@@ -1,6 +1,6 @@
 # MemoryScape implementation status
 
-Updated 2026-10-22 after database login throttling, baseline HTTP security headers, responsive layout fixes, local Docker, SQL, TypeScript, unit, and browser verification. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
+Updated 2026-10-23 after database login throttling, baseline HTTP security headers, responsive layout fixes, confidence intervals, local Docker, SQL, TypeScript, unit, and browser verification. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
 
 ## Infrastructure and database
 
@@ -21,7 +21,8 @@ Updated 2026-10-22 after database login throttling, baseline HTTP security heade
 - **Implemented and tested** — All application routes return `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, and restrictive camera/geolocation/microphone `Permissions-Policy` headers.
 - **Implemented and tested** — Browser tests cover CRUD, corridor drawing, route undo/clear and sequential navigation, related-memory detail selection, inclusive timeline date filtering/reinforcement, bounded graph recall, review refresh/reinforcement, settings persistence, and engine API paths against PostgreSQL.
 - **Implemented and tested** — API contracts cover malformed payloads, missing records, duplicate context linking without duplicate reinforcement, context unlink, duplicate/self-edge errors and edge removal against PostgreSQL. Database `NOT NULL` and `CHECK` violations now map to HTTP 400 instead of internal-server errors.
-- **Implemented and tested** — axe-core WCAG 2.1 A/AA scans pass on all seven primary pages in Chromium and Firefox.
+- **Implemented and tested** — axe-core WCAG 2.1 A/AA scans pass on all seven primary pages at desktop and 390px mobile width in Chromium and Firefox.
+- **Implemented and tested** — Responsive browser checks identified and fixed horizontal overflow in the memory and fading-review tables and long database-version metadata in Settings. Tables remain horizontally scrollable inside labeled regions on narrow screens.
 - **Implemented and tested** — Playwright checks all seven primary pages at 390px and 1440px widths; the phone checks caught and fixed timeline metadata and associative graph overflow.
 - **Implemented but not exhaustively tested** — Every malformed input combination, accessibility behavior outside the audited desktop pages/browsers, and contention beyond the deterministic 32-session maximum do not have exhaustive tests.
 
@@ -34,15 +35,16 @@ Updated 2026-10-22 after database login throttling, baseline HTTP security heade
 - **Implemented and tested** — `npm run db:benchmark` records real `EXPLAIN (ANALYZE, BUFFERS)` plans, actual materialized-view initial creation in a transactionally removed generated schema, refresh, view/direct retrieval, timeline, spatial planner-controlled scan comparison, and recursive depths 1–3.
 - **Implemented and tested** — Reports preserve separate real runs at 1,200 and 10,000 memories in `docs/evaluation/RESULTS-1200.md` and `RESULTS-10000.md` plus JSON plans. At the 10K run, the index candidate was slower than the controlled sequential plan; no index speedup is claimed.
 - **Implemented and tested** — Benchmark runner performs five sequential repetitions by default (configurable 1–20) and reports raw plans plus mean, median, sample standard deviation, minimum, and maximum for query, view-creation, and refresh timings. Both labeled datasets were rerun with five repetitions.
-- **Implemented and tested** — `npm run db:benchmark:fresh-buffers` provisions a temporary database container, seeds it, restarts PostgreSQL between one-run trials, preserves per-trial plans and aggregates actual measurements, then removes the isolated container and volume. Five 1,200-memory trials were run and recorded under `docs/evaluation/fresh-buffer-trials/`.
-- **Incomplete** — Formal confidence intervals, cold operating-system/disk-cache experiments, multiple hardware environments, and cognitive validity are not established. Five sequential fresh PostgreSQL buffer-pool runs on one host do not provide these.
+- **Implemented and tested** — `npm run db:benchmark:fresh-buffers` provisions a temporary database container, seeds it, restarts PostgreSQL between one-run trials, preserves per-trial plans, reports Student t 95% confidence intervals for means, then removes the isolated container and volume. Five 1,200-memory trials were run and recorded under `docs/evaluation/fresh-buffer-trials/`.
+- **Incomplete** — Cold operating-system/disk-cache experiments, multiple hardware environments, and cognitive validity are not established. The confidence intervals assume independent, approximately normal observations and describe this one-host fresh-buffer setup only.
 
 ## Known limitations
 
 - The local single-user auth is optional. Login throttling is workspace-wide, so it does not replace per-source rate limiting at a reverse proxy for public deployments. Deployments beyond a trusted local machine also need reviewed secret management, TLS, operational hardening, and appropriate authorization.
 - OpenStreetMap tiles require internet. Geodata storage and query computation remain local.
-- Chromium and Firefox test matrices pass. WebKit is configured, but this Arch Linux environment lacks Playwright WebKit's required host libraries; the separate browser container image could not be fetched with only 2.1 GB of free disk available, so Safari/WebKit has not been verified here. The suite is substantial for a prototype, not exhaustive for every acceptance scenario.
+- Chromium and Firefox browser coverage has passed when run with the documented database environment. WebKit is configured and its browser files downloaded, but Safari/WebKit cannot launch on this Arch Linux host because ICU 74, flite, libjxl, and libbacktrace runtime libraries are missing; WebKit browser behavior remains unverified. The suite is substantial for a prototype, not exhaustive for every acceptance scenario.
 - Five sequential repetitions in the regular benchmark share evolving cache state. The optional fresh-buffer runner clears PostgreSQL shared buffers between trials but not the operating-system file cache. Results are machine and workload specific.
+- Fresh-buffer confidence intervals are nominal Student t intervals over five sequential restarts. They do not account for host load, trial ordering, file cache, or between-machine variability.
 - Activation and review coefficients are configurable engineering parameters; they have not been established as biological constants.
 
 ## Verification performed
@@ -52,20 +54,22 @@ Updated 2026-10-22 after database login throttling, baseline HTTP security heade
 - `npm run build` — passed on Next.js 16.4.2; all application routes compiled.
 - `docker compose up --build -d web` — passed with the updated lockfile; `curl http://127.0.0.1:3000/api/health` returned PostgreSQL 16.15 and PostGIS 3.6.4. The existing database still contains 1,200 memories.
 - `npx tsc --noEmit` — passed.
-- `npm test -- --reporter=dot` — passed, 11 unit tests across 4 files, including repeated-measurement statistics, on Vitest 5.0.5.
+- `npm test -- --reporter=dot` — passed, 13 unit tests across 4 files, including Student t interval calculations, on Vitest 5.0.5.
 - `docker compose exec -T db psql -U memoryscape -d memoryscape -f /dev/stdin < tests/database/auth-rate-limit.sql` — passed; deterministic attempt, cooldown, reset, and expiry assertions rolled back.
 - `DATABASE_URL=... bash tests/database/concurrency.sh` — passed; eight simultaneous PostgreSQL sessions preserved every reinforcement strength update and history event.
 - `docker compose exec -T db psql -U memoryscape -d memoryscape -v ON_ERROR_STOP=1 -f /dev/stdin < tests/database/algorithms.sql` — passed; transaction rolled back.
 - `DATABASE_URL=... bash tests/database/concurrency.sh` — passed, 8-session run passed and preserved all 8 reinforcement history events.
 - `PLAYWRIGHT_BASE_URL=... DATABASE_URL=... PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=... npm run test:e2e:matrix -- --workers=1` — passed; 20 tests (10 in Chromium, 10 in Firefox), including seven-page axe scans, CRUD, API contracts, map, timeline, graph, review, and settings.
+- `DATABASE_URL=... PORT=3001 npm run dev` plus `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 PLAYWRIGHT_PROJECTS=chromium npx playwright test --config=playwright.matrix.config.ts --workers=1` — passed after the responsive corrections; all 26 Chromium UI tests passed against the PostgreSQL-backed app.
+- The same serial Playwright command with `PLAYWRIGHT_PROJECTS=firefox` — passed; all 26 Firefox UI tests passed against the PostgreSQL-backed app.
 - `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=... npm run test:e2e -- --workers=1` — passed; all 10 browser tests against the production Docker container.
 - `E2E_AUTH_PASSWORD=... PLAYWRIGHT_BASE_URL=... PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=... npm run test:e2e:auth` with a temporary configured password/session secret — passed; protected page/API, rejected credentials, lockout after five failures, valid login, limiter reset, and logout.
-- `PLAYWRIGHT_BASE_URL=... PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=... npx playwright test tests/ui/responsive.spec.ts` — passed, 14 checks for seven pages at phone and desktop widths.
+- `DATABASE_URL=... PORT=3001 npm run dev` plus `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 PLAYWRIGHT_PROJECTS=chromium npx playwright test tests/ui/responsive.spec.ts tests/ui/accessibility.spec.ts --config=playwright.matrix.config.ts --workers=1` — passed, 16 checks including axe WCAG 2.1 A/AA scans on all seven pages at desktop and phone width and 14 responsive checks.
 - `PLAYWRIGHT_BASE_URL=... PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=... npx playwright test tests/ui/security-headers.spec.ts` — passed.
 - `npm audit --audit-level=low` — passed with zero reported vulnerabilities after updating Next.js and Vitest.
 - `BENCHMARK_RUNS=5 BENCHMARK_LABEL=1200 npm run db:benchmark` — passed; 5 repetitions of 8 plans, view creation, and refresh against 1,200 memories.
 - Isolated `npm run db:seed -- --large` and `BENCHMARK_RUNS=5 BENCHMARK_LABEL=10000 npm run db:benchmark` — passed after waiting for the PostgreSQL initialization restart; disposable database was removed and primary DB remains at 1,200 memories.
-- `npm run db:benchmark:fresh-buffers` — passed; five 1,200-memory trials each followed a database restart. Median execution times included 3.200 ms for the indexed spatial candidate, 1.261 ms for the controlled sequential spatial query, 0.368–0.438 ms for associative depths 1–3, 0.360 ms for materialized-view retrieval, 0.711 ms for direct retrieval, and 0.035 ms for the timeline query. Median initial view creation was 17.215 ms and refresh was 34.099 ms. Results are preserved in `docs/evaluation/fresh-buffer-trials/RESULTS.md`; the temporary database and volume were removed, and the primary database still contains 1,200 memories.
+- `npm run db:benchmark:fresh-buffers` — passed on 2026-10-23; five 1,200-memory trials each followed a database restart. The current measured medians are in `docs/evaluation/fresh-buffer-trials/RESULTS.md`, with sample standard deviations and nominal 95% Student t intervals for the means. The indexed spatial candidate remained slower than the controlled sequential query; no general index benefit is claimed. The temporary database and volume were removed, and the primary database still contains 1,200 memories.
 
 ## Final checkpoint
 

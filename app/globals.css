@@ -7,3 +7,4 @@
 
 .leaflet-control-attribution a{color:#005a83;text-decoration:underline}
 .leaflet-container .leaflet-control-attribution a{color:#00517a;text-decoration:underline}
+.table-scroll{max-width:100%;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}.muted{overflow-wrap:anywhere}
