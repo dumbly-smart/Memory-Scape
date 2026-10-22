@@ -35,7 +35,7 @@ Updated 2026-10-22 after database login throttling, baseline HTTP security heade
 - **Implemented and tested** — Reports preserve separate real runs at 1,200 and 10,000 memories in `docs/evaluation/RESULTS-1200.md` and `RESULTS-10000.md` plus JSON plans. At the 10K run, the index candidate was slower than the controlled sequential plan; no index speedup is claimed.
 - **Implemented and tested** — Benchmark runner performs five sequential repetitions by default (configurable 1–20) and reports raw plans plus mean, median, sample standard deviation, minimum, and maximum for query, view-creation, and refresh timings. Both labeled datasets were rerun with five repetitions.
 - **Implemented and tested** — `npm run db:benchmark:fresh-buffers` provisions a temporary database container, seeds it, restarts PostgreSQL between one-run trials, preserves per-trial plans and aggregates actual measurements, then removes the isolated container and volume. Five 1,200-memory trials were run and recorded under `docs/evaluation/fresh-buffer-trials/`.
-- **Incomplete** — Formal confidence intervals, cold operating-system/disk-cache experiments, multiple hardware environments, and cognitive validity are not established. Three sequential fresh PostgreSQL buffer-pool runs on one host do not provide these.
+- **Incomplete** — Formal confidence intervals, cold operating-system/disk-cache experiments, multiple hardware environments, and cognitive validity are not established. Five sequential fresh PostgreSQL buffer-pool runs on one host do not provide these.
 
 ## Known limitations
 
