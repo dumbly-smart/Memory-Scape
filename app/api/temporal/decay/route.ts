@@ -1,0 +1,2 @@
+import {NextResponse}from'next/server';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
+export async function POST(){if(process.env.ALLOW_MANUAL_MAINTENANCE!=='true')return NextResponse.json({error:'Manual decay is disabled. The scheduled database job will apply decay.'},{status:403});try{const r=await pool.query('SELECT apply_memory_decay(now()) AS updated');return NextResponse.json({data:r.rows[0]});}catch(e){return jsonError(e);}}

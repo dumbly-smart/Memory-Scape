@@ -1,0 +1,45 @@
+{
+  "name": "memoryscape",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:e2e:auth": "playwright test --config=playwright.auth.config.ts",
+    "test:e2e:matrix": "PLAYWRIGHT_PROJECTS=chromium,firefox playwright test --config=playwright.matrix.config.ts",
+    "test:e2e:all-browsers": "playwright test --config=playwright.matrix.config.ts",
+    "test:watch": "vitest",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "db:benchmark": "tsx scripts/evaluate.ts"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "cytoscape": "^3.31.0",
+    "leaflet": "^1.9.4",
+    "next": "^16.4.2",
+    "pg": "^8.13.3",
+    "react": "^19.2.0",
+    "react-cytoscapejs": "^2.0.0",
+    "react-dom": "^19.2.0",
+    "react-leaflet": "^5.0.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
+    "@playwright/test": "^1.51.0",
+    "@types/leaflet": "^1.9.16",
+    "@types/node": "^22.13.10",
+    "@types/pg": "^8.11.11",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,2 @@
+import{NextResponse}from'next/server';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
+export async function POST(){if(process.env.ALLOW_MANUAL_MAINTENANCE!=='true')return NextResponse.json({error:'Manual maintenance is disabled. The scheduled database job will refresh this view.'},{status:403});try{await pool.query('SELECT refresh_fading_memories()');return NextResponse.json({data:{refreshed:true}});}catch(e){return jsonError(e);}}

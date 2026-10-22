@@ -1,0 +1,2 @@
+import{NextResponse}from'next/server';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
+export async function GET(){try{const r=await pool.query('SELECT f.*,meta.value AS refreshed_at FROM fading_memories_mv f CROSS JOIN system_metadata meta WHERE meta.key=$1 ORDER BY review_priority DESC LIMIT 200',['fading_view_refreshed_at']);return NextResponse.json({data:r.rows,refreshedAt:r.rows[0]?.refreshed_at??null});}catch(e){return jsonError(e);}}

@@ -1,0 +1,8 @@
+.git
+node_modules
+.next
+graft
+coverage
+playwright-report
+.env
+docs/evaluation/*.json

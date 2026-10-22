@@ -1,0 +1,28 @@
+services:
+  db:
+    build: { context: ., dockerfile: docker/postgres.Dockerfile }
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-memoryscape}
+      POSTGRES_USER: ${POSTGRES_USER:-memoryscape}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-memoryscape_local}
+    command: ["postgres", "-c", "shared_preload_libraries=pg_cron", "-c", "cron.database_name=${POSTGRES_DB:-memoryscape}", "-c", "cron.timezone=UTC"]
+    ports: ["127.0.0.1:5432:5432"]
+    volumes: ["memoryscape_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-memoryscape} -d ${POSTGRES_DB:-memoryscape}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  web:
+    build: { context: ., dockerfile: docker/web.Dockerfile }
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-memoryscape}:${POSTGRES_PASSWORD:-memoryscape_local}@db:5432/${POSTGRES_DB:-memoryscape}
+      NODE_ENV: production
+      ALLOW_MANUAL_MAINTENANCE: ${ALLOW_MANUAL_MAINTENANCE:-true}
+      MEMORYSCAPE_PASSWORD: ${MEMORYSCAPE_PASSWORD:-}
+      MEMORYSCAPE_SESSION_SECRET: ${MEMORYSCAPE_SESSION_SECRET:-}
+    ports: ["127.0.0.1:3000:3000"]
+    depends_on: { db: { condition: service_healthy } }
+    command: ["sh", "-c", "npm run db:migrate && npx next start -H 0.0.0.0"]
+volumes:
+  memoryscape_data:

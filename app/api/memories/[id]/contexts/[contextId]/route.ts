@@ -1,0 +1,3 @@
+import{NextResponse}from'next/server';import{z}from'zod';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
+const paramsSchema=z.object({id:z.string().uuid(),contextId:z.string().uuid()});
+export async function DELETE(_req:Request,{params}:{params:Promise<{id:string;contextId:string}>}){try{const p=paramsSchema.parse(await params),r=await pool.query('DELETE FROM memory_contexts WHERE memory_id=$1 AND context_id=$2 RETURNING memory_id',[p.id,p.contextId]);if(!r.rowCount)return NextResponse.json({error:'Context association not found'},{status:404});return NextResponse.json({data:{removed:true}});}catch(e){return jsonError(e);}}

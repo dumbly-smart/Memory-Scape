@@ -1,0 +1,1 @@
+'use client';import dynamic from'next/dynamic';const SpatialWalk=dynamic(()=>import('@/components/SpatialWalk').then(m=>m.SpatialWalk),{ssr:false,loading:()=> <div className="empty">Loading map…</div>});export default function Page(){return <SpatialWalk/>}
