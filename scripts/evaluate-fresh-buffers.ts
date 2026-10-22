@@ -2,7 +2,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { summarizeMeasurements } from './benchmark-stats';
+import { confidenceInterval95, summarizeMeasurements } from './benchmark-stats';
 
 type Plan = {
   'Planning Time'?: number;
@@ -116,9 +116,13 @@ async function main() {
       const stats = (read: (plan: Plan) => number | undefined) => summarizeMeasurements(
         samples.map(read).filter((value): value is number => value !== undefined),
       );
+      const executionTimes = samples.map((plan) => plan['Execution Time']).filter((value): value is number => value !== undefined);
       return [name, {
         planningMs: stats((plan) => plan['Planning Time']),
-        executionMs: stats((plan) => plan['Execution Time']),
+        executionMs: {
+          ...summarizeMeasurements(executionTimes),
+          confidenceInterval95: confidenceInterval95(executionTimes),
+        },
         actualRows: stats((plan) => plan.Plan?.['Actual Rows']),
         sharedHitBlocks: stats((plan) => plan.Plan?.['Shared Hit Blocks']),
         sharedReadBlocks: stats((plan) => plan.Plan?.['Shared Read Blocks']),
@@ -131,17 +135,24 @@ async function main() {
       trials: measurements,
       summaries: {
         plans,
-        fadingViewInitialCreationMs: summarizeMeasurements(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewInitialCreationMs)),
-        fadingViewRefreshMs: summarizeMeasurements(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewRefreshMs)),
+        fadingViewInitialCreationMs: {
+          ...summarizeMeasurements(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewInitialCreationMs)),
+          confidenceInterval95: confidenceInterval95(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewInitialCreationMs)),
+        },
+        fadingViewRefreshMs: {
+          ...summarizeMeasurements(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewRefreshMs)),
+          confidenceInterval95: confidenceInterval95(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewRefreshMs)),
+        },
       },
-      limitations: 'Each trial restarts an isolated PostgreSQL server, clearing shared_buffers. The operating-system file cache is not cleared, the host and dataset remain the same, and trials are sequential. These measurements are fresh PostgreSQL buffer-pool observations, not fully cold-disk or multi-hardware experiments.',
+      limitations: 'Intervals are nominal two-sided 95% Student t intervals for the mean of fresh-buffer restart observations. They assume independent, approximately normal samples and do not model host, operating-system cache, or hardware variability. Each trial restarts an isolated PostgreSQL server, clearing shared_buffers; the operating-system file cache is not cleared, and the host and dataset remain the same.',
     };
     await writeFile(path.join(outputDirectory, 'fresh-buffer-pools.json'), JSON.stringify(result, null, 2));
     const rows = names.map((name) => {
       const summary = plans[name];
-      return `| ${name} | ${summary.executionMs.median.toFixed(3)} | ${summary.executionMs.standardDeviation.toFixed(3)} | ${summary.sharedHitBlocks.median.toFixed(0)} | ${summary.sharedReadBlocks.median.toFixed(0)} |`;
+      const interval = summary.executionMs.confidenceInterval95;
+      return `| ${name} | ${summary.executionMs.median.toFixed(3)} | ${summary.executionMs.mean.toFixed(3)} [${interval.lower.toFixed(3)}, ${interval.upper.toFixed(3)}] | ${summary.executionMs.standardDeviation.toFixed(3)} | ${summary.sharedHitBlocks.median.toFixed(0)} | ${summary.sharedReadBlocks.median.toFixed(0)} |`;
     });
-    const report = `# Fresh PostgreSQL buffer-pool trials\n\nCaptured ${result.capturedAt} across ${trials} sequential database restarts. Each trial has one benchmark repetition, followed by a full PostgreSQL restart before the next. The timing summary reports median and sample standard deviation across those restarts.\n\n## Environment\n\n- PostgreSQL: ${String(result.environment.postgres)}\n- PostGIS: ${String(result.environment.postgis)}\n- Memories: ${String((result.environment as Record<string, unknown>).memory_count)}\n- Trials: ${trials}\n- Parameters: 150 m route radius, recursion threshold 0.01, depths 1–3\n\n## Query measurements\n\n| Query | Execution median (ms) | Sample SD (ms) | Shared hits median | Shared reads median |\n|---|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Materialized view\n\n- Initial creation: ${result.summaries.fadingViewInitialCreationMs.median.toFixed(3)} ms median; ${result.summaries.fadingViewInitialCreationMs.standardDeviation.toFixed(3)} ms sample SD.\n- Refresh: ${result.summaries.fadingViewRefreshMs.median.toFixed(3)} ms median; ${result.summaries.fadingViewRefreshMs.standardDeviation.toFixed(3)} ms sample SD.\n\nThe script restarts only a disposable, separately named database container and removes that container and its temporary volume at completion. PostgreSQL shared buffers start empty at each trial. The operating-system file cache remains uncontrolled, so these are not cold-disk measurements. All trials use one host and run sequentially. Raw plans and individual measurements are in [fresh-buffer-pools.json](fresh-buffer-pools.json).\n`;
+    const report = `# Fresh PostgreSQL buffer-pool trials\n\nCaptured ${result.capturedAt} across ${trials} sequential database restarts. Each trial has one benchmark repetition, followed by a full PostgreSQL restart before the next. The report includes median, sample standard deviation, and a nominal two-sided 95% Student t interval for the mean.\n\n## Environment\n\n- PostgreSQL: ${String(result.environment.postgres)}\n- PostGIS: ${String(result.environment.postgis)}\n- Memories: ${String((result.environment as Record<string, unknown>).memory_count)}\n- Trials: ${trials}\n- Parameters: 150 m route radius, recursion threshold 0.01, depths 1–3\n\n## Query measurements\n\n| Query | Execution median (ms) | Mean (95% t interval, ms) | Sample SD (ms) | Shared hits median | Shared reads median |\n|---|---:|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Materialized view\n\n- Initial creation: ${result.summaries.fadingViewInitialCreationMs.median.toFixed(3)} ms median; mean ${result.summaries.fadingViewInitialCreationMs.mean.toFixed(3)} ms; 95% t interval [${result.summaries.fadingViewInitialCreationMs.confidenceInterval95.lower.toFixed(3)}, ${result.summaries.fadingViewInitialCreationMs.confidenceInterval95.upper.toFixed(3)}] ms; sample SD ${result.summaries.fadingViewInitialCreationMs.standardDeviation.toFixed(3)} ms.\n- Refresh: ${result.summaries.fadingViewRefreshMs.median.toFixed(3)} ms median; mean ${result.summaries.fadingViewRefreshMs.mean.toFixed(3)} ms; 95% t interval [${result.summaries.fadingViewRefreshMs.confidenceInterval95.lower.toFixed(3)}, ${result.summaries.fadingViewRefreshMs.confidenceInterval95.upper.toFixed(3)}] ms; sample SD ${result.summaries.fadingViewRefreshMs.standardDeviation.toFixed(3)} ms.\n\nIntervals are conditional on this host and experiment. They assume independent, approximately normal restart samples and do not account for sequential ordering, host load, operating-system file cache, or hardware variation. PostgreSQL shared buffers start empty for every trial, but the operating-system file cache remains warm or uncontrolled; these are not cold-disk measurements. Raw plans and individual measurements are in [fresh-buffer-pools.json](fresh-buffer-pools.json).\n`;
     await writeFile(path.join(outputDirectory, 'RESULTS.md'), report);
     console.log(`Captured ${trials} fresh PostgreSQL buffer-pool trials in ${outputDirectory}`);
     completed = true;

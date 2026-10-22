@@ -7,6 +7,54 @@ export interface MeasurementSummary {
   maximum: number;
 }
 
+export interface MeanConfidenceInterval {
+  lower: number;
+  upper: number;
+}
+
+const T_95_TWO_SIDED = [
+  Number.NaN,
+  12.706,
+  4.303,
+  3.182,
+  2.776,
+  2.571,
+  2.447,
+  2.365,
+  2.306,
+  2.262,
+  2.228,
+  2.201,
+  2.179,
+  2.160,
+  2.145,
+  2.131,
+  2.120,
+  2.110,
+  2.101,
+  2.093,
+  2.086,
+  2.080,
+  2.074,
+  2.069,
+  2.064,
+  2.060,
+  2.056,
+  2.052,
+  2.048,
+  2.045,
+  2.042,
+];
+
+export function confidenceInterval95(values: number[]): MeanConfidenceInterval {
+  if (values.length < 2) throw new Error('Expected at least two measurements for a confidence interval');
+  const summary = summarizeMeasurements(values);
+  const degreesOfFreedom = values.length - 1;
+  const criticalValue = T_95_TWO_SIDED[degreesOfFreedom] ?? 1.96;
+  const margin = criticalValue * summary.standardDeviation / Math.sqrt(values.length);
+  return { lower: summary.mean - margin, upper: summary.mean + margin };
+}
+
 export function summarizeMeasurements(values: number[]): MeasurementSummary {
   if (values.length === 0 || values.some(value => !Number.isFinite(value))) {
     throw new Error('Expected at least one finite measurement');

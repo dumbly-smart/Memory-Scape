@@ -1,6 +1,6 @@
 # Fresh PostgreSQL buffer-pool trials
 
-Captured 2026-10-22T12:09:56.329Z across 5 sequential database restarts. Each trial has one benchmark repetition, followed by a full PostgreSQL restart before the next. The timing summary reports median and sample standard deviation across those restarts.
+Captured 2026-10-22T20:21:31.206Z across 5 sequential database restarts. Each trial has one benchmark repetition, followed by a full PostgreSQL restart before the next. The report includes median, sample standard deviation, and a nominal two-sided 95% Student t interval for the mean.
 
 ## Environment
 
@@ -12,20 +12,20 @@ Captured 2026-10-22T12:09:56.329Z across 5 sequential database restarts. Each tr
 
 ## Query measurements
 
-| Query | Execution median (ms) | Sample SD (ms) | Shared hits median | Shared reads median |
-|---|---:|---:|---:|---:|
-| spatial_index_candidate | 3.200 | 0.769 | 269 | 24 |
-| spatial_sequential_control | 1.261 | 0.400 | 53 | 0 |
-| associative_depth_1 | 0.438 | 0.039 | 77 | 5 |
-| associative_depth_2 | 0.375 | 0.016 | 93 | 2 |
-| associative_depth_3 | 0.368 | 0.012 | 130 | 1 |
-| fading_view | 0.360 | 0.041 | 3 | 32 |
-| fading_direct | 0.711 | 0.033 | 54 | 0 |
-| timeline | 0.035 | 0.002 | 102 | 0 |
+| Query | Execution median (ms) | Mean (95% t interval, ms) | Sample SD (ms) | Shared hits median | Shared reads median |
+|---|---:|---:|---:|---:|---:|
+| spatial_index_candidate | 3.120 | 7.084 [-3.743, 17.910] | 8.721 | 269 | 24 |
+| spatial_sequential_control | 1.260 | 1.623 [0.639, 2.608] | 0.793 | 53 | 0 |
+| associative_depth_1 | 0.437 | 0.488 [0.317, 0.659] | 0.137 | 77 | 5 |
+| associative_depth_2 | 0.354 | 0.383 [0.290, 0.476] | 0.075 | 93 | 2 |
+| associative_depth_3 | 0.369 | 0.399 [0.308, 0.490] | 0.073 | 130 | 1 |
+| fading_view | 0.353 | 0.363 [0.336, 0.390] | 0.022 | 3 | 32 |
+| fading_direct | 0.708 | 0.831 [0.468, 1.195] | 0.293 | 54 | 0 |
+| timeline | 0.037 | 0.049 [0.026, 0.071] | 0.018 | 102 | 0 |
 
 ## Materialized view
 
-- Initial creation: 17.215 ms median; 2.212 ms sample SD.
-- Refresh: 34.099 ms median; 8.675 ms sample SD.
+- Initial creation: 17.152 ms median; mean 17.690 ms; 95% t interval [16.190, 19.189] ms; sample SD 1.208 ms.
+- Refresh: 35.875 ms median; mean 35.596 ms; 95% t interval [33.809, 37.384] ms; sample SD 1.440 ms.
 
-The script restarts only a disposable, separately named database container and removes that container and its temporary volume at completion. PostgreSQL shared buffers start empty at each trial. The operating-system file cache remains uncontrolled, so these are not cold-disk measurements. All trials use one host and run sequentially. Raw plans and individual measurements are in [fresh-buffer-pools.json](fresh-buffer-pools.json).
+Intervals are conditional on this host and experiment. They assume independent, approximately normal restart samples and do not account for sequential ordering, host load, operating-system file cache, or hardware variation. PostgreSQL shared buffers start empty for every trial, but the operating-system file cache remains warm or uncontrolled; these are not cold-disk measurements. Raw plans and individual measurements are in [fresh-buffer-pools.json](fresh-buffer-pools.json).
