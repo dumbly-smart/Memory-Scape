@@ -137,7 +137,7 @@ async function main() {
       limitations: 'Repeated measurements run sequentially in one database session and therefore share evolving cache state. Spatial scan comparison is planner-controlled, not an index drop. Results are machine and workload dependent; repeated runs do not establish cognitive validity.',
     };
 
-    const directory = path.resolve('docs/evaluation');
+    const directory = path.resolve(process.env.BENCHMARK_OUTPUT_DIR ?? 'docs/evaluation');
     await mkdir(directory, { recursive: true });
     await writeFile(path.join(directory, 'latest.json'), JSON.stringify(result, null, 2));
     const label = process.env.BENCHMARK_LABEL;

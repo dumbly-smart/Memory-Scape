@@ -34,14 +34,15 @@ Updated 2026-10-22 after database login throttling, baseline HTTP security heade
 - **Implemented and tested** — `npm run db:benchmark` records real `EXPLAIN (ANALYZE, BUFFERS)` plans, actual materialized-view initial creation in a transactionally removed generated schema, refresh, view/direct retrieval, timeline, spatial planner-controlled scan comparison, and recursive depths 1–3.
 - **Implemented and tested** — Reports preserve separate real runs at 1,200 and 10,000 memories in `docs/evaluation/RESULTS-1200.md` and `RESULTS-10000.md` plus JSON plans. At the 10K run, the index candidate was slower than the controlled sequential plan; no index speedup is claimed.
 - **Implemented and tested** — Benchmark runner performs five sequential repetitions by default (configurable 1–20) and reports raw plans plus mean, median, sample standard deviation, minimum, and maximum for query, view-creation, and refresh timings. Both labeled datasets were rerun with five repetitions.
-- **Implemented but not tested** — Independent cold-cache runs, multiple hardware environments, formal confidence intervals, and cognitive validity are not established by the repeated measurements.
+- **Implemented and tested** — `npm run db:benchmark:fresh-buffers` provisions a temporary database container, seeds it, restarts PostgreSQL between one-run trials, preserves per-trial plans and aggregates actual measurements, then removes the isolated container and volume. Five 1,200-memory trials were run and recorded under `docs/evaluation/fresh-buffer-trials/`.
+- **Incomplete** — Formal confidence intervals, cold operating-system/disk-cache experiments, multiple hardware environments, and cognitive validity are not established. Three sequential fresh PostgreSQL buffer-pool runs on one host do not provide these.
 
 ## Known limitations
 
 - The local single-user auth is optional. Login throttling is workspace-wide, so it does not replace per-source rate limiting at a reverse proxy for public deployments. Deployments beyond a trusted local machine also need reviewed secret management, TLS, operational hardening, and appropriate authorization.
 - OpenStreetMap tiles require internet. Geodata storage and query computation remain local.
 - Chromium and Firefox test matrices pass. WebKit is configured, but this Arch Linux environment lacks Playwright WebKit's required host libraries; the separate browser container image could not be fetched with only 2.1 GB of free disk available, so Safari/WebKit has not been verified here. The suite is substantial for a prototype, not exhaustive for every acceptance scenario.
-- Five sequential benchmark repetitions share evolving cache state; they are not independent cold-start trials. Results are machine and workload specific.
+- Five sequential repetitions in the regular benchmark share evolving cache state. The optional fresh-buffer runner clears PostgreSQL shared buffers between trials but not the operating-system file cache. Results are machine and workload specific.
 - Activation and review coefficients are configurable engineering parameters; they have not been established as biological constants.
 
 ## Verification performed
@@ -64,7 +65,8 @@ Updated 2026-10-22 after database login throttling, baseline HTTP security heade
 - `npm audit --audit-level=low` — passed with zero reported vulnerabilities after updating Next.js and Vitest.
 - `BENCHMARK_RUNS=5 BENCHMARK_LABEL=1200 npm run db:benchmark` — passed; 5 repetitions of 8 plans, view creation, and refresh against 1,200 memories.
 - Isolated `npm run db:seed -- --large` and `BENCHMARK_RUNS=5 BENCHMARK_LABEL=10000 npm run db:benchmark` — passed after waiting for the PostgreSQL initialization restart; disposable database was removed and primary DB remains at 1,200 memories.
+- `npm run db:benchmark:fresh-buffers` — passed; five 1,200-memory trials each followed a database restart. Median execution times included 3.200 ms for the indexed spatial candidate, 1.261 ms for the controlled sequential spatial query, 0.368–0.438 ms for associative depths 1–3, 0.360 ms for materialized-view retrieval, 0.711 ms for direct retrieval, and 0.035 ms for the timeline query. Median initial view creation was 17.215 ms and refresh was 34.099 ms. Results are preserved in `docs/evaluation/fresh-buffer-trials/RESULTS.md`; the temporary database and volume were removed, and the primary database still contains 1,200 memories.
 
 ## Final checkpoint
 
-Core engines, app flows, migrations, optional local authentication with database login throttling, baseline security headers, responsive layouts, 1,200/10,000 dataset generation, repeated evaluation, and expanded API contracts are implemented and verified. The open local app is running; the primary database retains its original 1,200 memories.
+Core engines, app flows, migrations, optional local authentication with database login throttling, baseline security headers, responsive layouts, 1,200/10,000 dataset generation, sequential and fresh PostgreSQL buffer-pool evaluation, and expanded API contracts are implemented and verified. The open local app is running; the primary database retains its original 1,200 memories.

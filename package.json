@@ -14,7 +14,8 @@
     "test:watch": "vitest",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
-    "db:benchmark": "tsx scripts/evaluate.ts"
+    "db:benchmark": "tsx scripts/evaluate.ts",
+    "db:benchmark:fresh-buffers": "tsx scripts/evaluate-fresh-buffers.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.0",
