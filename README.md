@@ -9,14 +9,19 @@
 - Exponential decay, reinforcement, and atomic context-link reinforcement routines.
 - Recursive SQL activation with maximum three hops, cycle prevention, pruning, and best-path explanations.
 - Hourly fading-memory materialized view refreshed by pg_cron.
-- Next.js interface for memory CRUD endpoints, library capture/search, map route recall, timeline, graph exploration, review, and database settings.
+- Everyday workflows: quick capture and bookmarklet, people/project workspaces, follow-ups, decision notes, weekly review, and memory attachments with indexed text search.
+- Independent importance, sensitive-data, and archive controls; place reminders use user-triggered nearby recall.
+- Preview-first portable JSON backup/restore with attachment digest checks and transactional, no-overwrite imports.
+- Seed-centered graph exploration bounded to at most 60 displayed nodes, 12 candidate outgoing edges per node, and three hops.
+- Browser-local map tile configuration supports a local XYZ tile server for offline-compatible maps.
+- Next.js interface for memory CRUD, search, map route recall, timeline, graph exploration, review, and database settings.
 - Deterministic 1,200-row fictional campus seed dataset; refuses nonempty databases.
 
 ## Stack and architecture
 
 PostgreSQL 16, PostGIS, pg_cron, Node.js 22+, TypeScript, `pg`, Next.js 16, React 19, Tailwind CSS 4, Leaflet/OpenStreetMap, Cytoscape.js, Vitest 5, Playwright, and axe-core. See [system architecture](docs/architecture/SYSTEM_ARCHITECTURE.md), [schema](docs/database/SCHEMA.md), and the migration at `database/migrations/001_initial.sql`.
 
-The frontend sends validated values to API routes. SQL routines perform the main query work. OSM map tile downloads require internet; memory storage and recall processing remain in the local database.
+The frontend sends validated values to API routes. SQL routines perform the main query work. The default OpenStreetMap tile source needs internet; configure a local XYZ tile server under **Settings → Map tile source** for offline-compatible map imagery. Memory storage and recall processing remain in PostgreSQL.
 
 ## Quick start (Docker)
 
@@ -51,6 +56,17 @@ docker compose exec db psql -U memoryscape -d memoryscape -c "SELECT * FROM cron
 docker compose exec db psql -U memoryscape -d memoryscape -c "SELECT apply_memory_decay(now());"
 ```
 
+## Everyday workflows
+
+- **Capture:** `/capture` accepts a quick note and optional page source. The page also generates a bookmarklet that captures the current URL, title, and selected text into a reviewable draft.
+- **People and projects:** open a Person or Project context from a memory tag to see its recent history, resume point, follow-ups, and decisions.
+- **Follow-ups and decisions:** link an action or decision to a memory/context and track its due or revisit date.
+- **Weekly review:** `/review/weekly` prioritizes recent, pinned, fading memories and due follow-ups. Keep, snooze, archive, or dismiss each item. Sensitive and archived memories do not enter the queue.
+- **Attachments:** add up to 10 MiB per file to a memory. Plain UTF-8 text, Markdown, CSV, JSON, and XML have indexed text search; binary files remain downloadable but have no OCR/PDF extraction.
+- **Backup:** open **Settings → Backup & restore**, download the versioned JSON file, and select a file to preview before restoring. Restore rejects existing IDs/context labels and rolls back the whole import on error. Bundles are limited to 15 MiB overall and 10 MiB combined attachment bytes. Backups contain sensitive memory text and file contents; store them privately.
+- **Privacy and importance:** pin importance separately from strength; mark a memory sensitive or archive it from its detail view. Sensitive memories remain in the library but are excluded from nearby and review recall.
+- **Place recall:** `/nearby` asks for location only after an explicit user action. It sends coordinates to the local app, which queries PostGIS in meters.
+
 ## Tests and evaluation
 
 ```sh
@@ -74,6 +90,7 @@ The SQL contract test uses a rollback transaction and exercises actual database 
 - **Web starts but API says database unavailable:** inspect `docker compose ps` and `docker compose logs db web`; check `DATABASE_URL` and the healthcheck.
 - **Seed refuses:** it never overwrites data. Use a fresh development database/volume only if you intentionally want to discard that development database.
 - **No map imagery:** OSM tiles need internet access. Stored coordinates and spatial queries still work locally.
+- **Local map tiles:** set an XYZ URL template with `{z}`, `{x}`, and `{y}` under Settings. It is saved only in the browser that changed it; browser settings are not part of database backups.
 - **pg_cron extension error:** the database must start with `shared_preload_libraries=pg_cron` and `cron.database_name=memoryscape`; rebuild/start Compose and rerun migrations.
 - **Docker build fails on package mirrors:** the PostGIS image's OS package repositories may be stale; check the selected database image and apt repository availability.
 
