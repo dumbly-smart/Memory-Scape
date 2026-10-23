@@ -45,7 +45,7 @@ Updated 2026-10-23 after cache-eviction trial support, cross-host artifact compa
 
 - The local single-user auth is optional. Login throttling is workspace-wide, so it does not replace per-source rate limiting at a reverse proxy for public deployments. Deployments beyond a trusted local machine also need reviewed secret management, TLS, operational hardening, and appropriate authorization.
 - OpenStreetMap tiles require internet. Geodata storage and query computation remain local.
-- Chromium and Firefox browser coverage has passed when run with the documented database environment. WebKit is configured and its browser files downloaded, but Safari/WebKit cannot launch on this Arch Linux host because ICU 74, flite, libjxl, and libbacktrace runtime libraries are missing; WebKit browser behavior remains unverified. The suite is substantial for a prototype, not exhaustive for every acceptance scenario.
+- Chromium and Firefox browser coverage has passed when run with the documented database environment. WebKit was run in Ubuntu 24.04 with Playwright's WebKit dependencies: 25 of 26 tests passed, including axe scans and all responsive checks. One route-drawing workflow did not return its fixture memory after map clicks and remains unresolved. On the Arch host, WebKit cannot launch directly because ICU 74 and other runtime libraries are missing. The suite is substantial for a prototype, not exhaustive for every acceptance scenario.
 - Five sequential repetitions in the regular benchmark share evolving cache state. The optional fresh-buffer runner clears PostgreSQL shared buffers between trials but not the operating-system file cache. Results are machine and workload specific.
 - Fresh-buffer confidence intervals are nominal Student t intervals over five sequential restarts. They do not account for host load, trial ordering, file cache, or between-machine variability.
 - Activation and review coefficients are configurable engineering parameters; they have not been established as biological constants.
@@ -82,6 +82,7 @@ Updated 2026-10-23 after cache-eviction trial support, cross-host artifact compa
 - `bash tests/database/page-cache-eviction.sh` — passed against an isolated Docker volume with two synthetic relation files.
 - `npm run db:benchmark:compare -- /tmp/memoryscape-a.json /tmp/memoryscape-b.json` — passed using temporary copies of one artifact with distinct machine labels. This validated the CLI; it is not cross-machine experimental evidence.
 - `docker compose up -d --build` and `curl -fsS http://127.0.0.1:3000/api/health` — passed; local web and PostgreSQL services started, and health reported PostgreSQL 16.15/PostGIS 3.6.4.
+- `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 PLAYWRIGHT_PROJECTS=webkit npx playwright test --config=playwright.matrix.config.ts --workers=1` in Ubuntu 24.04 after `npx playwright install-deps webkit` — 25 passed, 1 failed. The remaining failure is the spatial route map workflow in `tests/ui/recall-pages.spec.ts`; its fixture memory was not present in the returned route results. The full failure trace was held in the temporary container and was not retained.
 
 ## Final checkpoint
 
