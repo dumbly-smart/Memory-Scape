@@ -73,9 +73,9 @@ export default function GraphPage() {
     <div className="page-head"><div><div className="eyebrow">POSTGRESQL WITH RECURSIVE · BOUNDED SPREADING ACTIVATION</div><h1>Associative graph</h1><p>Choose a seed; PostgreSQL returns a bounded, explainable neighborhood. Select a node to recenter exploration.</p></div></div>
     <div className="toolbar" style={{ flexWrap: 'wrap' }}>
       <select aria-label="Seed memory" value={seedId} onChange={event => { const id = event.target.value; setSeedId(id); setGraph(null); }}><option value="">Choose a recent memory…</option>{memories.map(memory => <option key={memory.id} value={memory.id}>{memory.title}</option>)}</select>
-      <label className="muted">Hops <select aria-label="Traversal depth" value={depth} onChange={event => void changeDepth(Number(event.target.value))}>{[1,2,3].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+      <label className="muted">Hops <select aria-label="Hops" value={depth} onChange={event => void changeDepth(Number(event.target.value))}>{[1,2,3].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
       <label className="muted">Prune below <input aria-label="Activation pruning threshold" className="input" style={{ width: 85, minWidth: 0 }} type="number" min="0" max="1" step=".01" value={threshold} onChange={event => void changeThreshold(Number(event.target.value))} /></label>
-      <button className="button" disabled={!seedId || busy} onClick={() => void recall(seedId)}>{busy ? 'Calculating…' : 'Explore seed graph'}</button>
+      <button className="button" disabled={!seedId || busy} onClick={() => void recall(seedId)}>{busy ? 'Calculating…' : 'Spread activation'}</button>
     </div>
     {error && <div className="error" role="alert">{error}</div>}
     <div className="dashboard-grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(260px,.8fr)' }}>

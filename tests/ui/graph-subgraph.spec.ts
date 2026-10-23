@@ -34,7 +34,7 @@ test('graph page can start an exploration from a chosen memory', async ({ page, 
   try {
     await page.goto('/graph');
     await page.getByLabel('Seed memory').selectOption(seed.id);
-    await page.getByRole('button', { name: 'Explore seed graph' }).click();
+    await page.getByRole('button', { name: 'Spread activation' }).click();
     await expect(page.getByRole('heading', { name: 'Activation ranking' })).toBeVisible();
     await expect(page.getByText('No associated memories passed the pruning threshold.')).toBeVisible();
   } finally { await request.delete(`/api/memories/${seed.id}`); }
