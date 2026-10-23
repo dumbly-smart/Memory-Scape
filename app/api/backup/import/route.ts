@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     input = bundleSchema.parse(JSON.parse(raw));
   } catch (error) { return jsonError(error); }
 
-  const counts = Object.fromEntries(collectionTables.map(([key]) => [key, input[key].length]));
+  const counts = Object.fromEntries([...collectionTables.map(([key]) => [key, input[key].length] as const), ['memoryContexts', input.memoryContexts.length] as const]);
   let attachmentBytes = 0;
   try {
     for (const row of input.attachments) {
