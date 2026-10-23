@@ -107,14 +107,18 @@ test('graph page runs bounded associative recall from a selected memory', async 
 
 test('review page refreshes the materialized queue and reinforces a fading memory', async ({ page, request }) => {
   await page.goto('/review');
+  const refreshResponse=page.waitForResponse(response=>response.url().endsWith('/api/review/refresh')&&response.request().method()==='POST');
   await page.getByRole('button', { name: '↻ Refresh view' }).click();
-  const firstRow = page.locator('tbody tr').first();
-  await expect(firstRow).toBeVisible({ timeout: 20_000 });
-  const title = (await firstRow.locator('td').first().innerText()).trim();
-  const memoryId = await firstRow.getAttribute('data-memory-id');
-  const before = Number((await firstRow.locator('td').nth(1).innerText()).replace('%', '')) / 100;
+  await refreshResponse;
+  const queue=await request.get('/api/review/fading');
+  expect(queue.ok()).toBe(true);
+  const first=(await queue.json()).data[0] as {memory_id:string};
+  const memoryId=first.memory_id;
+  const memoryResponse=await request.get(`/api/memories/${memoryId}`);
+  const before=Number((await memoryResponse.json()).data.strength);
   expect(memoryId).toBeTruthy();
   const row = page.locator(`tbody tr[data-memory-id="${memoryId}"]`);
+  await expect(row.getByRole('button',{name:'Review + reinforce'})).toBeVisible({timeout:20_000});
   await row.getByRole('button', { name: 'Review + reinforce' }).click();
   await expect(page.getByRole('status')).toContainText('strength updated to');
   const memory = (await (await request.get(`/api/memories/${memoryId}`)).json()).data;

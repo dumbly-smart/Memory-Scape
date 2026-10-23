@@ -10,8 +10,11 @@ test('memory details separate importance, privacy, and archive controls from rec
     await page.getByRole('textbox', { name: 'Search memories' }).fill(title);
     await page.getByRole('button', { name: title }).click();
     await page.getByRole('button', { name: 'Pin as important' }).click();
+    await expect(page.getByRole('button',{name:'Unpin importance'})).toBeVisible();
     await page.getByRole('button', { name: 'Mark sensitive' }).click();
+    await expect(page.getByRole('button',{name:'Mark non-sensitive'})).toBeVisible();
     await page.getByRole('button', { name: 'Archive memory' }).click();
+    await expect(page.getByRole('button',{name:'Restore from archive'})).toBeVisible();
     const response = await request.get(`/api/memories/${memoryId}`);
     const memory = (await response.json()).data;
     expect(memory.is_pinned).toBe(true);

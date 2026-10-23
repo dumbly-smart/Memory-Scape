@@ -66,22 +66,34 @@ Compose binds application and database ports to localhost. The project’s open 
 2. Turn the browser offline, save a nonsensitive note, then reconnect. Confirm the queue syncs and the note appears once in the memory library.
 3. Mark a memory sensitive and verify an offline save is refused.
 4. Open **Daily brief** to inspect follow-ups due within 24 hours, decisions due for revisit, and the fading-memory snapshot.
-5. Enable notifications only if desired. They are checked while the daily page is open; no notification is sent after closing the browser.
+5. Enable in-page notifications if desired, or opt into background reminders. The latter registers a Web Push subscription for due follow-ups and decision revisits; browser push services must be reachable.
 
 ## J — Import archive files
 
 1. Open **Settings → Import** and choose Markdown/text, a Netscape bookmark export, or an iCalendar file.
-2. Preview parsed titles, dates, and content. Repeat a preview to see content duplicates identified.
-3. Apply the import and confirm new rows appear in the library. Malformed files reject the whole batch before any write.
+2. Preview parsed titles, dates, and content. Recurring events expand; finite RRULE series are capped at 1,000 instances, while open-ended series cover the one-year-before/after import window. Repeat a preview to see duplicates identified.
+3. Apply the import and confirm new rows appear in the library. Malformed or oversized batches reject before any write.
 
 ## K — Encrypted backup portability
 
 1. Open **Settings → Backup & restore**, enter and confirm a passphrase of at least 12 characters, and download the encrypted file.
-2. Select an encrypted backup, enter the passphrase, preview restore counts, and explicitly apply the restore.
-3. A wrong passphrase or modified ciphertext fails locally before the server receives restore data. The passphrase is unrecoverable if lost.
+2. Copy and store the one-time recovery key separately from the file. It appears only on the page after export and is not stored by MemoryScape.
+3. Select an encrypted backup, unlock using either the passphrase or recovery key, preview restore counts, and explicitly apply the restore. A wrong key or modified ciphertext fails locally before the server receives restore data.
 
 ## L — Context cleanup and saved searches
 
 1. On a context workspace, add an alternate name; use that alias when linking another memory and confirm it resolves to the canonical context.
 2. Merge a same-type context into another; inspect moved links and aliases. Cross-type merge is rejected, and merge does not change memory strength.
 3. In the memory library, set filters, name the search, save it, then select and apply it later. Delete it when no longer useful.
+
+## M — Offline encrypted capture
+
+1. Open `/capture`, enter a local queue passphrase of at least 12 characters, and write a note.
+2. Disconnect the browser in developer tools, save the note, and inspect the `memoryscape-offline-capture` IndexedDB object store. Stored records contain ciphertext and no note content.
+3. Reconnect, enter the same passphrase, and choose **Sync encrypted drafts**. Try an incorrect passphrase first; it must leave the queue untouched.
+
+## N — Background reminders
+
+1. Open `/daily` in a browser that supports service workers and Push API, then choose **Enable background reminders** and grant notification permission.
+2. PostgreSQL stores the browser subscription and generated VAPID keys. Keep the server and its database running; the Node scheduler checks due items every minute.
+3. Create a due follow-up or decision, close the page, and wait for the browser push service. Sensitive and archived linked memories are excluded. Disable reminders on `/daily` to revoke the subscription.

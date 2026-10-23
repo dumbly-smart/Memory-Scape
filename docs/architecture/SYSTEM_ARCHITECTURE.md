@@ -12,8 +12,14 @@ flowchart TD
   PG --> MV[Fading-memory materialized view]
   CRON[pg_cron] --> DECAY
   CRON --> MV
+  UI --> OUTBOX[Encrypted IndexedDB capture outbox]
+  UI --> SUB[Opt-in Push subscription API]
+  SUB --> PG
+  PUSH[Node background reminder scheduler] --> PG
+  PUSH --> WEBPUSH[Browser push service]
+  WEBPUSH --> SW[Service worker notification]
   UI --> MAP[Leaflet + OpenStreetMap tiles]
   UI --> GRAPH[Cytoscape.js]
 ```
 
-Docker Compose binds app and database ports to loopback and persists PostgreSQL data in a named volume. OSM tile retrieval needs internet access; memory data and algorithms stay local. There is no authentication: deployment beyond a trusted local machine requires authentication, authorization, TLS, and network/database access controls.
+Docker Compose binds app and database ports to loopback and persists PostgreSQL data in a named volume. OSM tiles and Web Push relays need internet access; memory data and recall algorithms remain in PostgreSQL. Optional single-user authentication can protect the app; deployment beyond a trusted local machine requires it plus reviewed authorization, TLS, managed secrets, and database network controls.

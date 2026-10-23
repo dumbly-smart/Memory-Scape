@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Do not introduce ML, embeddings, paid services, external sync, or a separate mobile application.
-- Offline queue payloads are unencrypted browser data; disclose this and avoid implying sensitive-data protection.
+- Offline queue payloads must be authenticated ciphertext in IndexedDB; the local passphrase is never persisted or sent to the server.
 - All imports preview first, skip/report duplicates, and apply in one transaction.
 - Encrypted backups use PBKDF2-SHA-256 and AES-256-GCM; passphrases remain client-side.
 - Context merges only combine matching types and preserve all dependent records without reinforcement.
@@ -54,7 +54,7 @@
 
 - [x] Test brief inclusion/exclusion for overdue and due-soon follow-ups, revisit decisions, and sensitive/archived memories.
 - [x] Implement a parameterized DB query with a bounded date window; add an actionable `/daily` page.
-- [x] Add an opt-in notification preference stored locally; check only while the page is open and report when notifications are unavailable or denied.
+- [x] Add opt-in in-page notifications and a separate Web Push subscription flow for background reminders.
 - [x] Verify permission-denied/unsupported handling and commit/push.
 
 ### Task 4: Markdown, bookmark, and iCalendar import
@@ -100,3 +100,13 @@
 - [x] Restore/clean only test-created fixtures and verify the existing 1,200-memory seed remains intact.
 - [x] Document exact offline privacy, browser notification limits, supported import formats, encryption, merge semantics, and saved-search behavior.
 - [x] Commit/push final docs and confirm clean branch.
+
+### Task 9: Close the remaining daily-use limitations
+
+**Files:** `lib/offline-capture.ts`; `app/capture/page.tsx`; `lib/text-import.ts`; `lib/backup-crypto.ts`; `app/settings/backup/page.tsx`; `app/daily/page.tsx`; `lib/push/service.ts`; push API routes; migration 012; service worker and integration tests.
+
+- [x] Expand bounded iCalendar recurrence rules, exclusions, and dates; cap finite expansion and bound unending rules to a one-year window on either side of import time.
+- [x] Encrypt queued notes, migrate older plaintext queue entries when unlocked, verify wrong-key retention, and provide explicit confirmed discard when the key is lost.
+- [x] Add stored VAPID configuration, opt-in/revocable subscriptions, minute scheduler, sensitive-memory filtering, idempotent delivery, and service-worker notification/click handling.
+- [x] Wrap a random backup content key with both the passphrase and a separately displayed recovery key; continue restoring prior v1 files with their passphrase.
+- [x] Add unit, database integration, browser, build, and deployment verification; update README, schema, demo guide, implementation status, and this plan.
