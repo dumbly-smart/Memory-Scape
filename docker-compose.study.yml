@@ -1,0 +1,25 @@
+services:
+  db:
+    build: { context: ., dockerfile: docker/postgres.Dockerfile }
+    environment:
+      POSTGRES_DB: ${STUDY_POSTGRES_DB:-memoryscape_study}
+      POSTGRES_USER: ${STUDY_POSTGRES_USER:-memoryscape}
+      POSTGRES_PASSWORD: ${STUDY_POSTGRES_PASSWORD:-memoryscape_local}
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=pg_cron
+      - -c
+      - cron.database_name=${STUDY_POSTGRES_DB:-memoryscape_study}
+      - -c
+      - cron.timezone=UTC
+    ports: ["127.0.0.1:55432:5432"]
+    volumes: ["memoryscape_study_data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${STUDY_POSTGRES_USER:-memoryscape} -d ${STUDY_POSTGRES_DB:-memoryscape_study}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  memoryscape_study_data:

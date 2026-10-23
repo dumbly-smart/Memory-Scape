@@ -1,0 +1,178 @@
+{
+  "version": "v1",
+  "time_limit_seconds": 90,
+  "conditions": [
+    "conventional",
+    "spatial",
+    "associative"
+  ],
+  "counterbalance": [
+    {
+      "order": 1,
+      "condition_to_set": {
+        "conventional": "A",
+        "spatial": "B",
+        "associative": "C"
+      },
+      "sequence": [
+        {
+          "condition": "conventional",
+          "scenario_set": "A"
+        },
+        {
+          "condition": "spatial",
+          "scenario_set": "B"
+        },
+        {
+          "condition": "associative",
+          "scenario_set": "C"
+        }
+      ]
+    },
+    {
+      "order": 2,
+      "condition_to_set": {
+        "conventional": "B",
+        "spatial": "C",
+        "associative": "A"
+      },
+      "sequence": [
+        {
+          "condition": "spatial",
+          "scenario_set": "C"
+        },
+        {
+          "condition": "associative",
+          "scenario_set": "A"
+        },
+        {
+          "condition": "conventional",
+          "scenario_set": "B"
+        }
+      ]
+    },
+    {
+      "order": 3,
+      "condition_to_set": {
+        "conventional": "C",
+        "spatial": "A",
+        "associative": "B"
+      },
+      "sequence": [
+        {
+          "condition": "associative",
+          "scenario_set": "B"
+        },
+        {
+          "condition": "conventional",
+          "scenario_set": "C"
+        },
+        {
+          "condition": "spatial",
+          "scenario_set": "A"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "A-01",
+      "scenario_set": "A",
+      "prompt": "Find the fictional episode about working on a graph assignment that occurred on 2024-12-29.",
+      "conditions": {
+        "conventional": {
+          "search_text": "graph assignment",
+          "from": "2024-12-29T00:00:00.000Z",
+          "to": "2024-12-29T23:59:59.999Z"
+        },
+        "spatial": {
+          "route": {
+            "type": "LineString",
+            "coordinates": [
+              [
+                77.57863,
+                13.02242
+              ],
+              [
+                77.57893,
+                13.02242
+              ]
+            ]
+          },
+          "radius_meters": 50
+        },
+        "associative": {
+          "seed_memory_id": "8982d86d-3403-5af4-8b12-1abeab5f05a0",
+          "depth": 1,
+          "threshold": 0.01
+        }
+      }
+    },
+    {
+      "task_id": "B-01",
+      "scenario_set": "B",
+      "prompt": "Find the fictional episode about working on a graph assignment that occurred on 2024-12-28.",
+      "conditions": {
+        "conventional": {
+          "search_text": "graph assignment",
+          "from": "2024-12-28T00:00:00.000Z",
+          "to": "2024-12-28T23:59:59.999Z"
+        },
+        "spatial": {
+          "route": {
+            "type": "LineString",
+            "coordinates": [
+              [
+                77.57803,
+                13.02812
+              ],
+              [
+                77.57833,
+                13.02812
+              ]
+            ]
+          },
+          "radius_meters": 50
+        },
+        "associative": {
+          "seed_memory_id": "daba7cda-19d4-fbf2-fce6-c1a61e992e0e",
+          "depth": 1,
+          "threshold": 0.01
+        }
+      }
+    },
+    {
+      "task_id": "C-01",
+      "scenario_set": "C",
+      "prompt": "Find the fictional episode about working on a graph assignment that occurred on 2024-12-27.",
+      "conditions": {
+        "conventional": {
+          "search_text": "graph assignment",
+          "from": "2024-12-27T00:00:00.000Z",
+          "to": "2024-12-27T23:59:59.999Z"
+        },
+        "spatial": {
+          "route": {
+            "type": "LineString",
+            "coordinates": [
+              [
+                77.57743,
+                13.02382
+              ],
+              [
+                77.57773,
+                13.02382
+              ]
+            ]
+          },
+          "radius_meters": 50
+        },
+        "associative": {
+          "seed_memory_id": "f77e8358-66e0-7691-3e20-82e28110b02f",
+          "depth": 1,
+          "threshold": 0.01
+        }
+      }
+    }
+  ]
+}
