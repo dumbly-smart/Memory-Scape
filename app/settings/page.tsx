@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { MapTileSettingsPanel } from '@/components/MapTileSettings';
 
 type Info = { postgres: string; postgis: string };
 type Parameters = {
@@ -82,5 +83,6 @@ export default function SettingsPage() {
       <section className="panel"><h2>Temporal decay & reinforcement</h2><div className="algorithm-note">Strength after elapsed time: S(t) = S₀ × exp(−λ × elapsed days).<br/>Reinforcement: S′ = min(1, S + α × (1 − S)).<br/>Default daily decay coefficient λ = 0.01. Default review reinforcement α = 0.2.</div><p className="muted">Decay and reinforcement update last_strength_at in PostgreSQL. Reinforcement rows preserve before and after values.</p></section>
       <section className="panel"><h2>Scheduled database jobs</h2><p className="muted">Daily decay runs at 02:17 UTC. The fading review materialized view refreshes hourly at minute 37. Verify jobs in SQL with <code>SELECT jobname,schedule,command FROM cron.job;</code> and inspect execution history in <code>cron.job_run_details</code>.</p><p className="muted">Spatial maps use OpenStreetMap tiles and therefore need internet access. Coordinates and all recall computation remain local to your PostgreSQL database.</p></section>
     </div>
+    <div style={{ marginTop: 14 }}><MapTileSettingsPanel /></div>
   </>;
 }
