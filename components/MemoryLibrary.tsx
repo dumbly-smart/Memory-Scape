@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useState } from 'react';
+import Link from 'next/link';
 
 type Context = { id: string; type: string; label: string };
 type Association = { id: string; memoryId: string; direction: string; type: string; weight: number; valence: number };
@@ -38,6 +39,7 @@ export function MemoryLibrary() {
   }
   useEffect(() => { load().catch((e: Error) => setError(e.message)); }, [q, from, to, contextId, minStrength, hasLocation, sort]);
   useEffect(() => { fetch('/api/contexts').then(async r => { const body = await r.json(); if (!r.ok) throw new Error(body.error); setContexts(body.data); }).catch((e: Error) => setError(e.message)); }, []);
+  useEffect(() => { const candidate = new URLSearchParams(window.location.search).get('context') ?? ''; if (/^[0-9a-f-]{36}$/i.test(candidate)) setContextId(candidate); }, []);
 
   async function openMemory(memory: Memory) {
     setError('');
@@ -162,7 +164,7 @@ export function MemoryLibrary() {
       </form> : <>
         <p>{selected.content || 'No additional notes.'}</p><div className="algorithm-note">Event: {new Date(selected.occurred_at).toLocaleString()} · Strength: {Math.round(selected.strength * 100)}% · {selected.location_label ?? 'No location'}<br />Strength state updated: {selected.last_strength_at ? new Date(selected.last_strength_at).toLocaleString() : '—'}</div>
         <div style={{ display: 'flex', gap: 8, marginTop: 12 }}><button className="button" onClick={() => reinforce(selected.id)}>Reinforce memory</button><button className="button secondary" onClick={() => setEditing(true)}>Edit memory</button><button className="button secondary" onClick={deleteMemory}>Delete memory</button></div>
-        <h3>Contexts</h3>{selected.contexts?.map(c => <span key={c.id} className="quick" style={{ display: 'inline-flex', margin: '0 5px 5px 0', alignItems: 'center', gap: 6 }}>{c.type}: {c.label}<button aria-label={`Remove ${c.label} context`} className="button ghost" onClick={() => removeContext(c.id)}>×</button></span>)}
+        <h3>Contexts</h3>{selected.contexts?.map(c => <span key={c.id} className="quick" style={{ display: 'inline-flex', margin: '0 5px 5px 0', alignItems: 'center', gap: 6 }}><Link href={`/contexts/${c.id}`}>{c.type}: {c.label}</Link><button aria-label={`Remove ${c.label} context`} className="button ghost" onClick={() => removeContext(c.id)}>×</button></span>)}
         <form onSubmit={addContext} style={{ display: 'flex', gap: 6, marginTop: 8 }}><select name="type" aria-label="New context type">{contextTypes.map(t => <option key={t}>{t}</option>)}</select><input className="input" name="label" aria-label="New context label" placeholder="Add context" required /><button className="button secondary">Add</button></form>
         <h3>Associations</h3>{selected.associations?.map(edge => <div className="result-card" key={edge.id}><b>{edge.direction === 'out' ? '→' : '←'} {rows.find(m => m.id === edge.memoryId)?.title ?? edge.memoryId}</b><span>{edge.type} · weight {edge.weight} · valence {edge.valence}</span><button className="button ghost" onClick={() => removeAssociation(edge.id)}>Remove</button></div>)}
         <form onSubmit={addAssociation} className="toolbar" style={{ flexWrap: 'wrap' }}><select name="dst" aria-label="Associated memory" required defaultValue=""><option value="" disabled>Choose memory</option>{rows.filter(m => m.id !== selected.id).map(m => <option key={m.id} value={m.id}>{m.title}</option>)}</select><input className="input" name="type" aria-label="Relationship type" required defaultValue="Associated with" /><input className="input" name="weight" aria-label="Relationship weight" type="number" min="0" max="1" step=".05" defaultValue=".5" /><input className="input" name="valence" aria-label="Relationship valence" type="number" min="-1" max="1" step=".1" defaultValue="0" /><button className="button secondary">Link memory</button></form>

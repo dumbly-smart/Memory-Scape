@@ -13,6 +13,8 @@ export default function CapturePage() {
   const [occurredAt, setOccurredAt] = useState('');
   const [sourceUrl, setSourceUrl] = useState('');
   const [sourceTitle, setSourceTitle] = useState('');
+  const [contextId, setContextId] = useState('');
+  const [contextLabel, setContextLabel] = useState('');
   const [content, setContent] = useState('');
   const [isPinned, setPinned] = useState(false);
   const [isSensitive, setSensitive] = useState(false);
@@ -26,6 +28,10 @@ export default function CapturePage() {
     setSourceUrl(params.get('url')?.slice(0, 2048) ?? '');
     setSourceTitle(params.get('title')?.slice(0, 500) ?? '');
     setContent(params.get('text')?.slice(0, 20000) ?? '');
+    const candidateContext = params.get('context') ?? '';
+    const selectedContext = /^[0-9a-f-]{36}$/i.test(candidateContext) ? candidateContext : '';
+    setContextId(selectedContext);
+    if (selectedContext) fetch(`/api/contexts/${selectedContext}`).then(response => response.json()).then(body => setContextLabel(body.data?.label ?? '')).catch(() => setContextLabel(''));
   }, []);
 
   async function save(event: FormEvent<HTMLFormElement>) {
@@ -42,6 +48,7 @@ export default function CapturePage() {
           occurredAt: occurredAt ? new Date(occurredAt).toISOString() : undefined,
           sourceUrl: sourceUrl || undefined,
           sourceTitle: sourceTitle || undefined,
+          contextId: contextId || undefined,
           isPinned,
           isSensitive,
         }),
@@ -70,6 +77,7 @@ export default function CapturePage() {
           <label className="field" style={{ flex: 1 }}><span>Source URL <span className="muted">(optional)</span></span><input className="input" aria-label="Source URL" type="url" value={sourceUrl} onChange={event => setSourceUrl(event.target.value)} maxLength={2048} placeholder="https://…" /></label>
         </div>
         {sourceTitle && <p className="muted">Saved from: {sourceTitle}</p>}
+        {contextLabel && <p className="algorithm-note">This memory will be linked to {contextLabel}.</p>}
         <div className="toolbar" style={{ alignItems: 'center' }}>
           <label><input type="checkbox" checked={isPinned} onChange={event => setPinned(event.target.checked)} /> Pin as important</label>
           <label><input type="checkbox" checked={isSensitive} onChange={event => setSensitive(event.target.checked)} /> Keep out of review suggestions</label>

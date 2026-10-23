@@ -8,7 +8,7 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 
 - **Implemented and tested** — Quick capture inbox with content-first entry, first-line title derivation, current-time default, optional web source, and pin/sensitive flags. `POST /api/capture` and `/capture` are backed by PostgreSQL migration 004.
 - **Implemented but not complete** — Pin/sensitive fields persist on capture and can be changed through the memory PATCH API; the dedicated memory detail controls, archive workflow, and broader exclusion behavior are still pending.
-- **Incomplete** — Person and project workspaces with resume-work summaries.
+- **Implemented and tested** — Person and Project context workspaces with latest-memory resume summary, recent linked memories, memory count, and actions to capture or filter by that context. Context tags in memory detail link to their workspace.
 - **Incomplete** — Follow-ups linked to memories and contexts.
 - **Incomplete** — Decision records with rationale, alternatives, and revisit dates.
 - **Incomplete** — User-triggered nearby recall and place reminders.
@@ -20,6 +20,8 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 - **Incomplete** — End-to-end documentation and verification for the expanded workflows.
 
 Task 1 verification on 2026-10-23: `DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run db:migrate` applied migration 004 without changing existing memories; the isolated behavior suite `npm test -- --reporter=dot tests/capture/capture.test.ts` passed (4 tests); Chromium `tests/ui/capture.spec.ts` passed (2 tests); `npx tsc --noEmit` and `npm run build` passed. Playwright initially could not write root-owned generated test artifacts left by a container run; ownership of only `test-results/` was restored and the browser tests then passed.
+
+Task 2 verification on 2026-10-23: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 PLAYWRIGHT_PROJECTS=chromium npx playwright test tests/ui/contexts.spec.ts tests/ui/capture.spec.ts --config=playwright.matrix.config.ts --workers=1` passed (4 tests), including context-linked capture and unknown-context handling; `npx tsc --noEmit` passed.
 
 ## Infrastructure and database
 

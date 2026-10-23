@@ -10,6 +10,7 @@ const schema = z.object({
   occurredAt: z.string().datetime().optional(),
   sourceUrl: z.string().max(4096).optional(),
   sourceTitle: z.string().max(500).optional(),
+  contextId: z.string().uuid().optional(),
   isPinned: z.boolean().default(false),
   isSensitive: z.boolean().default(false),
 });
@@ -26,6 +27,10 @@ export async function POST(request: NextRequest) {
        VALUES($1,$2,coalesce($3::timestamptz,now()),$4,$5,$6,$7,now()) RETURNING id,title,occurred_at,source_url,is_pinned,is_sensitive`,
       [deriveCaptureTitle(input.title, input.content), input.content, input.occurredAt ?? null, sourceUrl, input.sourceTitle?.trim() || null, input.isPinned, input.isSensitive],
     );
+    if (input.contextId) {
+      const linked = await client.query('SELECT link_memory_context($1,c.type,c.label) AS inserted FROM contexts c WHERE c.id=$2', [result.rows[0].id, input.contextId]);
+      if (!linked.rowCount) throw new Error('Context not found');
+    }
     await client.query('COMMIT');
     return NextResponse.json({ data: result.rows[0] }, { status: 201 });
   } catch (error) {
