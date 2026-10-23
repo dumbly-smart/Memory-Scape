@@ -20,7 +20,7 @@ test('daily brief surfaces overdue follow-ups linked to a memory', async ({ requ
     await page.goto('/daily');
     await expect(page.getByRole('heading', { name: 'Today, in context' })).toBeVisible();
     await expect(page.getByText('Review the field notes')).toBeVisible();
-    await expect(page.getByRole('button', { name: /Enable daily notifications/ })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Enable in-page notifications/ })).toBeVisible();
     await request.patch('/api/memories/'+memoryId,{data:{isSensitive:true}});
     const privateBrief=(await (await request.get('/api/daily')).json()).data;
     expect(privateBrief.dueFollowUps.some((row: {title:string})=>row.title==='Review the field notes')).toBe(false);
@@ -34,13 +34,45 @@ test('daily brief surfaces overdue follow-ups linked to a memory', async ({ requ
 test('daily notifications explain unsupported browsers and denied permission',async({page})=>{
   await page.goto('/daily');
   await page.evaluate(()=>Object.defineProperty(window,'Notification',{configurable:true,value:undefined}));
-  await page.getByRole('button',{name:/Enable daily notifications/}).click();
+  await page.getByRole('button',{name:/Enable in-page notifications/}).click();
   await expect(page.getByRole('status')).toContainText('does not support notifications');
 });
 
 test('daily notifications remain optional when browser permission is denied',async({page})=>{
   await page.goto('/daily');
   await page.evaluate(()=>Object.defineProperty(window,'Notification',{configurable:true,value:{permission:'denied',requestPermission:async()=> 'denied'}}));
-  await page.getByRole('button',{name:/Enable daily notifications/}).click();
+  await page.getByRole('button',{name:/Enable in-page notifications/}).click();
   await expect(page.getByRole('status')).toContainText('Notifications were not enabled');
+});
+
+test('background push registration is persisted and can be revoked',async({request})=>{
+  const key=await request.get('/api/push/public-key');
+  expect(key.status()).toBe(200);
+  expect((await key.json()).data.publicKey).toMatch(/^[A-Za-z0-9_-]+$/);
+  const endpoint=`https://fcm.googleapis.com/fcm/send/${randomUUID()}`;
+  const subscription={endpoint,keys:{p256dh:'B'.repeat(43),auth:'a'.repeat(22)}};
+  const invalid=await request.post('/api/push/subscriptions',{data:{...subscription,endpoint:'http://not-secure.test/push'}});
+  expect(invalid.status()).toBe(400);
+  const created=await request.post('/api/push/subscriptions',{data:subscription});
+  expect(created.status()).toBe(201);
+  const removed=await request.delete('/api/push/subscriptions',{data:{endpoint}});
+  expect(removed.status()).toBe(200);
+});
+
+test('daily page offers opt-in browser push and removes the subscription when disabled',async({page})=>{
+  await page.addInitScript(()=>{
+    class FakeNotification { static permission='granted'; static requestPermission=async()=> 'granted'; constructor(_title:string,_options?:NotificationOptions){} }
+    Object.defineProperty(window,'Notification',{configurable:true,value:FakeNotification});
+    const serialized={endpoint:`https://fcm.googleapis.com/fcm/send/${crypto.randomUUID()}`,keys:{p256dh:'B'.repeat(43),auth:'a'.repeat(22)}};
+    let current:typeof subscription|null=null;
+    const subscription={endpoint:serialized.endpoint,toJSON:()=>serialized,unsubscribe:async()=>{current=null;return true}};
+    const registration={pushManager:{getSubscription:async()=>current,subscribe:async()=>{current=subscription;return subscription}}};
+    Object.defineProperty(navigator,'serviceWorker',{configurable:true,value:{register:async()=>registration,ready:Promise.resolve(registration)}});
+  });
+  await page.goto('/daily');
+  await page.getByRole('button',{name:'Enable background reminders'}).click();
+  await expect(page.getByRole('status')).toContainText('Background reminders enabled');
+  await expect(page.getByRole('button',{name:'Disable background reminders'})).toBeVisible();
+  await page.getByRole('button',{name:'Disable background reminders'}).click();
+  await expect(page.getByRole('status')).toContainText('Background reminders disabled');
 });

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'memoryscape-pwa-v1';
+const CACHE_NAME = 'memoryscape-pwa-v2';
 const CORE_FILES = ['/capture', '/offline.html', '/manifest.webmanifest', '/icon.svg'];
 
 self.addEventListener('install', event => {
@@ -9,6 +9,27 @@ self.addEventListener('install', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('memoryscape-pwa-') && key !== CACHE_NAME).map(key => caches.delete(key)))));
   self.clients.claim();
+});
+
+self.addEventListener('push', event => {
+  let payload = { title: 'MemoryScape', body: 'You have something to review.', url: '/daily', tag: 'memoryscape-reminder' };
+  try { if (event.data) payload = { ...payload, ...event.data.json() }; } catch { /* Use the safe generic notification for malformed payloads. */ }
+  const url = typeof payload.url === 'string' && payload.url.startsWith('/') ? payload.url : '/daily';
+  event.waitUntil(self.registration.showNotification(String(payload.title).slice(0, 120), {
+    body: String(payload.body).slice(0, 240),
+    tag: String(payload.tag ?? 'memoryscape-reminder').slice(0, 128),
+    data: { url },
+  }));
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const target = new URL(event.notification.data?.url ?? '/daily', self.location.origin);
+  const safeUrl = target.origin === self.location.origin ? target.href : new URL('/daily', self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clients => {
+    const existing = clients.find(client => client.url.startsWith(self.location.origin));
+    return existing && 'focus' in existing ? existing.navigate(safeUrl).then(() => existing.focus()) : self.clients.openWindow(safeUrl);
+  }));
 });
 
 self.addEventListener('fetch', event => {

@@ -13,6 +13,12 @@ type Brief = {
 const optInKey = 'memoryscape.dailyBriefNotifications';
 const notifiedKey = 'memoryscape.dailyBriefNotifiedIds';
 
+function applicationServerKey(value:string):Uint8Array {
+  const padding='='.repeat((4-value.length%4)%4);
+  const decoded=atob((value+padding).replace(/-/g,'+').replace(/_/g,'/'));
+  return Uint8Array.from(decoded,character=>character.charCodeAt(0));
+}
+
 function sendDueNotifications(brief: Brief) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted' || localStorage.getItem(optInKey) !== 'true') return;
   const sent = new Set<string>(JSON.parse(localStorage.getItem(notifiedKey) ?? '[]') as string[]);
@@ -37,6 +43,7 @@ export default function DailyBriefPage() {
   const [loading, setLoading] = useState(true);
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [backgroundPushEnabled,setBackgroundPushEnabled]=useState(false);
   const load = useCallback(async (notify = false) => {
     const response = await fetch('/api/daily', { cache: 'no-store' });
     const value = await response.json();
@@ -47,6 +54,7 @@ export default function DailyBriefPage() {
 
   useEffect(() => {
     setNotificationsEnabled(localStorage.getItem(optInKey) === 'true' && typeof Notification !== 'undefined' && Notification.permission === 'granted');
+    if('serviceWorker' in navigator&&'PushManager' in window) void navigator.serviceWorker.ready.then(registration=>registration.pushManager.getSubscription()).then(subscription=>setBackgroundPushEnabled(Boolean(subscription))).catch(()=>setBackgroundPushEnabled(false));
     load(true).catch(cause => setError(cause instanceof Error ? cause.message : 'Could not load daily brief')).finally(() => setLoading(false));
     const timer = window.setInterval(() => { if (document.visibilityState === 'visible') load(true).catch(cause => setError(cause instanceof Error ? cause.message : 'Could not refresh daily brief')); }, 5 * 60 * 1000);
     return () => window.clearInterval(timer);
@@ -68,9 +76,42 @@ export default function DailyBriefPage() {
     setNotificationMessage('Daily notifications disabled.');
   }
 
+  async function enableBackgroundPush(){
+    setNotificationMessage('');
+    if(!('serviceWorker' in navigator)||!('PushManager' in window)||typeof Notification==='undefined'){setNotificationMessage('Background push is not supported by this browser. The daily brief remains available.');return}
+    try{
+      if(Notification.permission!=='granted'&&await Notification.requestPermission()!=='granted')throw new Error('Notification permission was not granted.');
+      const response=await fetch('/api/push/public-key');
+      const keyBody=await response.json();
+      if(!response.ok)throw new Error(keyBody.error??'Push notifications could not be configured.');
+      const registration=await navigator.serviceWorker.ready;
+      const subscription=await registration.pushManager.getSubscription()??await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:applicationServerKey(keyBody.data.publicKey) as BufferSource});
+      const serialized=subscription.toJSON();
+      const saved=await fetch('/api/push/subscriptions',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:subscription.endpoint,keys:serialized.keys})});
+      const result=await saved.json();
+      if(!saved.ok)throw new Error(result.error??'Push subscription could not be saved.');
+      setBackgroundPushEnabled(true);
+      setNotificationMessage('Background reminders enabled. Open follow-ups and decisions due within a day may arrive while MemoryScape is closed.');
+    }catch(cause){setNotificationMessage(cause instanceof Error?cause.message:'Background push could not be enabled.')}
+  }
+
+  async function disableBackgroundPush(){
+    try{
+      const registration=await navigator.serviceWorker.ready;
+      const subscription=await registration.pushManager.getSubscription();
+      if(subscription){
+        const response=await fetch('/api/push/subscriptions',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({endpoint:subscription.endpoint})});
+        if(!response.ok)throw new Error('Could not remove the server push subscription.');
+        await subscription.unsubscribe();
+      }
+      setBackgroundPushEnabled(false);
+      setNotificationMessage('Background reminders disabled.');
+    }catch(cause){setNotificationMessage(cause instanceof Error?cause.message:'Background push could not be disabled.')}
+  }
+
   return <>
-    <div className="page-head"><div><div className="eyebrow">DAILY BRIEF</div><h1>Today, in context</h1><p>Due follow-ups, decisions to revisit, and memories that could use a review.</p></div><div className="toolbar" style={{ margin: 0 }}><button className="button secondary" onClick={notificationsEnabled ? disableNotifications : enableNotifications}>{notificationsEnabled ? 'Disable daily notifications' : 'Enable daily notifications'}</button></div></div>
-    <p className="muted">Notifications are opt-in and checked while this page is open. MemoryScape does not send push notifications when the browser is closed.</p>
+    <div className="page-head"><div><div className="eyebrow">DAILY BRIEF</div><h1>Today, in context</h1><p>Due follow-ups, decisions to revisit, and memories that could use a review.</p></div><div className="toolbar" style={{ margin: 0, flexWrap:'wrap' }}><button className="button secondary" onClick={notificationsEnabled ? disableNotifications : enableNotifications}>{notificationsEnabled ? 'Disable in-page notifications' : 'Enable in-page notifications'}</button><button className="button" onClick={backgroundPushEnabled?disableBackgroundPush:enableBackgroundPush}>{backgroundPushEnabled?'Disable background reminders':'Enable background reminders'}</button></div></div>
+    <p className="muted">In-page alerts are checked every five minutes while this page is open. Background reminders use opt-in Web Push; the browser’s push service relays the encrypted notification payload.</p>
     {notificationMessage && <p className="success" role="status">{notificationMessage}</p>}
     {error && <div className="error" role="alert">{error}</div>}
     {loading ? <div className="panel empty" role="status">Preparing today’s brief…</div> : brief && <div className="dashboard-grid">
