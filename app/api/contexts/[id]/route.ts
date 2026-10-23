@@ -34,3 +34,23 @@ export async function GET(_request: NextRequest, { params }: Params) {
     return jsonError(error);
   }
 }
+
+export async function DELETE(_request:NextRequest,{params}:Params) {
+  const client=await pool.connect();
+  try {
+    const id=idSchema.parse((await params).id);
+    await client.query('BEGIN');
+    const context=await client.query('SELECT id FROM contexts WHERE id=$1 FOR UPDATE',[id]);
+    if(!context.rowCount) { await client.query('ROLLBACK'); return NextResponse.json({error:'Context not found'},{status:404}); }
+    const refs=await client.query(
+      `SELECT (SELECT count(*) FROM memory_contexts WHERE context_id=$1)::int memories,
+              (SELECT count(*) FROM follow_ups WHERE context_id=$1)::int follow_ups,
+              (SELECT count(*) FROM decisions WHERE context_id=$1)::int decisions`,[id]);
+    const row=refs.rows[0];
+    if(Number(row.memories)+Number(row.follow_ups)+Number(row.decisions)>0) { await client.query('ROLLBACK'); return NextResponse.json({error:'Context is still referenced; merge it or remove its relationships first'},{status:409}); }
+    await client.query('DELETE FROM contexts WHERE id=$1',[id]);
+    await client.query('COMMIT');
+    return NextResponse.json({data:{deleted:true,id}});
+  } catch(error) { await client.query('ROLLBACK'); return jsonError(error); }
+  finally { client.release(); }
+}

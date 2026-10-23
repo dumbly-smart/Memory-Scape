@@ -15,3 +15,7 @@ The repeatable initial schema is implemented in [`001_initial.sql`](../../databa
 Important indexes: GiST over geography for `ST_DWithin`; B-tree on event time, strength, graph source/destination, reinforcement history; GIN over English text search; context link indexes for both traversal directions.
 
 Memory event time (`occurred_at`) is separate from strength state time (`last_strength_at`). Strength operations update the latter but preserve the former.
+
+## Daily-use persistence additions
+
+Migration 010 adds nullable `memories.capture_key` with a partial unique index for retry-safe offline capture, `context_aliases` for normalized alternate names, and `saved_searches` for named JSON filter sets. Migration 011 makes normalized aliases globally unique and updates `link_memory_context` to resolve aliases of the requested context type. Context merging transfers memory links, follow-ups, decisions, and aliases transactionally; the source context is removed after transfer.

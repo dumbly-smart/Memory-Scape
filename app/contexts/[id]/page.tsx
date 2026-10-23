@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FollowUpsWidget } from '@/components/FollowUpsWidget';
 import { DecisionWidget } from '@/components/DecisionWidget';
+import { ContextAliases } from '@/components/ContextAliases';
 
 type ContextData = {
   id: string;
@@ -45,6 +46,7 @@ export default function ContextPage({ params }: { params: Promise<{ id: string }
         <div className="quick-grid"><Link className="quick" href={`/capture?context=${context.id}`}><b>Capture a memory</b><span>Save a new note for {context.label}</span></Link><Link className="quick" href={`/memories?context=${context.id}`}><b>Browse linked memories</b><span>Open the full memory library</span></Link></div>
       </section>
     </div>
+    <ContextAliases contextId={context.id} type={context.type} label={context.label} />
     <div style={{ marginTop: 16 }}><FollowUpsWidget contextId={context.id} /></div>
     <div style={{ marginTop: 16 }}><DecisionWidget contextId={context.id} /></div>
     <section className="panel" style={{ marginTop: 16 }}><div className="panel-title"><h2>Recent memories</h2><span className="muted">Showing up to 100</span></div>
