@@ -13,11 +13,12 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 - **Implemented and tested** — Decision records store the choice, required rationale, alternatives, decision time, optional revisit time, and optional memory/context links. Context and memory detail workflows can create and review them; dates are validated against one another.
 - **Implemented and tested** — User-triggered “What’s relevant here?” uses browser geolocation only after a click; PostGIS filters and orders memories/reminders by geography distance. Sensitive and archived memories are excluded. Place reminders have a GiST index and bounded meter radius.
 - **Implemented and tested** — Capture page generates a bookmarklet for its current origin. The bookmarklet sends URL, page title, and up to 20,000 selected characters to a reviewable capture draft; it requires no extension or external service.
-- **Incomplete** — Memory attachments with content hashes and safe download.
+- **Implemented but not fully tested** — PostgreSQL `bytea` attachments up to 10 MiB, SHA-256 metadata, safe forced-download headers, delete/list UI, and indexed full-text search for UTF-8 plain text/Markdown/CSV/JSON/XML. Binary documents/images are stored and downloadable, but PDF/OCR extraction is not implemented.
 - **Incomplete** — Weekly review with keep/snooze/archive/dismiss actions.
 - **Incomplete** — Versioned export and dry-run/transactional restore.
 - **Incomplete** — Seed-centered bounded graph exploration and configurable local map tile source.
 - **Incomplete** — End-to-end documentation and verification for the expanded workflows.
+- **Implemented and tested** — Browser geolocation is permitted for the app’s own origin; camera and microphone remain blocked. Proxy request buffering is configured to 11 MiB to support a 10 MiB file plus multipart overhead.
 
 Task 1 verification on 2026-10-23: `DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run db:migrate` applied migration 004 without changing existing memories; the isolated behavior suite `npm test -- --reporter=dot tests/capture/capture.test.ts` passed (4 tests); Chromium `tests/ui/capture.spec.ts` passed (2 tests); `npx tsc --noEmit` and `npm run build` passed. Playwright initially could not write root-owned generated test artifacts left by a container run; ownership of only `test-results/` was restored and the browser tests then passed.
 
@@ -30,6 +31,8 @@ Task 4 verification on 2026-10-23: migration 006 applied; Chromium `tests/ui/dec
 Task 5 verification on 2026-10-23: migration 007 applied; Chromium `tests/ui/nearby.spec.ts` passed (2 tests) against actual PostGIS data and a user-click-triggered geolocation fixture; it checks meter distances, invalid coordinates, and sensitive/archived exclusion. `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed after fixing complete browser geolocation test typings.
 
 Task 6 verification on 2026-10-23: `npm test -- --reporter=dot tests/capture/bookmarklet.test.ts` passed (2 tests); Chromium `tests/ui/capture.spec.ts` passed (3 tests), including bookmarklet origin and selected-text capture support; full `npm test -- --reporter=dot` passed (28 tests); `npx tsc --noEmit` and `npm run build` passed. One browser run initially found the local dev server had stopped after the execution restart; restarting it resolved the environment issue.
+
+Task 7 verification on 2026-10-23: migration 008 applied; Chromium `tests/ui/attachments.spec.ts` and `tests/ui/security-headers.spec.ts` passed (3 tests), covering indexed text search, 10 MiB rejection, SHA-256 metadata, path-safe filenames, download headers, deletion, and geolocation policy; full unit suite passed (28 tests); `npx tsc --noEmit` and `npm run build` passed. The primary database still contains 1,200 memories and has zero attachments after test cleanup. Next.js reports `proxyClientMaxBodySize` as experimental in this release.
 
 ## Infrastructure and database
 
