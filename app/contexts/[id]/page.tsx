@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { FollowUpsWidget } from '@/components/FollowUpsWidget';
+import { DecisionWidget } from '@/components/DecisionWidget';
 
 type ContextData = {
   id: string;
@@ -45,6 +46,7 @@ export default function ContextPage({ params }: { params: Promise<{ id: string }
       </section>
     </div>
     <div style={{ marginTop: 16 }}><FollowUpsWidget contextId={context.id} /></div>
+    <div style={{ marginTop: 16 }}><DecisionWidget contextId={context.id} /></div>
     <section className="panel" style={{ marginTop: 16 }}><div className="panel-title"><h2>Recent memories</h2><span className="muted">Showing up to 100</span></div>
       {context.memories.length ? context.memories.map(memory => <article className="memory-row" key={memory.id}><span className="memory-pin">{memory.is_pinned ? '★' : '◷'}</span><div className="memory-row-main"><b>{memory.title}</b><span>{new Date(memory.occurred_at).toLocaleString()} · {memory.location_label ?? 'No place'}</span><p>{memory.content}</p></div><span className="muted">{Math.round(memory.strength * 100)}%</span></article>) : <div className="empty">No memories linked to this context.</div>}
     </section>
