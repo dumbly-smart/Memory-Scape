@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
 import { buildCaptureBookmarklet } from '@/lib/bookmarklet';
+import { CaptureDraft, listQueuedCaptures, enqueueCapture, syncQueuedCaptures } from '@/lib/offline-capture';
 
 function localDateTime() {
   const now = new Date();
@@ -24,9 +25,16 @@ export default function CapturePage() {
   const [savedId, setSavedId] = useState('');
   const [bookmarklet, setBookmarklet] = useState('');
   const [bookmarkletStatus, setBookmarkletStatus] = useState('');
+  const [pendingCount, setPendingCount] = useState(0);
+  const [queueStatus, setQueueStatus] = useState('');
 
   useEffect(() => {
     setOccurredAt(localDateTime());
+    void listQueuedCaptures().then(items => {
+      setPendingCount(items.length);
+      if (navigator.onLine && items.length) void syncOfflineQueue();
+    }).catch(() => setPendingCount(0));
+    window.addEventListener('online', syncOfflineQueue);
     setBookmarklet(buildCaptureBookmarklet(window.location.origin));
     const params = new URLSearchParams(window.location.search);
     setSourceUrl(params.get('url')?.slice(0, 2048) ?? '');
@@ -36,27 +44,55 @@ export default function CapturePage() {
     const selectedContext = /^[0-9a-f-]{36}$/i.test(candidateContext) ? candidateContext : '';
     setContextId(selectedContext);
     if (selectedContext) fetch(`/api/contexts/${selectedContext}`).then(response => response.json()).then(body => setContextLabel(body.data?.label ?? '')).catch(() => setContextLabel(''));
+    return () => window.removeEventListener('online', syncOfflineQueue);
   }, []);
+
+  async function syncOfflineQueue() {
+    try {
+      const result = await syncQueuedCaptures();
+      setPendingCount(result.remaining);
+      if (result.synced) setQueueStatus(`Synced ${result.synced} offline capture${result.synced === 1 ? '' : 's'}.`);
+      if (result.failed) setError(result.failed);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not sync offline captures'); }
+  }
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError('');
+    setQueueStatus('');
     try {
-      const response = await fetch('/api/capture', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          title: new FormData(event.currentTarget).get('title') || undefined,
-          content,
-          occurredAt: occurredAt ? new Date(occurredAt).toISOString() : undefined,
-          sourceUrl: sourceUrl || undefined,
-          sourceTitle: sourceTitle || undefined,
-          contextId: contextId || undefined,
-          isPinned,
-          isSensitive,
-        }),
-      });
+      const form = new FormData(event.currentTarget);
+      const payload: CaptureDraft = {
+        title: String(form.get('title') || '').trim() || undefined,
+        content,
+        occurredAt: occurredAt ? new Date(occurredAt).toISOString() : undefined,
+        sourceUrl: sourceUrl || undefined,
+        sourceTitle: sourceTitle || undefined,
+        contextId: contextId || undefined,
+        isPinned,
+        isSensitive,
+      };
+      const captureKey = crypto.randomUUID();
+      if (!navigator.onLine) {
+        if (isSensitive) throw new Error('Sensitive notes cannot be queued offline because browser storage is not encrypted');
+        await enqueueCapture(payload, captureKey);
+        setPendingCount((count) => count + 1);
+        setQueueStatus('Saved on this device; waiting to sync');
+        setContent('');
+        return;
+      }
+      let response: Response;
+      try {
+        response = await fetch('/api/capture', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ ...payload, captureKey }) });
+      } catch (cause) {
+        if (!(cause instanceof TypeError) || isSensitive) throw cause;
+        await enqueueCapture(payload, captureKey);
+        setPendingCount((count) => count + 1);
+        setQueueStatus('Saved on this device; waiting to sync');
+        setContent('');
+        return;
+      }
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? 'Could not save this memory');
       setSavedId(result.data.id as string);
@@ -96,7 +132,9 @@ export default function CapturePage() {
           <label><input type="checkbox" checked={isSensitive} onChange={event => setSensitive(event.target.checked)} /> Keep out of review suggestions</label>
         </div>
         {error && <div className="error" role="alert">{error}</div>}
+        {queueStatus && <div className="success" role="status">{queueStatus}</div>}
         {savedId && <div className="success" role="status">Saved. You can <Link href={`/memories?memory=${savedId}`}>continue in the library</Link>.</div>}
+        {pendingCount > 0 && <div className="algorithm-note" aria-live="polite">{pendingCount} offline capture{pendingCount === 1 ? '' : 's'} waiting on this device. Drafts in browser storage are not encrypted; do not queue sensitive notes.</div>}
         <button className="button" type="submit" disabled={saving || (!content.trim() && !sourceUrl.trim())}>{saving ? 'Saving…' : 'Save memory'}</button>
       </form>
     </div>

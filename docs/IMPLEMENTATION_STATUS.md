@@ -135,3 +135,10 @@ Post-rebuild backup UI verification: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 
 ## Final checkpoint
 
 Core engines, app flows, migrations, optional local authentication with database login throttling, baseline security headers, responsive layouts, 1,200/10,000 dataset generation, sequential and fresh PostgreSQL buffer-pool evaluation, expanded API contracts, all 26 WebKit browser tests, and the human-study preparation/scoring kit are implemented and verified. The open local app is running; the primary database retains its original 1,200 memories. Human-subject results and external-machine experiments remain unperformed.
+
+## Practical daily-use feature expansion (started 2026-10-23)
+
+- **Implemented and tested** — Installable PWA metadata, capture page cache and offline fallback, IndexedDB outbox for nonsensitive quick captures, automatic sync on reconnect, and server-side capture-key idempotency. Sensitive notes are rejected from the unencrypted browser queue. Verification: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 npx playwright test tests/ui/offline-capture.spec.ts --reporter=line` (3 passed); `npx tsc --noEmit` and `npm run build` passed. This test used the local optimized Next server and existing PostgreSQL data; one temporary row from the initial red test was removed by ID.
+- **Implemented but not tested** — Migration 010 adds the persistence primitives for future context aliases and saved searches. Migration applied successfully to the local database; those user-facing workflows are not yet implemented.
+- **Incomplete** — Daily brief and opt-in in-app notifications, preview/apply Markdown/bookmark/iCalendar imports, encrypted backup files, context alias/merge UI and API, and saved search UI/API.
+- **Not yet reverified** — Full test suite and rebuilt Compose image after this feature expansion.
