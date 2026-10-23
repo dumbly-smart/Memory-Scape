@@ -30,7 +30,9 @@ test('capture is installable and can queue then sync an offline draft', async ({
   await page.context().setOffline(false);
   await expect(page.getByRole('status')).toContainText('Synced 1 offline capture');
   const found = await request.get(`/api/memories?q=${encodeURIComponent(text)}`);
-  expect((await found.json()).data.some((row: { content: string }) => row.content === text)).toBe(true);
+  const rows = (await found.json()).data as { id:string; content:string }[];
+  expect(rows.some(row => row.content === text)).toBe(true);
+  for (const row of rows.filter(item => item.content === text)) await request.delete(`/api/memories/${row.id}`);
 });
 
 test('sensitive draft is not written to the unencrypted offline queue', async ({ page }) => {
