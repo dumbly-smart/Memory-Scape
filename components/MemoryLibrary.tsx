@@ -7,6 +7,8 @@ import { DecisionWidget } from '@/components/DecisionWidget';
 import { AttachmentWidget } from '@/components/AttachmentWidget';
 
 type Context = { id: string; type: string; label: string };
+type SavedFilters={q?:string;from?:string;to?:string;contextId?:string;minStrength?:string;hasLocation?:string;sort?:string};
+type SavedSearch={id:string;name:string;filters:SavedFilters};
 type Association = { id: string; memoryId: string; direction: string; type: string; weight: number; valence: number };
 type Reinforcement = { id: string; reinforcement_type: string; strength_before: number; strength_after: number; reinforcement_amount: number; created_at: string };
 type Memory = { id: string; title: string; content: string; occurred_at: string; last_strength_at?: string; strength: number; decay_rate?: number; location_label: string | null; latitude: number | null; longitude: number | null; is_pinned?: boolean; is_sensitive?: boolean; archived_at?: string | null; contexts?: Context[]; associations?: Association[]; reinforcements?: Reinforcement[] };
@@ -22,6 +24,10 @@ export function MemoryLibrary() {
   const [hasLocation, setHasLocation] = useState('');
   const [sort, setSort] = useState('occurred_desc');
   const [contexts, setContexts] = useState<Context[]>([]);
+  const [savedSearches,setSavedSearches]=useState<SavedSearch[]>([]);
+  const [savedSearchId,setSavedSearchId]=useState('');
+  const [savedSearchName,setSavedSearchName]=useState('');
+  const [searchStatus,setSearchStatus]=useState('');
   const [modal, setModal] = useState(false);
   const [selected, setSelected] = useState<Memory | null>(null);
   const [editing, setEditing] = useState(false);
@@ -41,8 +47,14 @@ export function MemoryLibrary() {
     setRows(body.data);
   }
   useEffect(() => { load().catch((e: Error) => setError(e.message)); }, [q, from, to, contextId, minStrength, hasLocation, sort]);
-  useEffect(() => { fetch('/api/contexts').then(async r => { const body = await r.json(); if (!r.ok) throw new Error(body.error); setContexts(body.data); }).catch((e: Error) => setError(e.message)); }, []);
+  useEffect(() => { fetch('/api/contexts').then(async r => { const body = await r.json(); if (!r.ok) throw new Error(body.error); setContexts(body.data); }).catch((e: Error) => setError(e.message)); fetch('/api/saved-searches').then(async r=>{const body=await r.json();if(!r.ok)throw new Error(body.error);setSavedSearches(body.data);}).catch((e:Error)=>setError(e.message)); }, []);
   useEffect(() => { const candidate = new URLSearchParams(window.location.search).get('context') ?? ''; if (/^[0-9a-f-]{36}$/i.test(candidate)) setContextId(candidate); }, []);
+
+  function currentFilters():SavedFilters { return { ...(q.trim()?{q:q.trim()}:{}),...(from?{from}:{}),...(to?{to}:{}),...(contextId?{contextId}:{}),...(minStrength?{minStrength}:{}),...(hasLocation?{hasLocation}:{}),sort }; }
+  async function refreshSavedSearches(){const response=await fetch('/api/saved-searches');const body=await response.json();if(!response.ok)throw new Error(body.error);setSavedSearches(body.data);}
+  async function saveSearch(){setError('');setSearchStatus('');const response=await fetch('/api/saved-searches',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:savedSearchName,filters:currentFilters()})});const body=await response.json();if(!response.ok){setError(body.error??'Could not save search');return;}setSavedSearchName('');setSavedSearchId(body.data.id);setSearchStatus(`Saved search “${body.data.name}”.`);await refreshSavedSearches();}
+  function applySearch(){const saved=savedSearches.find(item=>item.id===savedSearchId);if(!saved)return;const f=saved.filters;setQ(f.q??'');setFrom(f.from??'');setTo(f.to??'');setContextId(f.contextId??'');setMinStrength(f.minStrength??'');setHasLocation(f.hasLocation??'');setSort(f.sort??'occurred_desc');setSearchStatus(`Applied “${saved.name}”.`);}
+  async function deleteSearch(){if(!savedSearchId)return;const saved=savedSearches.find(item=>item.id===savedSearchId);const response=await fetch(`/api/saved-searches/${savedSearchId}`,{method:'DELETE'});const body=await response.json();if(!response.ok){setError(body.error??'Could not delete saved search');return;}setSavedSearchId('');setSearchStatus(`Deleted “${saved?.name??'saved search'}”.`);await refreshSavedSearches();}
 
   async function openMemory(memory: Memory) {
     setError('');
@@ -149,6 +161,7 @@ export function MemoryLibrary() {
   return <>
     <div className="page-head"><div><div className="eyebrow">PERSONAL KNOWLEDGE BASE</div><h1>Memory library</h1><p>Episodes, observations, and knowledge connected to time and place.</p></div><button className="button" onClick={() => setModal(true)}>＋ New memory</button></div>
     <div className="toolbar" style={{ flexWrap: 'wrap' }}><input className="input" aria-label="Search memories" placeholder="Search memories…" value={q} onChange={e => setQ(e.target.value)} /><label className="muted">From <input className="input" aria-label="Filter from date" type="date" value={from} onChange={e => setFrom(e.target.value)} /></label><label className="muted">To <input className="input" aria-label="Filter to date" type="date" value={to} onChange={e => setTo(e.target.value)} /></label><select aria-label="Filter by context" value={contextId} onChange={e => setContextId(e.target.value)}><option value="">All contexts</option>{contexts.map(c => <option key={c.id} value={c.id}>{c.type}: {c.label}</option>)}</select><select aria-label="Minimum strength" value={minStrength} onChange={e => setMinStrength(e.target.value)}><option value="">Any strength</option><option value="0.25">At least 25%</option><option value="0.5">At least 50%</option><option value="0.75">At least 75%</option></select><select aria-label="Location filter" value={hasLocation} onChange={e => setHasLocation(e.target.value)}><option value="">Any location</option><option value="true">Has location</option><option value="false">No location</option></select><select aria-label="Sort memories" value={sort} onChange={e => setSort(e.target.value)}><option value="occurred_desc">Newest first</option><option value="occurred_asc">Oldest first</option><option value="strength_desc">Strongest first</option><option value="strength_asc">Weakest first</option></select><span className="muted" style={{ alignSelf: 'center' }}>{rows.length} results</span></div>
+    <div className="toolbar" aria-label="Saved searches" style={{ flexWrap:'wrap',marginTop:10 }}><select className="input" aria-label="Saved searches" value={savedSearchId} onChange={event=>setSavedSearchId(event.target.value)}><option value="">Choose saved search…</option>{savedSearches.map(search=><option key={search.id} value={search.id}>{search.name}</option>)}</select><button className="button secondary" disabled={!savedSearchId} onClick={applySearch}>Apply saved search</button><button className="button ghost" disabled={!savedSearchId} onClick={deleteSearch}>Delete saved search</button><input className="input" aria-label="New saved search name" maxLength={80} placeholder="Name this filter set" value={savedSearchName} onChange={event=>setSavedSearchName(event.target.value)} /><button className="button secondary" disabled={!savedSearchName.trim()} onClick={saveSearch}>Save current search</button>{searchStatus&&<span role="status" className="success">{searchStatus}</span>}</div>
     {error && <div className="error" role="alert">{error}</div>}
     <div className="panel">{rows.length ? <div className="table-scroll" role="region" aria-label="Memories"><table className="responsive-table"><thead><tr><th>MEMORY</th><th>EVENT TIME</th><th>LOCATION</th><th>STRENGTH</th><th>RECALL</th></tr></thead><tbody>{rows.map(m => <tr key={m.id}><td><button className="button ghost" style={{ padding: 0, textAlign: 'left' }} onClick={() => openMemory(m)}>{m.title}</button></td><td>{new Date(m.occurred_at).toLocaleString()}</td><td>{m.location_label ?? '—'}</td><td>{Math.round(m.strength * 100)}%</td><td><button className="button secondary" onClick={() => reinforce(m.id)}>Reinforce</button></td></tr>)}</tbody></table></div> : <div className="empty">No memories match. Create one or run <code>npm run db:seed</code> for a synthetic dataset.</div>}</div>
 
