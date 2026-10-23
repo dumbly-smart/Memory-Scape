@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { FollowUpsWidget } from '@/components/FollowUpsWidget';
 
 type ContextData = {
   id: string;
@@ -43,6 +44,7 @@ export default function ContextPage({ params }: { params: Promise<{ id: string }
         <div className="quick-grid"><Link className="quick" href={`/capture?context=${context.id}`}><b>Capture a memory</b><span>Save a new note for {context.label}</span></Link><Link className="quick" href={`/memories?context=${context.id}`}><b>Browse linked memories</b><span>Open the full memory library</span></Link></div>
       </section>
     </div>
+    <div style={{ marginTop: 16 }}><FollowUpsWidget contextId={context.id} /></div>
     <section className="panel" style={{ marginTop: 16 }}><div className="panel-title"><h2>Recent memories</h2><span className="muted">Showing up to 100</span></div>
       {context.memories.length ? context.memories.map(memory => <article className="memory-row" key={memory.id}><span className="memory-pin">{memory.is_pinned ? '★' : '◷'}</span><div className="memory-row-main"><b>{memory.title}</b><span>{new Date(memory.occurred_at).toLocaleString()} · {memory.location_label ?? 'No place'}</span><p>{memory.content}</p></div><span className="muted">{Math.round(memory.strength * 100)}%</span></article>) : <div className="empty">No memories linked to this context.</div>}
     </section>

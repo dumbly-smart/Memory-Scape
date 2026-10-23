@@ -9,7 +9,7 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 - **Implemented and tested** — Quick capture inbox with content-first entry, first-line title derivation, current-time default, optional web source, and pin/sensitive flags. `POST /api/capture` and `/capture` are backed by PostgreSQL migration 004.
 - **Implemented but not complete** — Pin/sensitive fields persist on capture and can be changed through the memory PATCH API; the dedicated memory detail controls, archive workflow, and broader exclusion behavior are still pending.
 - **Implemented and tested** — Person and Project context workspaces with latest-memory resume summary, recent linked memories, memory count, and actions to capture or filter by that context. Context tags in memory detail link to their workspace.
-- **Incomplete** — Follow-ups linked to memories and contexts.
+- **Implemented and tested** — Follow-ups attach to memories or Person/Project contexts, support optional due dates, open/done/dismissed states, and idempotent completion/reopen. Memory detail and context workspaces expose follow-up controls.
 - **Incomplete** — Decision records with rationale, alternatives, and revisit dates.
 - **Incomplete** — User-triggered nearby recall and place reminders.
 - **Incomplete** — Browser bookmarklet capture with URL/title/selection preview.
@@ -22,6 +22,8 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 Task 1 verification on 2026-10-23: `DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run db:migrate` applied migration 004 without changing existing memories; the isolated behavior suite `npm test -- --reporter=dot tests/capture/capture.test.ts` passed (4 tests); Chromium `tests/ui/capture.spec.ts` passed (2 tests); `npx tsc --noEmit` and `npm run build` passed. Playwright initially could not write root-owned generated test artifacts left by a container run; ownership of only `test-results/` was restored and the browser tests then passed.
 
 Task 2 verification on 2026-10-23: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 PLAYWRIGHT_PROJECTS=chromium npx playwright test tests/ui/contexts.spec.ts tests/ui/capture.spec.ts --config=playwright.matrix.config.ts --workers=1` passed (4 tests), including context-linked capture and unknown-context handling; `npx tsc --noEmit` passed.
+
+Task 3 verification on 2026-10-23: migration 005 applied on the existing local database; Chromium `tests/ui/follow-ups.spec.ts tests/ui/contexts.spec.ts` passed (4 tests), covering invalid due dates, linked creation, listing, repeated completion, and the context UI; `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed.
 
 ## Infrastructure and database
 

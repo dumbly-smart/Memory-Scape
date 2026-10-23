@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useState } from 'react';
 import Link from 'next/link';
+import { FollowUpsWidget } from '@/components/FollowUpsWidget';
 
 type Context = { id: string; type: string; label: string };
 type Association = { id: string; memoryId: string; direction: string; type: string; weight: number; valence: number };
@@ -168,6 +169,7 @@ export function MemoryLibrary() {
         <form onSubmit={addContext} style={{ display: 'flex', gap: 6, marginTop: 8 }}><select name="type" aria-label="New context type">{contextTypes.map(t => <option key={t}>{t}</option>)}</select><input className="input" name="label" aria-label="New context label" placeholder="Add context" required /><button className="button secondary">Add</button></form>
         <h3>Associations</h3>{selected.associations?.map(edge => <div className="result-card" key={edge.id}><b>{edge.direction === 'out' ? '→' : '←'} {rows.find(m => m.id === edge.memoryId)?.title ?? edge.memoryId}</b><span>{edge.type} · weight {edge.weight} · valence {edge.valence}</span><button className="button ghost" onClick={() => removeAssociation(edge.id)}>Remove</button></div>)}
         <form onSubmit={addAssociation} className="toolbar" style={{ flexWrap: 'wrap' }}><select name="dst" aria-label="Associated memory" required defaultValue=""><option value="" disabled>Choose memory</option>{rows.filter(m => m.id !== selected.id).map(m => <option key={m.id} value={m.id}>{m.title}</option>)}</select><input className="input" name="type" aria-label="Relationship type" required defaultValue="Associated with" /><input className="input" name="weight" aria-label="Relationship weight" type="number" min="0" max="1" step=".05" defaultValue=".5" /><input className="input" name="valence" aria-label="Relationship valence" type="number" min="-1" max="1" step=".1" defaultValue="0" /><button className="button secondary">Link memory</button></form>
+        <div style={{ marginTop: 18 }}><FollowUpsWidget memoryId={selected.id} /></div>
         <h3>Reinforcement history</h3>{selected.reinforcements?.length ? selected.reinforcements.map(r => <div className="result-card" key={r.id}><b>{r.reinforcement_type}</b><span>{Math.round(r.strength_before * 100)}% → {Math.round(r.strength_after * 100)}% · {new Date(r.created_at).toLocaleString()}</span></div>) : <div className="muted">No reinforcement events.</div>}
       </>}
     </div></div>}
