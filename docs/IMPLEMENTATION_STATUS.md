@@ -1,6 +1,6 @@
 # MemoryScape implementation status
 
-Updated 2026-10-23 after database login throttling, baseline HTTP security headers, responsive layout fixes, confidence intervals, local Docker, SQL, TypeScript, unit, and browser verification. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
+Updated 2026-10-23 after cache-eviction trial support, cross-host artifact comparison, and a draft human-study protocol. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
 
 ## Infrastructure and database
 
@@ -35,8 +35,11 @@ Updated 2026-10-23 after database login throttling, baseline HTTP security heade
 - **Implemented and tested** — `npm run db:benchmark` records real `EXPLAIN (ANALYZE, BUFFERS)` plans, actual materialized-view initial creation in a transactionally removed generated schema, refresh, view/direct retrieval, timeline, spatial planner-controlled scan comparison, and recursive depths 1–3.
 - **Implemented and tested** — Reports preserve separate real runs at 1,200 and 10,000 memories in `docs/evaluation/RESULTS-1200.md` and `RESULTS-10000.md` plus JSON plans. At the 10K run, the index candidate was slower than the controlled sequential plan; no index speedup is claimed.
 - **Implemented and tested** — Benchmark runner performs five sequential repetitions by default (configurable 1–20) and reports raw plans plus mean, median, sample standard deviation, minimum, and maximum for query, view-creation, and refresh timings. Both labeled datasets were rerun with five repetitions.
-- **Implemented and tested** — `npm run db:benchmark:fresh-buffers` provisions a temporary database container, seeds it, restarts PostgreSQL between one-run trials, preserves per-trial plans, reports Student t 95% confidence intervals for means, then removes the isolated container and volume. Five 1,200-memory trials were run and recorded under `docs/evaluation/fresh-buffer-trials/`.
-- **Incomplete** — Cold operating-system/disk-cache experiments, multiple hardware environments, and cognitive validity are not established. The confidence intervals assume independent, approximately normal observations and describe this one-host fresh-buffer setup only.
+- **Implemented and tested** — `npm run db:benchmark:fresh-buffers` provisions a temporary database container, seeds it, restarts PostgreSQL between one-run trials, preserves per-trial plans, reports Student t 95% confidence intervals for means, then removes the isolated container and volume. The default restarts the PostgreSQL shared buffer pool only.
+- **Implemented and tested** — `FRESH_BUFFER_EVICT_PAGE_CACHE=1 npm run db:benchmark:fresh-buffers` checkpoints the disposable database and issues `POSIX_FADV_DONTNEED` requests for database relation files. The five 1,200-memory trial report records request counts and targeted bytes. The kernel may retain pages; this does not constitute a verified cold-cache or cold-disk run.
+- **Implemented and tested** — `npm run db:benchmark:compare -- <artifact-a.json> <artifact-b.json>` compares artifacts with matching dataset size, cache strategy, route radius, pruning threshold, and plan set, and writes Markdown and JSON with host metadata. It was exercised with temporary artifacts only.
+- **Implemented and documented** — `docs/evaluation/HUMAN_STUDY_PROTOCOL.md` defines an ethics-first synthetic-scenario protocol and data dictionary. It does not represent completed human-subject evaluation.
+- **Incomplete** — Verified global operating-system/disk-cache cold starts, runs on other physical machines, and participant-based cognitive validity are not established. Confidence intervals assume independent, approximately normal observations and describe this one-host experiment only.
 
 ## Known limitations
 
@@ -55,6 +58,11 @@ Updated 2026-10-23 after database login throttling, baseline HTTP security heade
 - `docker compose up --build -d web` — passed with the updated lockfile; `curl http://127.0.0.1:3000/api/health` returned PostgreSQL 16.15 and PostGIS 3.6.4. The existing database still contains 1,200 memories.
 - `npx tsc --noEmit` — passed.
 - `npm test -- --reporter=dot` — passed, 13 unit tests across 4 files, including Student t interval calculations, on Vitest 5.0.5.
+- `npm test` — passed, 18 tests across 6 files after the benchmark comparison and cache helper changes.
+- `npx tsc --noEmit` — passed after benchmark report typing correction.
+- `npm run build` — passed after benchmark report typing correction; all routes compiled.
+- `npm audit --audit-level=low` — passed with zero vulnerabilities.
+- `bash tests/database/page-cache-eviction.sh` — passed against an isolated Docker volume, visiting regular files under synthetic PostgreSQL `base/` and `global/` directories.
 - `docker compose exec -T db psql -U memoryscape -d memoryscape -f /dev/stdin < tests/database/auth-rate-limit.sql` — passed; deterministic attempt, cooldown, reset, and expiry assertions rolled back.
 - `DATABASE_URL=... bash tests/database/concurrency.sh` — passed; eight simultaneous PostgreSQL sessions preserved every reinforcement strength update and history event.
 - `docker compose exec -T db psql -U memoryscape -d memoryscape -v ON_ERROR_STOP=1 -f /dev/stdin < tests/database/algorithms.sql` — passed; transaction rolled back.
@@ -70,6 +78,10 @@ Updated 2026-10-23 after database login throttling, baseline HTTP security heade
 - `BENCHMARK_RUNS=5 BENCHMARK_LABEL=1200 npm run db:benchmark` — passed; 5 repetitions of 8 plans, view creation, and refresh against 1,200 memories.
 - Isolated `npm run db:seed -- --large` and `BENCHMARK_RUNS=5 BENCHMARK_LABEL=10000 npm run db:benchmark` — passed after waiting for the PostgreSQL initialization restart; disposable database was removed and primary DB remains at 1,200 memories.
 - `npm run db:benchmark:fresh-buffers` — passed on 2026-10-23; five 1,200-memory trials each followed a database restart. The current measured medians are in `docs/evaluation/fresh-buffer-trials/RESULTS.md`, with sample standard deviations and nominal 95% Student t intervals for the means. The indexed spatial candidate remained slower than the controlled sequential query; no general index benefit is claimed. The temporary database and volume were removed, and the primary database still contains 1,200 memories.
+- `FRESH_BUFFER_EVICT_PAGE_CACHE=1 npm run db:benchmark:fresh-buffers` — passed on 2026-10-23; five trials each issued successful advisory eviction requests for about 1,975 relation files (about 65.7 MB) after checkpoint. The artifacts explicitly state this is an eviction attempt, not verified cold cache. The temporary database and volume were removed.
+- `bash tests/database/page-cache-eviction.sh` — passed against an isolated Docker volume with two synthetic relation files.
+- `npm run db:benchmark:compare -- /tmp/memoryscape-a.json /tmp/memoryscape-b.json` — passed using temporary copies of one artifact with distinct machine labels. This validated the CLI; it is not cross-machine experimental evidence.
+- `docker compose up -d --build` and `curl -fsS http://127.0.0.1:3000/api/health` — passed; local web and PostgreSQL services started, and health reported PostgreSQL 16.15/PostGIS 3.6.4.
 
 ## Final checkpoint
 
