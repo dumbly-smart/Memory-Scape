@@ -12,7 +12,7 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 - **Implemented and tested** — Follow-ups attach to memories or Person/Project contexts, support optional due dates, open/done/dismissed states, and idempotent completion/reopen. Memory detail and context workspaces expose follow-up controls.
 - **Implemented and tested** — Decision records store the choice, required rationale, alternatives, decision time, optional revisit time, and optional memory/context links. Context and memory detail workflows can create and review them; dates are validated against one another.
 - **Implemented and tested** — User-triggered “What’s relevant here?” uses browser geolocation only after a click; PostGIS filters and orders memories/reminders by geography distance. Sensitive and archived memories are excluded. Place reminders have a GiST index and bounded meter radius.
-- **Incomplete** — Browser bookmarklet capture with URL/title/selection preview.
+- **Implemented and tested** — Capture page generates a bookmarklet for its current origin. The bookmarklet sends URL, page title, and up to 20,000 selected characters to a reviewable capture draft; it requires no extension or external service.
 - **Incomplete** — Memory attachments with content hashes and safe download.
 - **Incomplete** — Weekly review with keep/snooze/archive/dismiss actions.
 - **Incomplete** — Versioned export and dry-run/transactional restore.
@@ -28,6 +28,8 @@ Task 3 verification on 2026-10-23: migration 005 applied on the existing local d
 Task 4 verification on 2026-10-23: migration 006 applied; Chromium `tests/ui/decisions.spec.ts` passed (2 tests), including date-order validation, persistence, and project UI; `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed. The first run found that a refined Zod object cannot be extended; the route now applies cross-field refinements after building the full object schema.
 
 Task 5 verification on 2026-10-23: migration 007 applied; Chromium `tests/ui/nearby.spec.ts` passed (2 tests) against actual PostGIS data and a user-click-triggered geolocation fixture; it checks meter distances, invalid coordinates, and sensitive/archived exclusion. `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed after fixing complete browser geolocation test typings.
+
+Task 6 verification on 2026-10-23: `npm test -- --reporter=dot tests/capture/bookmarklet.test.ts` passed (2 tests); Chromium `tests/ui/capture.spec.ts` passed (3 tests), including bookmarklet origin and selected-text capture support; full `npm test -- --reporter=dot` passed (28 tests); `npx tsc --noEmit` and `npm run build` passed. One browser run initially found the local dev server had stopped after the execution restart; restarting it resolved the environment issue.
 
 ## Infrastructure and database
 

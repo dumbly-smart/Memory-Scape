@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useEffect, useState } from 'react';
+import { buildCaptureBookmarklet } from '@/lib/bookmarklet';
 
 function localDateTime() {
   const now = new Date();
@@ -21,9 +22,12 @@ export default function CapturePage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [savedId, setSavedId] = useState('');
+  const [bookmarklet, setBookmarklet] = useState('');
+  const [bookmarkletStatus, setBookmarkletStatus] = useState('');
 
   useEffect(() => {
     setOccurredAt(localDateTime());
+    setBookmarklet(buildCaptureBookmarklet(window.location.origin));
     const params = new URLSearchParams(window.location.search);
     setSourceUrl(params.get('url')?.slice(0, 2048) ?? '');
     setSourceTitle(params.get('title')?.slice(0, 500) ?? '');
@@ -66,6 +70,15 @@ export default function CapturePage() {
     }
   }
 
+  async function copyBookmarklet() {
+    try {
+      await navigator.clipboard.writeText(bookmarklet);
+      setBookmarkletStatus('Copied. Create a browser bookmark and paste this into its URL field.');
+    } catch {
+      setBookmarkletStatus('Select and copy the bookmarklet text, then paste it into a browser bookmark URL field.');
+    }
+  }
+
   return <>
     <div className="page-head"><div><div className="eyebrow">CAPTURE</div><h1>Quick capture</h1><p>Save the thought first. Add context whenever you need it.</p></div><Link className="button secondary" href="/memories">Memory library</Link></div>
     <div className="panel" style={{ maxWidth: 760 }}>
@@ -87,5 +100,12 @@ export default function CapturePage() {
         <button className="button" type="submit" disabled={saving || (!content.trim() && !sourceUrl.trim())}>{saving ? 'Saving…' : 'Save memory'}</button>
       </form>
     </div>
+    <section className="panel" style={{ maxWidth: 760, marginTop: 16 }} aria-label="Browser capture bookmarklet">
+      <div className="panel-title"><h2>Save from your browser</h2><span className="muted">No extension or external service</span></div>
+      <p className="muted">Copy this code into a new browser bookmark’s URL field. On a page, select text and click that bookmark to open a reviewable draft here.</p>
+      <label className="field"><span>Bookmarklet URL</span><textarea aria-label="Bookmarklet URL" readOnly rows={3} value={bookmarklet} /></label>
+      <button className="button secondary" onClick={copyBookmarklet} disabled={!bookmarklet}>Copy bookmarklet URL</button>
+      {bookmarkletStatus && <p className="success" role="status">{bookmarkletStatus}</p>}
+    </section>
   </>;
 }

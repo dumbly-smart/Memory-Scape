@@ -25,3 +25,11 @@ test('capture endpoint rejects non-web source URLs', async ({ request }) => {
   const response = await request.post('/api/capture', { data: { content: 'unsafe source', sourceUrl: 'javascript:alert(1)' } });
   expect(response.status()).toBe(400);
 });
+
+test('capture page provides a bookmarklet targeting the running app', async ({ page }) => {
+  await page.goto('/capture');
+  const bookmarklet = await page.getByLabel('Bookmarklet URL').inputValue();
+  expect(bookmarklet.startsWith('javascript:')).toBe(true);
+  expect(bookmarklet).toContain(`${new URL(page.url()).origin}/capture`);
+  expect(bookmarklet).toContain('getSelection');
+});
