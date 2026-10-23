@@ -1,5 +1,9 @@
 # Evaluation results
 
+## Remaining evidence gaps
+
+The fresh PostgreSQL buffer and best-effort relation-file page-cache eviction trials are recorded in [fresh-buffer-trials/RESULTS.md](fresh-buffer-trials/RESULTS.md). The eviction requests were issued successfully, but Linux does not guarantee that the targeted pages left cache; this is not a cold-disk measurement. Only one host has supplied a benchmark artifact, so no cross-hardware comparison has been made. No participants have been recruited or studied; see the [draft human-study protocol](HUMAN_STUDY_PROTOCOL.md), which requires institutional ethics approval before use.
+
 Captured 2026-10-21T16:08:54.526Z over 5 sequential runs. Values are median ± sample standard deviation; timing units are milliseconds.
 
 ## Environment

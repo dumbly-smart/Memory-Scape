@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { confidenceInterval95, summarizeMeasurements } from './benchmark-stats';
+import { freshBufferCacheConfig } from './fresh-buffer-config';
 
 type Plan = {
   'Planning Time'?: number;
@@ -17,6 +18,14 @@ type Evaluation = {
   environment: Record<string, unknown>;
   parameters: Record<string, unknown>;
   runs: Array<{ plans: Record<string, Plan>; fadingViewInitialCreationMs: number; fadingViewRefreshMs: number }>;
+};
+type PageCacheEviction = {
+  success: boolean;
+  strategy: string;
+  filesVisited: number;
+  bytesTargeted: number;
+  evictionRequests: number;
+  guarantee: string;
 };
 
 function docker(args: string[], capture = false): string {
@@ -49,6 +58,23 @@ function waitForDatabase(container: string) {
   throw new Error(`Timed out waiting for disposable database ${container}`);
 }
 
+function evictRelationFilePages(container: string, volume: string, helperImage: string): PageCacheEviction {
+  docker(['exec', container, 'psql', '-U', 'memoryscape', '-d', 'memoryscape', '-v', 'ON_ERROR_STOP=1', '-c', 'CHECKPOINT'], true);
+  const scriptPath = path.resolve('scripts/evict-postgres-cache.py');
+  const output = docker([
+    'run', '--rm',
+    '--volume', `${volume}:/var/lib/postgresql/data:ro`,
+    '--volume', `${scriptPath}:/tmp/evict-postgres-cache.py:ro`,
+    helperImage,
+    'python3', '/tmp/evict-postgres-cache.py', '--data-directory', '/var/lib/postgresql/data',
+  ], true);
+  const report = JSON.parse(output) as PageCacheEviction;
+  if (!report.success || report.strategy !== 'posix_fadvise_dontneed') {
+    throw new Error(`PostgreSQL file-cache eviction request failed: ${output}`);
+  }
+  return report;
+}
+
 async function main() {
   const trials = Number(process.env.FRESH_BUFFER_TRIALS ?? '5');
   if (!Number.isInteger(trials) || trials < 2 || trials > 10) {
@@ -62,6 +88,9 @@ async function main() {
   const container = `memoryscape-buffer-${runId}`;
   const volume = `memoryscape-buffer-data-${runId}`;
   const password = 'memoryscape_benchmark_only';
+  const { evictPageCache, cacheStrategy } = freshBufferCacheConfig(process.env.FRESH_BUFFER_EVICT_PAGE_CACHE);
+  const cacheEvictorImage = process.env.PAGE_CACHE_EVICTOR_IMAGE ?? 'python:3.12-alpine';
+  const machineLabel = process.env.MACHINE_LABEL?.trim() || os.hostname();
   let created = false;
   let completed = false;
   let temporaryOutputDirectory: string | undefined;
@@ -92,13 +121,19 @@ async function main() {
     const outputDirectory = path.resolve('docs/evaluation/fresh-buffer-trials');
     await mkdir(outputDirectory, { recursive: true });
     temporaryOutputDirectory = await mkdtemp(path.join(os.tmpdir(), 'memoryscape-buffer-trials-'));
-    const measurements: Array<{ trial: number; evaluation: Evaluation }> = [];
+    const measurements: Array<{ trial: number; cacheEviction: PageCacheEviction | null; evaluation: Evaluation }> = [];
     for (let trial = 1; trial <= trials; trial += 1) {
       if (trial > 1) {
         docker(['restart', container], true);
         waitForDatabase(container);
         ({ databaseUrl, published } = currentDatabaseUrl());
         console.log(`PostgreSQL restarted for trial ${trial} on ${published}`);
+      }
+      const cacheEviction = evictPageCache
+        ? evictRelationFilePages(container, volume, cacheEvictorImage)
+        : null;
+      if (cacheEviction) {
+        console.log(`Trial ${trial}: requested eviction for ${cacheEviction.filesVisited} files (${cacheEviction.bytesTargeted} bytes).`);
       }
       const label = `buffer-${trial}`;
       runNpm(['run', 'db:benchmark'], databaseUrl, {
@@ -107,7 +142,7 @@ async function main() {
         BENCHMARK_OUTPUT_DIR: temporaryOutputDirectory,
       });
       const file = path.join(temporaryOutputDirectory, `latest-${label}.json`);
-      measurements.push({ trial, evaluation: JSON.parse(await readFile(file, 'utf8')) as Evaluation });
+      measurements.push({ trial, cacheEviction, evaluation: JSON.parse(await readFile(file, 'utf8')) as Evaluation });
     }
 
     const names = Object.keys(measurements[0].evaluation.runs[0].plans);
@@ -130,8 +165,13 @@ async function main() {
     }));
     const result = {
       capturedAt: new Date().toISOString(),
-      environment: measurements[0].evaluation.environment,
-      parameters: { ...measurements[0].evaluation.parameters, freshBufferPoolTrials: trials },
+      machineLabel,
+      environment: { ...measurements[0].evaluation.environment, machineLabel },
+      parameters: {
+        ...measurements[0].evaluation.parameters,
+        freshBufferPoolTrials: trials,
+        cacheStrategy,
+      },
       trials: measurements,
       summaries: {
         plans,
@@ -144,7 +184,7 @@ async function main() {
           confidenceInterval95: confidenceInterval95(measurements.map(({ evaluation }) => evaluation.runs[0].fadingViewRefreshMs)),
         },
       },
-      limitations: 'Intervals are nominal two-sided 95% Student t intervals for the mean of fresh-buffer restart observations. They assume independent, approximately normal samples and do not model host, operating-system cache, or hardware variability. Each trial restarts an isolated PostgreSQL server, clearing shared_buffers; the operating-system file cache is not cleared, and the host and dataset remain the same.',
+      limitations: `Intervals are nominal two-sided 95% Student t intervals for the mean of fresh-buffer restart observations. They assume independent, approximately normal samples and do not model host, operating-system cache, or hardware variability. Each trial restarts an isolated PostgreSQL server, clearing shared_buffers. Cache strategy ${cacheStrategy} does not establish a cold disk or a verified fully cold operating-system cache; POSIX_FADV_DONTNEED is advisory.`,
     };
     await writeFile(path.join(outputDirectory, 'fresh-buffer-pools.json'), JSON.stringify(result, null, 2));
     const rows = names.map((name) => {
@@ -152,7 +192,14 @@ async function main() {
       const interval = summary.executionMs.confidenceInterval95;
       return `| ${name} | ${summary.executionMs.median.toFixed(3)} | ${summary.executionMs.mean.toFixed(3)} [${interval.lower.toFixed(3)}, ${interval.upper.toFixed(3)}] | ${summary.executionMs.standardDeviation.toFixed(3)} | ${summary.sharedHitBlocks.median.toFixed(0)} | ${summary.sharedReadBlocks.median.toFixed(0)} |`;
     });
-    const report = `# Fresh PostgreSQL buffer-pool trials\n\nCaptured ${result.capturedAt} across ${trials} sequential database restarts. Each trial has one benchmark repetition, followed by a full PostgreSQL restart before the next. The report includes median, sample standard deviation, and a nominal two-sided 95% Student t interval for the mean.\n\n## Environment\n\n- PostgreSQL: ${String(result.environment.postgres)}\n- PostGIS: ${String(result.environment.postgis)}\n- Memories: ${String((result.environment as Record<string, unknown>).memory_count)}\n- Trials: ${trials}\n- Parameters: 150 m route radius, recursion threshold 0.01, depths 1–3\n\n## Query measurements\n\n| Query | Execution median (ms) | Mean (95% t interval, ms) | Sample SD (ms) | Shared hits median | Shared reads median |\n|---|---:|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Materialized view\n\n- Initial creation: ${result.summaries.fadingViewInitialCreationMs.median.toFixed(3)} ms median; mean ${result.summaries.fadingViewInitialCreationMs.mean.toFixed(3)} ms; 95% t interval [${result.summaries.fadingViewInitialCreationMs.confidenceInterval95.lower.toFixed(3)}, ${result.summaries.fadingViewInitialCreationMs.confidenceInterval95.upper.toFixed(3)}] ms; sample SD ${result.summaries.fadingViewInitialCreationMs.standardDeviation.toFixed(3)} ms.\n- Refresh: ${result.summaries.fadingViewRefreshMs.median.toFixed(3)} ms median; mean ${result.summaries.fadingViewRefreshMs.mean.toFixed(3)} ms; 95% t interval [${result.summaries.fadingViewRefreshMs.confidenceInterval95.lower.toFixed(3)}, ${result.summaries.fadingViewRefreshMs.confidenceInterval95.upper.toFixed(3)}] ms; sample SD ${result.summaries.fadingViewRefreshMs.standardDeviation.toFixed(3)} ms.\n\nIntervals are conditional on this host and experiment. They assume independent, approximately normal restart samples and do not account for sequential ordering, host load, operating-system file cache, or hardware variation. PostgreSQL shared buffers start empty for every trial, but the operating-system file cache remains warm or uncontrolled; these are not cold-disk measurements. Raw plans and individual measurements are in [fresh-buffer-pools.json](fresh-buffer-pools.json).\n`;
+    const evictionRows = evictPageCache
+      ? measurements.map(({ trial, cacheEviction }) => `| ${trial} | ${cacheEviction?.filesVisited ?? 0} | ${cacheEviction?.bytesTargeted ?? 0} |`).join('\n')
+      : 'Disabled. PostgreSQL shared buffers were reset by restarting the isolated server; operating-system cache was uncontrolled.';
+    const evictionSection = evictPageCache
+      ? `| Trial | Relation files targeted | Bytes targeted |\n|---:|---:|---:|\n${evictionRows}\n\nThe helper checkpoints the disposable database and issues Linux POSIX_FADV_DONTNEED requests for regular files under PostgreSQL base/ and global/ directories. This is an advisory eviction request. The kernel may retain pages, PostgreSQL startup may warm pages, and no global cache flush is performed; interpret this as a cache-eviction attempt, not a cold-disk measurement.`
+      : evictionRows;
+    const environment = result.environment as Record<string, unknown>;
+    const report = `# Fresh PostgreSQL buffer-pool trials\n\nCaptured ${result.capturedAt} across ${trials} sequential database restarts. Each trial has one benchmark repetition, followed by a full PostgreSQL restart before the next. The report includes median, sample standard deviation, and a nominal two-sided 95% Student t interval for the mean.\n\n## Environment\n\n- Machine: ${machineLabel}\n- PostgreSQL: ${String(environment.postgres)}\n- PostGIS: ${String(environment.postgis)}\n- Memories: ${String(environment.memory_count)}\n- Trials: ${trials}\n- Cache strategy: ${cacheStrategy}\n- Parameters: 150 m route radius, recursion threshold 0.01, depths 1–3\n\n## Query measurements\n\n| Query | Execution median (ms) | Mean (95% t interval, ms) | Sample SD (ms) | Shared hits median | Shared reads median |\n|---|---:|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Materialized view\n\n- Initial creation: ${result.summaries.fadingViewInitialCreationMs.median.toFixed(3)} ms median; mean ${result.summaries.fadingViewInitialCreationMs.mean.toFixed(3)} ms; 95% t interval [${result.summaries.fadingViewInitialCreationMs.confidenceInterval95.lower.toFixed(3)}, ${result.summaries.fadingViewInitialCreationMs.confidenceInterval95.upper.toFixed(3)}] ms; sample SD ${result.summaries.fadingViewInitialCreationMs.standardDeviation.toFixed(3)} ms.\n- Refresh: ${result.summaries.fadingViewRefreshMs.median.toFixed(3)} ms median; mean ${result.summaries.fadingViewRefreshMs.mean.toFixed(3)} ms; 95% t interval [${result.summaries.fadingViewRefreshMs.confidenceInterval95.lower.toFixed(3)}, ${result.summaries.fadingViewRefreshMs.confidenceInterval95.upper.toFixed(3)}] ms; sample SD ${result.summaries.fadingViewRefreshMs.standardDeviation.toFixed(3)} ms.\n\n## Operating-system page-cache handling\n\n${evictionSection}\n\nIntervals are conditional on this host and experiment. They assume independent, approximately normal restart samples and do not account for sequential ordering, host load, or hardware variation. The raw trial plans and cache-eviction request results are in [fresh-buffer-pools.json](fresh-buffer-pools.json).\n`;
     await writeFile(path.join(outputDirectory, 'RESULTS.md'), report);
     console.log(`Captured ${trials} fresh PostgreSQL buffer-pool trials in ${outputDirectory}`);
     completed = true;
