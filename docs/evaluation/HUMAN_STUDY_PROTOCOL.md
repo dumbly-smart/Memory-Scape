@@ -10,13 +10,13 @@ This study evaluates task performance and perceived usability. It does not estab
 
 ## Design
 
-Use a within-participant, counterbalanced exploratory study. Each participant completes equivalent tasks using:
+Use a within-participant, counterbalanced exploratory study. Each participant completes one task in each of three conditions using a different, equivalent fictional scenario set in each condition:
 
 1. **Conventional browsing:** the Memory Library's text search and date filters.
 2. **Spatial recall:** the Spatial Memory Walk over a supplied route and radius.
 3. **Associative recall:** the graph recall interface from a supplied seed memory, with a fixed depth and pruning threshold.
 
-Use at least three equivalent fictional scenario sets so participants do not see the same answers in every condition. Assign scenario-to-condition order with a balanced Latin-square schedule. Keep the database seed, available memories, query parameters, instructions, and time limit fixed across participants. Record the actual seed version and algorithm settings in the study log.
+The frozen v1 task pack in [`study/`](study/STUDY_RUNBOOK.md) contains three equivalent scenario sets and a balanced 3×3 Latin-square schedule. It fixes the task prompts, 90-second limit, search text and date bounds, route/radius, graph seed/depth/pruning threshold, and the exact target IDs. The answer key is stored separately from the participant-facing prompts. Validate the pack and verify it against a fresh deterministic demo database before a session. Record the pack file hashes, app commit, database seed, and algorithm settings in the study log.
 
 Run a small usability pilot after ethics approval to identify confusing instructions and estimate task-time variability. Set the confirmatory sample size from a preregistered power analysis on the primary paired outcome; do not choose a sample size after looking at confirmatory results. If recruitment or power is limited, label the study exploratory and report precision rather than claiming effectiveness.
 
@@ -34,7 +34,7 @@ Run a small usability pilot after ethics approval to identify confusing instruct
 
 1. Obtain approval, consent, and a random participant code.
 2. Explain that MemoryScape is a research prototype and demonstrate the controls using a practice scenario not used in measured tasks.
-3. Assign a counterbalanced order and an equivalent scenario set.
+3. Assign one of the three registered schedules. Each schedule maps all three scenario sets to all three conditions and balances condition order.
 4. Present each retrieval question with its assigned condition. Start timing when the question is shown; stop when the participant submits an answer or the preregistered time limit expires.
 5. Record correctness against a frozen answer key, elapsed seconds, whether the target was found, confidence (1–7), and a short workload rating (1–7). Do not record screen/audio/video unless separately approved and consented.
 6. After all conditions, collect a brief usability questionnaire and an optional non-identifying comment about interface difficulty. Avoid requests for personal memory content.
@@ -61,7 +61,8 @@ Use a local CSV with one row per participant-task-condition. Keep consent record
 | `task_id` | string | Preregistered task identifier |
 | `condition` | enum | `conventional`, `spatial`, or `associative` |
 | `order_index` | integer | Position of condition/task in the counterbalanced schedule |
-| `correct` | boolean | Submitted answer matches the frozen answer key |
+| `submitted_memory_id` | UUID | Memory selected as the answer; compare with the operator-only frozen key |
+| `correct` | boolean | Derived by the scoring utility from `submitted_memory_id`; do not self-report it |
 | `found_target` | boolean | Participant selected/opened the target memory |
 | `elapsed_seconds` | nonnegative number | Time to answer, capped at the preregistered limit |
 | `confidence_1_to_7` | integer | Participant's confidence in the response |
@@ -76,4 +77,4 @@ Before a session, record the app commit, database migration version, determinist
 
 ## Current limitations
 
-This protocol has not been reviewed by an ethics committee, power analysis has not been performed, the scenario task set and frozen answer key have not been built, and no participant data exist. Complete those steps and obtain approval before any human evaluation. Until then, cognitive validity remains untested.
+This protocol has not been reviewed by an ethics committee, a power analysis has not been performed, and no participant data exist. Obtain institutional approval and preregister the analysis/sample-size plan before recruiting or collecting data. The v1 scenario task pack, exact answer key, validator, database compatibility check, CSV scorer, and aggregate report generator are implemented. Until an approved study is run, cognitive validity remains untested.

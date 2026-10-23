@@ -1,6 +1,6 @@
 # MemoryScape implementation status
 
-Updated 2026-10-23 after cache-eviction trial support, cross-host artifact comparison, and a draft human-study protocol. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
+Updated 2026-10-23 after WebKit browser fixes and the frozen human-study preparation/scoring kit. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
 
 ## Infrastructure and database
 
@@ -39,7 +39,8 @@ Updated 2026-10-23 after cache-eviction trial support, cross-host artifact compa
 - **Implemented and tested** — `FRESH_BUFFER_EVICT_PAGE_CACHE=1 npm run db:benchmark:fresh-buffers` checkpoints the disposable database and issues `POSIX_FADV_DONTNEED` requests for database relation files. The five 1,200-memory trial report records request counts and targeted bytes. The kernel may retain pages; this does not constitute a verified cold-cache or cold-disk run.
 - **Implemented and tested** — `npm run db:benchmark:compare -- <artifact-a.json> <artifact-b.json>` compares artifacts with matching dataset size, cache strategy, route radius, pruning threshold, and plan set, and writes Markdown and JSON with host metadata. It was exercised with temporary artifacts only.
 - **Implemented and documented** — `docs/evaluation/HUMAN_STUDY_PROTOCOL.md` defines an ethics-first synthetic-scenario protocol and data dictionary. It does not represent completed human-subject evaluation.
-- **Incomplete** — Verified global operating-system/disk-cache cold starts, runs on other physical machines, and participant-based cognitive validity are not established. Confidence intervals assume independent, approximately normal observations and describe this one-host experiment only.
+- **Implemented and tested** — The study kit includes three frozen synthetic task variants, a balanced Latin-square schedule, a separate answer key, strict task/CSV validation, a read-only seeded-database compatibility check, and aggregate scoring with paired accuracy intervals. No participant records or outcomes are included.
+- **Incomplete** — Institutional ethics approval, informed consent, a preregistered analysis and justified sample size, recruitment, participant-based cognitive validity, verified global operating-system/disk-cache cold starts, and runs on other physical machines are not established. These require institutional or external participation and cannot be represented as completed local implementation. Confidence intervals assume independent, approximately normal observations and describe this one-host experiment only.
 
 ## Known limitations
 
@@ -81,9 +82,17 @@ Updated 2026-10-23 after cache-eviction trial support, cross-host artifact compa
 - `FRESH_BUFFER_EVICT_PAGE_CACHE=1 npm run db:benchmark:fresh-buffers` — passed on 2026-10-23; five trials each issued successful advisory eviction requests for about 1,975 relation files (about 65.7 MB) after checkpoint. The artifacts explicitly state this is an eviction attempt, not verified cold cache. The temporary database and volume were removed.
 - `bash tests/database/page-cache-eviction.sh` — passed against an isolated Docker volume with two synthetic relation files.
 - `npm run db:benchmark:compare -- /tmp/memoryscape-a.json /tmp/memoryscape-b.json` — passed using temporary copies of one artifact with distinct machine labels. This validated the CLI; it is not cross-machine experimental evidence.
+- `npm run study:validate` — passed; three frozen tasks and their Latin-square assignments validated, with SHA-256 hashes emitted for the v1 stimuli and answer key.
+- `DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run study:verify-db` — passed against the existing 1,200-memory synthetic database; all three target memories passed full-text/date, PostGIS corridor, graph-edge, activation-threshold, and graph-page visibility checks.
+- `docker compose -p memoryscape-study -f docker-compose.study.yml config`, then `up -d --wait`, migration, seed, and `study:verify-db` — passed on a separate isolated PostgreSQL/PostGIS/pg_cron volume at localhost port 55432. Both extensions loaded, both scheduled jobs registered, and all three task targets verified; the container was stopped with its own volume preserved. The primary workspace database was not modified by this isolated run.
+- `npm test -- --reporter=dot tests/database/human-study.test.ts` — passed, four tests for task/key validation, route errors, key-based scoring/paired differences, duplicate rows, and malformed CSV.
+- `npm test -- --reporter=dot` — passed, 22 tests across 7 files, including the study pack/scorer tests.
+- `npx tsc --noEmit` and `npm run build` — passed after adding the study CLI.
+- `npm run study:score -- /tmp/memoryscape-study-sample.csv` — passed against a temporary synthetic CSV; exercised correct and incorrect answer scoring and printed aggregate-only output. This is a tooling smoke test, not participant or research data.
+- `npm audit --audit-level=low` — passed; zero known vulnerabilities.
 - `docker compose up -d --build` and `curl -fsS http://127.0.0.1:3000/api/health` — passed; local web and PostgreSQL services started, and health reported PostgreSQL 16.15/PostGIS 3.6.4.
 - `docker run --rm --network host --ipc=host -v /home/xtrmn8/Memory-Scape:/work -v /tmp/memoryscape-webkit-artifacts:/test-output -w /work -e PLAYWRIGHT_BASE_URL=http://127.0.0.1:3000 -e PLAYWRIGHT_PROJECTS=webkit -e PLAYWRIGHT_BROWSERS_PATH=/ms-playwright mcr.microsoft.com/playwright:v1.64.1-noble bash -lc 'npx playwright test --config=playwright.matrix.config.ts --workers=1 --output=/test-output'` — passed, 26 WebKit browser tests. The matching Playwright image provides the missing WebKit runtime libraries. The map test uses its accessible corridor-radius control to ensure its route reaches its fixture point; the timeline test verifies filtering after rapid date changes.
 
 ## Final checkpoint
 
-Core engines, app flows, migrations, optional local authentication with database login throttling, baseline security headers, responsive layouts, 1,200/10,000 dataset generation, sequential and fresh PostgreSQL buffer-pool evaluation, expanded API contracts, and all 26 WebKit browser tests are implemented and verified. The open local app is running; the primary database retains its original 1,200 memories.
+Core engines, app flows, migrations, optional local authentication with database login throttling, baseline security headers, responsive layouts, 1,200/10,000 dataset generation, sequential and fresh PostgreSQL buffer-pool evaluation, expanded API contracts, all 26 WebKit browser tests, and the human-study preparation/scoring kit are implemented and verified. The open local app is running; the primary database retains its original 1,200 memories. Human-subject results and external-machine experiments remain unperformed.
