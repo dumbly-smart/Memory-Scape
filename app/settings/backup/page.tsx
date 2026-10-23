@@ -40,7 +40,7 @@ export default function BackupPage() {
   }
 
   return <>
-    <div className="page-head"><div><div className="eyebrow">PORTABILITY</div><h1>Backup & restore</h1><p>Move your local knowledge archive as a versioned JSON file.</p></div><Link className="button secondary" href="/settings">Settings</Link></div>
+    <div className="page-head"><div><div className="eyebrow">PORTABILITY</div><h1>Backup & restore</h1><p>Move your local knowledge archive as a versioned JSON file.</p></div><div className="toolbar" style={{margin:0}}><Link className="button secondary" href="/settings/import">Import files</Link><Link className="button secondary" href="/settings">Settings</Link></div></div>
     {error && <div className="error" role="alert">{error}</div>}{status && <div className="success" role="status">{status}</div>}
     <div className="dashboard-grid">
       <section className="panel"><h2>Download a backup</h2><p>Includes memories, contexts, links, graph edges, reinforcement history, follow-ups, decisions, attachments, place reminders, and review actions.</p><a className="button" href="/api/backup/export">Download JSON backup</a></section>
