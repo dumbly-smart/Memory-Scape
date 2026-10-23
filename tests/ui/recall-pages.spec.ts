@@ -35,7 +35,20 @@ test('map draws and edits a route, shows its corridor, and supports sequential a
     await page.mouse.click(bounds.x + bounds.width / 2 + 12, bounds.y + bounds.height / 2);
     await expect(page.getByRole('button', { name: 'Undo last point' })).toBeEnabled();
     await expect(page.locator('.leaflet-overlay-pane path')).toHaveCount(2);
-    await page.getByRole('button', { name: 'Run spatial memory walk' }).click();
+    const radius = page.getByRole('slider', { name: /Corridor radius/ });
+    await radius.focus();
+    for (let step = 0; step < 4; step += 1) await radius.press('ArrowRight');
+    await expect(radius).toHaveValue('250');
+    const [walkResponse] = await Promise.all([
+      page.waitForResponse(response => new URL(response.url()).pathname === '/api/spatial/walk'),
+      page.getByRole('button', { name: 'Run spatial memory walk' }).click(),
+    ]);
+    const walkPayload = await walkResponse.json() as { data: Array<{ memory_id: string }> };
+    expect(walkResponse.ok(), `Spatial walk returned ${walkResponse.status()} for ${JSON.stringify(walkResponse.request().postDataJSON())}`).toBeTruthy();
+    expect(
+      walkPayload.data.some(memory => memory.memory_id === id),
+      `Spatial walk omitted the fixture for route ${JSON.stringify(walkResponse.request().postDataJSON())}; returned ${JSON.stringify(walkPayload.data)}`,
+    ).toBe(true);
     const result = page.locator('.result-card').filter({ hasText: title });
     await expect(result).toBeVisible({ timeout: 20_000 });
     await result.click();
