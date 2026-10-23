@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { randomUUID, webcrypto } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
-import { encryptBackup } from '../../lib/backup-crypto';
+import { encryptBackupWithRecovery } from '../../lib/backup-crypto';
 
 test('workspace backup supports dry-run then atomic import and refuses collisions', async ({ request }) => {
   const memoryId = '7734d10c-a8ae-4fc1-9202-d64651183122';
@@ -75,11 +75,14 @@ test('backup page downloads an encrypted envelope and restores it in the browser
     const download=await downloadPromise;
     const encrypted=await readFile(await download.path(),'utf8');
     expect(encrypted).toContain('memoryscape-encrypted-backup');
+    expect(JSON.parse(encrypted).version).toBe(2);
     expect(encrypted).not.toContain('Not uploaded until decrypted locally');
+    await expect(page.getByRole('textbox',{name:'Backup recovery key'})).toBeVisible();
 
-    const encryptedFixture=await encryptBackup(JSON.stringify(bundle),passphrase,webcrypto as unknown as Crypto);
-    await page.getByLabel('Backup JSON (up to 15 MiB)').setInputFiles({name:'encrypted.json',mimeType:'application/json',buffer:Buffer.from(encryptedFixture)});
-    await page.getByLabel('Restore passphrase').fill(passphrase);
+    const encryptedFixture=await encryptBackupWithRecovery(JSON.stringify(bundle),passphrase,webcrypto as unknown as Crypto);
+    await page.getByLabel('Backup JSON (up to 15 MiB)').setInputFiles({name:'encrypted.json',mimeType:'application/json',buffer:Buffer.from(encryptedFixture.envelope)});
+    await page.getByLabel('Restore key type').selectOption('recovery');
+    await page.getByLabel('Restore recovery key').fill(encryptedFixture.recoveryKey);
     await page.getByRole('button',{name:'Preview restore'}).click();
     await expect(page.getByRole('status')).toContainText('Preview only. Nothing has been changed.');
     expect((await request.get(`/api/memories/${memoryId}`)).status()).toBe(404);

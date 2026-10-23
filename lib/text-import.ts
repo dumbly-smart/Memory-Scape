@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { rrulestr } from 'rrule';
 
 export type ImportedMemory = { captureKey: string; title: string; content: string; occurredAt: string; sourceUrl?: string; sourceTitle?: string; format: 'markdown'|'text'|'bookmark'|'calendar' };
 
@@ -75,35 +76,79 @@ function dateFromIcs(value: string, tzid?: string): string {
   } catch { throw new Error(`Unsupported iCalendar time zone: ${tzid}`); }
 }
 
-function parseCalendar(source: string): ImportedMemory[] {
+function wallClockValue(value: string, tzid?: string): string {
+  if (!tzid || !value.endsWith('Z')) return value;
+  const date = new Date(`${value.slice(0,4)}-${value.slice(4,6)}-${value.slice(6,8)}T${value.slice(9,11)}:${value.slice(11,13)}:${value.slice(13,15)}Z`);
+  if (!Number.isFinite(date.getTime())) throw new Error(`Unsupported iCalendar recurrence date: ${value}`);
+  const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA',{timeZone:tzid,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'}).formatToParts(date).map(part=>[part.type,part.value]));
+  return `${parts.year}${parts.month}${parts.day}T${parts.hour}${parts.minute}${parts.second}`;
+}
+
+function parseCalendar(source: string, referenceTime = new Date()): ImportedMemory[] {
   const unfolded = source.replace(/\r?\n[ \t]/g,'');
   const blocks = unfolded.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/gi) ?? [];
   const output: ImportedMemory[] = [];
   for (const block of blocks) {
-    const fields = new Map<string,{ value:string; tzid?:string }>();
+    const fields = new Map<string,{ value:string; tzid?:string }[]>();
     for (const line of block.split(/\r?\n/)) {
       const colon = line.indexOf(':');
       if (colon < 0) continue;
       const [rawName,...params] = line.slice(0,colon).split(';');
       const name = rawName.toUpperCase();
       const tzid = params.map(p => /^TZID=(.*)$/i.exec(p)?.[1]).find(Boolean)?.replace(/^"|"$/g,'');
-      fields.set(name,{ value:line.slice(colon+1), tzid });
+      fields.set(name,[...(fields.get(name)??[]),{ value:line.slice(colon+1), tzid }]);
     }
-    const summary = unescapeIcs(fields.get('SUMMARY')?.value ?? 'Calendar event');
-    const description = unescapeIcs(fields.get('DESCRIPTION')?.value ?? '');
-    const start = fields.get('DTSTART');
+    const first = (name:string) => fields.get(name)?.[0];
+    const summary = unescapeIcs(first('SUMMARY')?.value ?? 'Calendar event');
+    const description = unescapeIcs(first('DESCRIPTION')?.value ?? '');
+    const start = first('DTSTART');
     if (!start) continue;
-    const occurredAt = dateFromIcs(start.value,start.tzid);
-    output.push(create({ title:summary.slice(0,500), content:description, occurredAt, format:'calendar' }));
+    const recurrenceLines = [`DTSTART:${wallClockValue(start.value,start.tzid)}`];
+    for (const rule of fields.get('RRULE')??[]) {
+      let value = rule.value;
+      const until = /(?:^|;)UNTIL=(\d{8}T\d{6}Z)(?=;|$)/i.exec(value)?.[1];
+      if (until && start.tzid) value = value.replace(until,wallClockValue(until,start.tzid));
+      recurrenceLines.push(`RRULE:${value}`);
+    }
+    for (const name of ['RDATE','EXDATE']) for (const date of fields.get(name)??[]) {
+      const dates = date.value.split(',').map(value=>wallClockValue(value,date.tzid??start.tzid)).join(',');
+      recurrenceLines.push(`${name}:${dates}`);
+    }
+
+    let occurrenceDates:Date[];
+    if (!(fields.has('RRULE')||fields.has('RDATE')||fields.has('EXDATE'))) {
+      occurrenceDates=[new Date(`${start.value.slice(0,4)}-${start.value.slice(4,6)}-${start.value.slice(6,8)}T${start.value.length>=15?`${start.value.slice(9,11)}:${start.value.slice(11,13)}:${start.value.slice(13,15)}`:'00:00:00'}Z`)];
+    } else {
+      const recurrence=rrulestr(recurrenceLines.join('\n'),{forceset:true});
+      const hasBoundedRule=(fields.get('RRULE')??[]).every(rule=>/\b(?:COUNT|UNTIL)=/i.test(rule.value));
+      if (hasBoundedRule) {
+        occurrenceDates=recurrence.all((_date,index)=>index<=1000);
+        if (occurrenceDates.length>1000) throw new Error('A recurring calendar event expands to more than 1,000 entries');
+      } else {
+        const windowStart=Date.UTC(referenceTime.getUTCFullYear()-1,referenceTime.getUTCMonth(),referenceTime.getUTCDate());
+        const windowEnd=Date.UTC(referenceTime.getUTCFullYear()+1,referenceTime.getUTCMonth(),referenceTime.getUTCDate());
+        const startDate=recurrence.all((_date,index)=>index===0)[0];
+        occurrenceDates=[...(startDate&&startDate.getTime()<windowStart?[startDate]:[]),...recurrence.between(new Date(windowStart),new Date(windowEnd),true)];
+      }
+    }
+    const seen=new Set<number>();
+    for (const occurrence of occurrenceDates) {
+      if (!Number.isFinite(occurrence.getTime())||seen.has(occurrence.getTime())) continue;
+      seen.add(occurrence.getTime());
+      const pseudoValue=`${occurrence.getUTCFullYear()}${String(occurrence.getUTCMonth()+1).padStart(2,'0')}${String(occurrence.getUTCDate()).padStart(2,'0')}T${String(occurrence.getUTCHours()).padStart(2,'0')}${String(occurrence.getUTCMinutes()).padStart(2,'0')}${String(occurrence.getUTCSeconds()).padStart(2,'0')}`;
+      const occurredAt=dateFromIcs(pseudoValue,start.tzid);
+      output.push(create({ title:summary.slice(0,500), content:description, occurredAt, format:'calendar' }));
+      if (output.length>1000) throw new Error('Calendar import expands to more than 1,000 entries');
+    }
   }
   if (!output.length) throw new Error('No VEVENT entries with DTSTART were found');
   return output;
 }
 
-export function parseTextImport(filename: string, content: string): ImportedMemory[] {
+export function parseTextImport(filename: string, content: string, referenceTime = new Date()): ImportedMemory[] {
   const extension = filename.split('.').pop()?.toLowerCase();
   if (extension === 'md' || extension === 'markdown' || extension === 'txt') return parseMarkdown(filename,content);
   if (extension === 'html' || extension === 'htm') return parseBookmarks(content);
-  if (extension === 'ics') return parseCalendar(content);
+  if (extension === 'ics') return parseCalendar(content,referenceTime);
   throw new Error(`Unsupported import type for ${filename}; use .md, .markdown, .txt, .html, .htm, or .ics`);
 }

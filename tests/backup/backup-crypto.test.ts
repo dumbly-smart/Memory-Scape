@@ -1,6 +1,6 @@
 import { webcrypto } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { decryptBackup, encryptBackup } from '../../lib/backup-crypto';
+import { decryptBackup, encryptBackup, encryptBackupWithRecovery } from '../../lib/backup-crypto';
 
 describe('encrypted backup envelope', () => {
   it('encrypts archive text and decrypts it only with the correct passphrase', async () => {
@@ -23,5 +23,14 @@ describe('encrypted backup envelope', () => {
     const envelope = JSON.parse(encrypted) as { ciphertext:string };
     envelope.ciphertext = `${envelope.ciphertext.slice(0,-4)}AAAA`;
     await expect(decryptBackup(JSON.stringify(envelope),'a sufficiently long test passphrase',webcrypto as unknown as Crypto)).rejects.toThrow();
+  });
+
+  it('restores an encrypted archive with an independent recovery key',async()=>{
+    const archive=JSON.stringify({format:'memoryscape-backup',memories:[{title:'private'}]});
+    const {envelope,recoveryKey}=await encryptBackupWithRecovery(archive,'correct horse battery staple',webcrypto as unknown as Crypto);
+    expect(envelope).not.toContain(recoveryKey);
+    await expect(decryptBackup(envelope,'correct horse battery staple',webcrypto as unknown as Crypto)).resolves.toBe(archive);
+    await expect(decryptBackup(envelope,recoveryKey,webcrypto as unknown as Crypto,'recovery')).resolves.toBe(archive);
+    await expect(decryptBackup(envelope,'wrong recovery key',webcrypto as unknown as Crypto,'recovery')).rejects.toThrow();
   });
 });
