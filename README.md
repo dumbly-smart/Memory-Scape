@@ -63,7 +63,7 @@ docker compose exec db psql -U memoryscape -d memoryscape -c "SELECT apply_memor
 - **Follow-ups and decisions:** link an action or decision to a memory/context and track its due or revisit date.
 - **Weekly review:** `/review/weekly` prioritizes recent, pinned, fading memories and due follow-ups. Keep, snooze, archive, or dismiss each item. Sensitive and archived memories do not enter the queue.
 - **Attachments:** add up to 10 MiB per file to a memory. Plain UTF-8 text, Markdown, CSV, JSON, and XML have indexed text search; binary files remain downloadable but have no OCR/PDF extraction.
-- **Backup:** open **Settings → Backup & restore**, download the versioned JSON file, and select a file to preview before restoring. Restore rejects existing IDs/context labels and rolls back the whole import on error. Bundles are limited to 15 MiB overall and 10 MiB combined attachment bytes. Backups contain sensitive memory text and file contents; store them privately.
+- **Backup:** Open Settings → Backup & restore and create an encrypted file with a passphrase, or explicitly choose unencrypted JSON. Select a backup to preview before restoring. Restore rejects existing IDs/context labels and rolls back the whole import on error. Bundles are limited to 15 MiB overall and 10 MiB combined attachment bytes.
 - **Privacy and importance:** pin importance separately from strength; mark a memory sensitive or archive it from its detail view. Sensitive memories remain in the library but are excluded from nearby and review recall.
 - **Place recall:** `/nearby` asks for location only after an explicit user action. It sends coordinates to the local app, which queries PostGIS in meters.
 
@@ -98,3 +98,12 @@ The SQL contract test uses a rollback transaction and exercises actual database 
 ## Research contributions and limits
 
 The prototype makes the three recall algorithms inspectable in SQL and provides deterministic correctness fixtures. Valence and review-priority coefficients are engineering choices, not empirically validated cognitive constants. See [spatial recall](docs/algorithms/SPATIAL_RECALL.md), [temporal model](docs/algorithms/TEMPORAL_DECAY.md), [spreading activation](docs/algorithms/SPREADING_ACTIVATION.md), [evaluation methodology](docs/evaluation/METHODOLOGY.md), and the [demo guide](docs/DEMO_GUIDE.md). The recorded benchmark output is a reproducible repeated observation, not a general performance claim.
+
+### Daily-use portability
+
+- /capture can queue nonsensitive drafts in IndexedDB and sync them after reconnect. The local browser queue is not encrypted; sensitive captures are rejected offline. Service-worker support improves the capture shell, but first install and map tiles need a network connection.
+- /daily summarizes overdue/next-day follow-ups, decisions to revisit, and the fading-memory snapshot. Browser notifications require opt-in and are checked only while the page is open; closed-browser push is not implemented.
+- **Settings → Import** previews Markdown/text files, Netscape bookmark HTML, and iCalendar events before writing. Imports are capped at 15 MiB and 1,000 entries; duplicate content is skipped. Calendar recurrence rules are not expanded; floating iCalendar times are treated as UTC.
+- **Settings → Backup & restore** encrypts exports locally using PBKDF2-SHA-256 and AES-256-GCM. Use at least a 12-character passphrase and keep it separate from the backup; MemoryScape cannot recover a lost passphrase. The plain JSON export remains available and contains readable private data.
+- Context pages can add alternate names and merge contexts of the same type. Merges move memory links, follow-ups, decisions, and aliases transactionally, deduplicate repeated memory links, and do not reinforce memories.
+- The memory library can save named filter combinations to PostgreSQL and restore or delete them later.

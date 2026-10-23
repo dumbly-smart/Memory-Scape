@@ -2,18 +2,18 @@ import { createHash } from 'node:crypto';
 
 export type ImportedMemory = { captureKey: string; title: string; content: string; occurredAt: string; sourceUrl?: string; sourceTitle?: string; format: 'markdown'|'text'|'bookmark'|'calendar' };
 
-function keyFor(value: Omit<ImportedMemory, 'captureKey'>): string {
-  const bytes = createHash('sha256').update(JSON.stringify([value.format,value.title,value.content,value.sourceUrl ?? null])).digest();
+function keyFor(value: Omit<ImportedMemory, 'captureKey'>, includeEventTime=true): string {
+  const bytes = createHash('sha256').update(JSON.stringify([value.format,value.title,value.content,value.sourceUrl ?? null,includeEventTime?value.occurredAt:null])).digest();
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = bytes.subarray(0,16).toString('hex');
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
 }
 
-function create(value: Omit<ImportedMemory, 'captureKey'>): ImportedMemory {
+function create(value: Omit<ImportedMemory, 'captureKey'>, includeEventTime=true): ImportedMemory {
   if (!value.title.trim()) value.title = 'Imported memory';
   if (value.content.length > 1_000_000) throw new Error('An imported entry exceeds the 1 MiB per-memory limit');
-  return { ...value, captureKey: keyFor(value) };
+  return { ...value, captureKey: keyFor(value,includeEventTime) };
 }
 
 function decodeEntities(text: string): string {
@@ -30,10 +30,11 @@ function parseMarkdown(filename: string, source: string): ImportedMemory[] {
   let metadata = '';
   const frontmatter = /^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?/.exec(body);
   if (frontmatter) { metadata = frontmatter[1]; body = body.slice(frontmatter[0].length); }
-  const title = /^\s*#\s+(.+?)\s*$/m.exec(body)?.[1]?.trim() ?? body.split(/\r?\n/).find(line => line.trim())?.replace(/^\s*[-*#>]+\s*/, '').trim() ?? filename.replace(/\.(md|markdown|txt)$/i,'');
+  const frontmatterTitle=/^title:\s*["']?(.+?)["']?\s*$/mi.exec(metadata)?.[1]?.trim();
+  const title = frontmatterTitle ?? /^\s*#\s+(.+?)\s*$/m.exec(body)?.[1]?.trim() ?? body.split(/\r?\n/).find(line => line.trim())?.replace(/^\s*[-*#>]+\s*/, '').trim() ?? filename.replace(/\.(md|markdown|txt)$/i,'');
   const dateValue = /^occurred_at:\s*["']?(.+?)["']?\s*$/mi.exec(metadata)?.[1]?.trim();
   const occurredAt = dateValue && Number.isFinite(Date.parse(dateValue)) ? new Date(dateValue).toISOString() : new Date().toISOString();
-  return [create({ title: title.slice(0,500), content: body.trim(), occurredAt, format: /\.txt$/i.test(filename) ? 'text' : 'markdown' })];
+  return [create({ title: title.slice(0,500), content: body.trim(), occurredAt, format: /\.txt$/i.test(filename) ? 'text' : 'markdown' },Boolean(dateValue))];
 }
 
 function parseBookmarks(source: string): ImportedMemory[] {
@@ -48,7 +49,7 @@ function parseBookmarks(source: string): ImportedMemory[] {
     const title = decodeEntities(match[2].replace(/<[^>]*>/g,' ').replace(/\s+/g,' ').trim()) || url.hostname;
     const addDate = /\badd_date\s*=\s*(["']?)(\d+)\1/i.exec(match[1])?.[2];
     const occurredAt = addDate ? new Date(Number(addDate) * 1000).toISOString() : new Date().toISOString();
-    output.push(create({ title: title.slice(0,500), content: `Saved bookmark: ${url.href}`, occurredAt, sourceUrl: url.href, sourceTitle: title, format:'bookmark' }));
+    output.push(create({ title: title.slice(0,500), content: `Saved bookmark: ${url.href}`, occurredAt, sourceUrl: url.href, sourceTitle: title, format:'bookmark' },false));
   }
   if (!output.length) throw new Error('No HTTP or HTTPS bookmarks were found in this HTML file');
   return output;

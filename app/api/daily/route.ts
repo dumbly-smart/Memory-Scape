@@ -12,6 +12,7 @@ export async function GET() {
          LEFT JOIN memories m ON m.id=f.memory_id
          LEFT JOIN contexts c ON c.id=f.context_id
          WHERE f.status='open' AND f.due_at IS NOT NULL AND f.due_at < now()+interval '1 day'
+           AND (f.memory_id IS NULL OR EXISTS(SELECT 1 FROM memories visible WHERE visible.id=f.memory_id AND NOT visible.is_sensitive AND visible.archived_at IS NULL))
          ORDER BY f.due_at ASC,f.id LIMIT 50`,
       ),
       pool.query(
@@ -21,6 +22,7 @@ export async function GET() {
          LEFT JOIN memories m ON m.id=d.memory_id
          LEFT JOIN contexts c ON c.id=d.context_id
          WHERE d.revisit_at IS NOT NULL AND d.revisit_at < now()+interval '1 day'
+           AND (d.memory_id IS NULL OR EXISTS(SELECT 1 FROM memories visible WHERE visible.id=d.memory_id AND NOT visible.is_sensitive AND visible.archived_at IS NULL))
          ORDER BY d.revisit_at ASC,d.id LIMIT 50`,
       ),
       pool.query(

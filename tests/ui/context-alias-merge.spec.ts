@@ -17,23 +17,28 @@ test('context aliases resolve on capture and merge moves references without losi
     expect((await request.post('/api/contexts',{data:{type:'Topic',label:sourceLabel,memoryId}})).status()).toBe(201);
     const aliasResponse=await request.post(`/api/contexts/${sourceId}/aliases`,{data:{alias}});
     expect(aliasResponse.status()).toBe(201);
+    const aliasCollision=await request.post('/api/contexts/'+targetId+'/aliases',{data:{alias:alias.toUpperCase()}});
+    expect(aliasCollision.status()).toBe(409);
     const beforeAlias=await request.get(`/api/memories/${memoryId}`);
-    const linkByAlias=await request.post('/api/contexts',{data:{type:'Topic',label:alias,memoryId}});
+    const linkByAlias=await request.post('/api/contexts',{data:{type:'Topic',label:alias.toLowerCase(),memoryId}});
     expect((await linkByAlias.json()).data.inserted).toBe(false);
     const afterAlias=await request.get(`/api/memories/${memoryId}`);
     expect((await afterAlias.json()).data.reinforcements).toHaveLength((await beforeAlias.json()).data.reinforcements.length);
+    expect((await request.post('/api/contexts',{data:{type:'Topic',label:targetLabel,memoryId}})).status()).toBe(201);
+    const historyBeforeMerge=(await (await request.get(`/api/memories/${memoryId}`)).json()).data.reinforcements.length;
     const followUp=await request.post('/api/follow-ups',{data:{title:`Alias follow-up ${suffix}`,memoryId,contextId:sourceId}});
     followUpId=(await followUp.json()).data.id;
     const decision=await request.post('/api/decisions',{data:{choice:`Alias decision ${suffix}`,rationale:'Keep context continuity',contextId:sourceId}});
     decisionId=(await decision.json()).data.id;
     const merge=await request.post('/api/contexts/merge',{data:{sourceId,targetId}});
     expect(merge.status()).toBe(200);
-    expect((await merge.json()).data).toMatchObject({memoryLinksMoved:1,followUpsMoved:1,decisionsMoved:1});
+    expect((await merge.json()).data).toMatchObject({memoryLinksMoved:0,followUpsMoved:1,decisionsMoved:1});
     const detail=await request.get(`/api/contexts/${targetId}/aliases`);
     expect((await detail.json()).data.map((row:{alias:string})=>row.alias)).toContain(sourceLabel);
     expect((await request.get(`/api/contexts/${sourceId}`)).status()).toBe(404);
     const memory=(await request.get(`/api/memories/${memoryId}`)).json();
     expect((await memory).data.contexts.map((row:{id:string})=>row.id)).toEqual([targetId]);
+    expect((await memory).data.reinforcements).toHaveLength(historyBeforeMerge);
     expect((await (await request.get(`/api/follow-ups?contextId=${targetId}`)).json()).data.some((row:{id:string})=>row.id===followUpId)).toBe(true);
     expect((await (await request.get(`/api/decisions?contextId=${targetId}`)).json()).data.some((row:{id:string})=>row.id===decisionId)).toBe(true);
   } finally {
@@ -68,6 +73,7 @@ test('context merge rejects incompatible types without deleting either context',
   const source=(await (await request.post('/api/contexts',{data:{type:'Topic',label:`Type source ${suffix}`}})).json()).data;
   const target=(await (await request.post('/api/contexts',{data:{type:'Project',label:`Type target ${suffix}`}})).json()).data;
   try {
+    expect((await request.post('/api/contexts/merge',{data:{sourceId:source.id,targetId:source.id}})).status()).toBe(400);
     const response=await request.post('/api/contexts/merge',{data:{sourceId:source.id,targetId:target.id}});
     expect(response.status()).toBe(400);
     expect((await request.get(`/api/contexts/${source.id}`)).status()).toBe(200);

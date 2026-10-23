@@ -59,3 +59,29 @@
 ## Local operation and privacy
 
 Compose binds application and database ports to localhost. The project’s open local mode is not suitable for untrusted networks; configure its optional password authentication before any non-local exposure. The app does not upload memory contents to an external service. Map tile requests go to the configured tile provider and may disclose the viewed map area to that provider.
+
+## I — Offline capture and daily brief
+
+1. Open **Quick capture** once while online so the service worker can cache the capture shell.
+2. Turn the browser offline, save a nonsensitive note, then reconnect. Confirm the queue syncs and the note appears once in the memory library.
+3. Mark a memory sensitive and verify an offline save is refused.
+4. Open **Daily brief** to inspect follow-ups due within 24 hours, decisions due for revisit, and the fading-memory snapshot.
+5. Enable notifications only if desired. They are checked while the daily page is open; no notification is sent after closing the browser.
+
+## J — Import archive files
+
+1. Open **Settings → Import** and choose Markdown/text, a Netscape bookmark export, or an iCalendar file.
+2. Preview parsed titles, dates, and content. Repeat a preview to see content duplicates identified.
+3. Apply the import and confirm new rows appear in the library. Malformed files reject the whole batch before any write.
+
+## K — Encrypted backup portability
+
+1. Open **Settings → Backup & restore**, enter and confirm a passphrase of at least 12 characters, and download the encrypted file.
+2. Select an encrypted backup, enter the passphrase, preview restore counts, and explicitly apply the restore.
+3. A wrong passphrase or modified ciphertext fails locally before the server receives restore data. The passphrase is unrecoverable if lost.
+
+## L — Context cleanup and saved searches
+
+1. On a context workspace, add an alternate name; use that alias when linking another memory and confirm it resolves to the canonical context.
+2. Merge a same-type context into another; inspect moved links and aliases. Cross-type merge is rejected, and merge does not change memory strength.
+3. In the memory library, set filters, name the search, save it, then select and apply it later. Delete it when no longer useful.

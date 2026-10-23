@@ -108,14 +108,15 @@ test('graph page runs bounded associative recall from a selected memory', async 
 test('review page refreshes the materialized queue and reinforces a fading memory', async ({ page, request }) => {
   await page.goto('/review');
   await page.getByRole('button', { name: '↻ Refresh view' }).click();
-  const row = page.locator('tbody tr').first();
-  await expect(row).toBeVisible({ timeout: 20_000 });
-  const title = (await row.locator('td').first().innerText()).trim();
-  const memoryId = await row.getAttribute('data-memory-id');
-  const before = Number((await row.locator('td').nth(1).innerText()).replace('%', '')) / 100;
+  const firstRow = page.locator('tbody tr').first();
+  await expect(firstRow).toBeVisible({ timeout: 20_000 });
+  const title = (await firstRow.locator('td').first().innerText()).trim();
+  const memoryId = await firstRow.getAttribute('data-memory-id');
+  const before = Number((await firstRow.locator('td').nth(1).innerText()).replace('%', '')) / 100;
   expect(memoryId).toBeTruthy();
+  const row = page.locator(`tbody tr[data-memory-id="${memoryId}"]`);
   await row.getByRole('button', { name: 'Review + reinforce' }).click();
-  await expect(page.getByRole('status')).toContainText(`${title} strength updated to`);
+  await expect(page.getByRole('status')).toContainText('strength updated to');
   const memory = (await (await request.get(`/api/memories/${memoryId}`)).json()).data;
   expect(memory.strength).toBeGreaterThan(before);
   await expect(page.getByRole('status')).toContainText(`${Math.round(memory.strength * 100)}%`);

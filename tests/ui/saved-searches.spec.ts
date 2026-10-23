@@ -8,6 +8,7 @@ test('saved-search API validates filters and supports create, update, list, and 
   const id=(await created.json()).data.id as string;
   try {
     expect((await request.post('/api/saved-searches',{data:{name:`Bad ${randomUUID()}`,filters:{query:'unsafe'}}})).status()).toBe(400);
+    expect((await request.post('/api/saved-searches',{data:{name:'x'.repeat(81),filters:{}}})).status()).toBe(400);
     expect((await request.post('/api/saved-searches',{data:{name:`Bad date ${randomUUID()}`,filters:{from:'2026-02-30'}}})).status()).toBe(400);
     expect((await request.post('/api/saved-searches',{data:{name,filters:{q:'other'}}})).status()).toBe(409);
     expect((await request.get('/api/saved-searches')).json()).resolves.toMatchObject({data:[expect.objectContaining({id,name,filters:{q:'campus',sort:'occurred_desc'}})]});
@@ -39,6 +40,7 @@ test('memory library saves, applies, and deletes saved searches',async({page,req
     expect(saved).toBeTruthy();
     await page.locator('select[aria-label="Saved searches"]').selectOption(saved!.id);
     await page.getByRole('button',{name:'Delete saved search'}).click();
+    await expect(page.getByRole('status')).toContainText('Deleted');
     expect((await request.get(`/api/saved-searches/${saved!.id}`)).status()).toBe(404);
   } finally { await request.delete(`/api/saved-searches/${id}`); }
 });

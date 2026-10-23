@@ -45,3 +45,36 @@ test('import page previews and applies a selected file', async ({ page, request 
     await expect(page.getByRole('status')).toContainText('Imported 1 entries');
   } finally { await removeImported(request,[title]); }
 });
+
+
+test('malformed import batches fail with a client error before any memory is written',async({request})=>{
+  const title=`Must not import ${randomUUID()}`;
+  const response=await request.post('/api/import/text',{data:{action:'apply',files:[{name:'valid.md',content:`# ${title}
+
+Valid entry.`},{name:'broken.ics',content:'BEGIN:VCALENDAR\nEND:VCALENDAR'}]}});
+  expect(response.status()).toBe(400);
+  const search=await request.get(`/api/memories?q=${encodeURIComponent(title)}`);
+  expect((await search.json()).data).toHaveLength(0);
+});
+
+
+test('text import enforces the documented total payload limit',async({request})=>{
+  const response=await request.post('/api/import/text',{data:{action:'preview',files:[{name:'large.md',content:'x'.repeat(15*1024*1024+1)}]}});
+  expect(response.status()).toBe(413);
+});
+
+
+test('duplicate items within a selected batch are reported and inserted once',async({request})=>{
+  const title='Repeated batch note '+randomUUID();
+  const content=['# '+title,'','The same entry appears twice.'].join(String.fromCharCode(10));
+  try {
+    const files=[{name:'first.md',content},{name:'copy.md',content}];
+    const preview=await request.post('/api/import/text',{data:{action:'preview',files}});
+    expect((await preview.json()).data).toMatchObject({total:2,duplicates:1,newEntries:1});
+    const applied=await request.post('/api/import/text',{data:{action:'apply',files}});
+    expect((await applied.json()).data).toMatchObject({inserted:1,skipped:1,total:2});
+  } finally {
+    const found=await request.get('/api/memories?q='+encodeURIComponent('Repeated batch note'));
+    if(found.ok())for(const row of (await found.json()).data as {id:string;title:string}[])if(row.title.startsWith(title))await request.delete('/api/memories/'+row.id);
+  }
+});

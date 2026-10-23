@@ -16,7 +16,8 @@ const notifiedKey = 'memoryscape.dailyBriefNotifiedIds';
 function sendDueNotifications(brief: Brief) {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted' || localStorage.getItem(optInKey) !== 'true') return;
   const sent = new Set<string>(JSON.parse(localStorage.getItem(notifiedKey) ?? '[]') as string[]);
-  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const today = [now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
   const reminders = [
     ...brief.dueFollowUps.map(item => ({ id: `followup:${item.id}`, title: item.title, body: item.due_at < new Date().toISOString() ? 'Overdue follow-up' : 'Due within a day' })),
     ...brief.decisionsToRevisit.map(item => ({ id: `decision:${item.id}`, title: item.choice, body: 'Decision ready to revisit' })),
@@ -52,7 +53,7 @@ export default function DailyBriefPage() {
   }, [load]);
 
   async function enableNotifications() {
-    if (!('Notification' in window)) { setNotificationMessage('This browser does not support notifications.'); return; }
+    if (typeof Notification === 'undefined') { setNotificationMessage('This browser does not support notifications.'); return; }
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') { localStorage.removeItem(optInKey); setNotificationsEnabled(false); setNotificationMessage('Notifications were not enabled. The daily brief still works here.'); return; }
     localStorage.setItem(optInKey, 'true');
