@@ -2,6 +2,25 @@
 
 Updated 2026-10-23 after WebKit browser fixes and the frozen human-study preparation/scoring kit. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
 
+## Everyday-use feature expansion (started 2026-10-23)
+
+Full design and task breakdown: [Everyday Memory Workflows design](superpowers/specs/2026-10-23-everyday-memory-workflows-design.md) and [implementation plan](superpowers/plans/2026-10-23-everyday-memory-workflows.md).
+
+- **Implemented and tested** — Quick capture inbox with content-first entry, first-line title derivation, current-time default, optional web source, and pin/sensitive flags. `POST /api/capture` and `/capture` are backed by PostgreSQL migration 004.
+- **Implemented but not complete** — Pin/sensitive fields persist on capture and can be changed through the memory PATCH API; the dedicated memory detail controls, archive workflow, and broader exclusion behavior are still pending.
+- **Incomplete** — Person and project workspaces with resume-work summaries.
+- **Incomplete** — Follow-ups linked to memories and contexts.
+- **Incomplete** — Decision records with rationale, alternatives, and revisit dates.
+- **Incomplete** — User-triggered nearby recall and place reminders.
+- **Incomplete** — Browser bookmarklet capture with URL/title/selection preview.
+- **Incomplete** — Memory attachments with content hashes and safe download.
+- **Incomplete** — Weekly review with keep/snooze/archive/dismiss actions.
+- **Incomplete** — Versioned export and dry-run/transactional restore.
+- **Incomplete** — Seed-centered bounded graph exploration and configurable local map tile source.
+- **Incomplete** — End-to-end documentation and verification for the expanded workflows.
+
+Task 1 verification on 2026-10-23: `DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run db:migrate` applied migration 004 without changing existing memories; the isolated behavior suite `npm test -- --reporter=dot tests/capture/capture.test.ts` passed (4 tests); Chromium `tests/ui/capture.spec.ts` passed (2 tests); `npx tsc --noEmit` and `npm run build` passed. Playwright initially could not write root-owned generated test artifacts left by a container run; ownership of only `test-results/` was restored and the browser tests then passed.
+
 ## Infrastructure and database
 
 - **Implemented and tested** — PostgreSQL 16.15, PostGIS 3.6.4, and pg_cron 1.6 run in Compose. Host ports bind to localhost and PostgreSQL data persists in a named volume.
