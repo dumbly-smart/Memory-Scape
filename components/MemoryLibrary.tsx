@@ -9,7 +9,7 @@ import { AttachmentWidget } from '@/components/AttachmentWidget';
 type Context = { id: string; type: string; label: string };
 type Association = { id: string; memoryId: string; direction: string; type: string; weight: number; valence: number };
 type Reinforcement = { id: string; reinforcement_type: string; strength_before: number; strength_after: number; reinforcement_amount: number; created_at: string };
-type Memory = { id: string; title: string; content: string; occurred_at: string; last_strength_at?: string; strength: number; decay_rate?: number; location_label: string | null; latitude: number | null; longitude: number | null; contexts?: Context[]; associations?: Association[]; reinforcements?: Reinforcement[] };
+type Memory = { id: string; title: string; content: string; occurred_at: string; last_strength_at?: string; strength: number; decay_rate?: number; location_label: string | null; latitude: number | null; longitude: number | null; is_pinned?: boolean; is_sensitive?: boolean; archived_at?: string | null; contexts?: Context[]; associations?: Association[]; reinforcements?: Reinforcement[] };
 const contextTypes = ['Person', 'Place', 'Topic', 'Activity', 'Project', 'Emotion', 'Event', 'Custom'];
 
 export function MemoryLibrary() {
@@ -96,6 +96,16 @@ export function MemoryLibrary() {
     await load(); if (selected?.id === id) await openMemory(body.data);
   }
 
+  async function updateFlags(values: { isPinned?: boolean; isSensitive?: boolean; archivedAt?: string | null }) {
+    if (!selected) return;
+    setBusy(true); setError('');
+    const response = await fetch(`/api/memories/${selected.id}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify(values) });
+    const body = await response.json(); setBusy(false);
+    if (!response.ok) { setError(body.error ?? 'Could not update memory flags'); return; }
+    const changed = { ...selected, ...body.data } as Memory;
+    setSelected(changed); setRows(current => current.map(memory => memory.id === changed.id ? { ...memory, ...changed } : memory));
+  }
+
   async function deleteMemory() {
     if (!selected || !window.confirm(`Delete “${selected.title}”? This also deletes its contexts and associations.`)) return;
     const response = await fetch(`/api/memories/${selected.id}`, { method: 'DELETE' });
@@ -165,8 +175,9 @@ export function MemoryLibrary() {
         <div style={{ display: 'flex', gap: 8 }}><div className="field" style={{ flex: 1 }}><label htmlFor="edit-strength">Strength</label><input id="edit-strength" className="input" name="strength" type="number" min="0" max="1" step=".01" defaultValue={selected.strength} /></div><div className="field" style={{ flex: 1 }}><label htmlFor="edit-decay">Decay rate per day</label><input id="edit-decay" className="input" name="decayRate" type="number" min="0" max="10" step=".001" defaultValue={selected.decay_rate ?? 0.01} /></div></div>
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}><button type="button" className="button secondary" onClick={() => setEditing(false)}>Cancel edit</button><button className="button" disabled={busy}>{busy ? 'Saving…' : 'Save changes'}</button></div>
       </form> : <>
-        <p>{selected.content || 'No additional notes.'}</p><div className="algorithm-note">Event: {new Date(selected.occurred_at).toLocaleString()} · Strength: {Math.round(selected.strength * 100)}% · {selected.location_label ?? 'No location'}<br />Strength state updated: {selected.last_strength_at ? new Date(selected.last_strength_at).toLocaleString() : '—'}</div>
-        <div style={{ display: 'flex', gap: 8, marginTop: 12 }}><button className="button" onClick={() => reinforce(selected.id)}>Reinforce memory</button><button className="button secondary" onClick={() => setEditing(true)}>Edit memory</button><button className="button secondary" onClick={deleteMemory}>Delete memory</button></div>
+        <p>{selected.content || 'No additional notes.'}</p>
+        <div className="algorithm-note">Event: {new Date(selected.occurred_at).toLocaleString()} · Strength: {Math.round(selected.strength * 100)}% · {selected.location_label ?? 'No location'}<br />Strength state updated: {selected.last_strength_at ? new Date(selected.last_strength_at).toLocaleString() : '—'} · Importance is independent from recall strength.</div>
+        <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}><button className="button" onClick={() => reinforce(selected.id)}>Reinforce memory</button><button className="button secondary" aria-pressed={selected.is_pinned === true} onClick={() => updateFlags({ isPinned: !selected.is_pinned })}>{selected.is_pinned ? 'Unpin importance' : 'Pin as important'}</button><button className="button secondary" aria-pressed={selected.is_sensitive === true} onClick={() => updateFlags({ isSensitive: !selected.is_sensitive })}>{selected.is_sensitive ? 'Mark non-sensitive' : 'Mark sensitive'}</button><button className="button secondary" onClick={() => updateFlags({ archivedAt: selected.archived_at ? null : new Date().toISOString() })}>{selected.archived_at ? 'Restore from archive' : 'Archive memory'}</button><button className="button secondary" onClick={() => setEditing(true)}>Edit memory</button><button className="button secondary" onClick={deleteMemory}>Delete memory</button></div>
         <h3>Contexts</h3>{selected.contexts?.map(c => <span key={c.id} className="quick" style={{ display: 'inline-flex', margin: '0 5px 5px 0', alignItems: 'center', gap: 6 }}><Link href={`/contexts/${c.id}`}>{c.type}: {c.label}</Link><button aria-label={`Remove ${c.label} context`} className="button ghost" onClick={() => removeContext(c.id)}>×</button></span>)}
         <form onSubmit={addContext} style={{ display: 'flex', gap: 6, marginTop: 8 }}><select name="type" aria-label="New context type">{contextTypes.map(t => <option key={t}>{t}</option>)}</select><input className="input" name="label" aria-label="New context label" placeholder="Add context" required /><button className="button secondary">Add</button></form>
         <h3>Associations</h3>{selected.associations?.map(edge => <div className="result-card" key={edge.id}><b>{edge.direction === 'out' ? '→' : '←'} {rows.find(m => m.id === edge.memoryId)?.title ?? edge.memoryId}</b><span>{edge.type} · weight {edge.weight} · valence {edge.valence}</span><button className="button ghost" onClick={() => removeAssociation(edge.id)}>Remove</button></div>)}
