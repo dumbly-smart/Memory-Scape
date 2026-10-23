@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, webcrypto } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+import { encryptBackup } from '../../lib/backup-crypto';
 
 test('workspace backup supports dry-run then atomic import and refuses collisions', async ({ request }) => {
   const memoryId = '7734d10c-a8ae-4fc1-9202-d64651183122';
@@ -53,6 +55,35 @@ test('backup restore page requires preview before applying the bundle', async ({
     await expect(page.getByRole('status')).toContainText('Preview only. Nothing has been changed.');
     expect((await request.get(`/api/memories/${memoryId}`)).status()).toBe(404);
     await page.getByRole('button', { name: 'Restore these records' }).click();
+    await expect(page.getByRole('status')).toContainText('Restored 1 records');
+    expect((await request.get(`/api/memories/${memoryId}`)).status()).toBe(200);
+  } finally { await request.delete(`/api/memories/${memoryId}`); }
+});
+
+
+test('backup page downloads an encrypted envelope and restores it in the browser', async ({ page, request }) => {
+  const memoryId=randomUUID();
+  const passphrase='memoryscape-test-passphrase';
+  const timestamp=new Date().toISOString();
+  const bundle={format:'memoryscape-backup',version:1,exportedAt:timestamp,memories:[{id:memoryId,title:'Encrypted restore fixture',content:'Not uploaded until decrypted locally',occurred_at:timestamp,latitude:null,longitude:null,location_label:null,strength:0.8,decay_rate:0.01,last_strength_at:timestamp,created_at:timestamp,updated_at:timestamp,source_url:null,source_title:null,is_pinned:false,is_sensitive:false,archived_at:null}],contexts:[],memoryContexts:[],memoryEdges:[],reinforcements:[],followUps:[],decisions:[],attachments:[],placeReminders:[],reviewActions:[]};
+  try {
+    await page.goto('/settings/backup');
+    await page.getByLabel('Encryption passphrase',{exact:true}).fill(passphrase);
+    await page.getByLabel('Confirm encryption passphrase').fill(passphrase);
+    const downloadPromise=page.waitForEvent('download');
+    await page.getByRole('button',{name:'Download encrypted backup'}).click();
+    const download=await downloadPromise;
+    const encrypted=await readFile(await download.path(),'utf8');
+    expect(encrypted).toContain('memoryscape-encrypted-backup');
+    expect(encrypted).not.toContain('Not uploaded until decrypted locally');
+
+    const encryptedFixture=await encryptBackup(JSON.stringify(bundle),passphrase,webcrypto as unknown as Crypto);
+    await page.getByLabel('Backup JSON (up to 15 MiB)').setInputFiles({name:'encrypted.json',mimeType:'application/json',buffer:Buffer.from(encryptedFixture)});
+    await page.getByLabel('Restore passphrase').fill(passphrase);
+    await page.getByRole('button',{name:'Preview restore'}).click();
+    await expect(page.getByRole('status')).toContainText('Preview only. Nothing has been changed.');
+    expect((await request.get(`/api/memories/${memoryId}`)).status()).toBe(404);
+    await page.getByRole('button',{name:'Restore these records'}).click();
     await expect(page.getByRole('status')).toContainText('Restored 1 records');
     expect((await request.get(`/api/memories/${memoryId}`)).status()).toBe(200);
   } finally { await request.delete(`/api/memories/${memoryId}`); }
