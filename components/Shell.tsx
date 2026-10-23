@@ -6,7 +6,7 @@ import { ReactNode, useEffect, useState } from 'react';
 
 const nav = [
   ['/', 'Overview', '⌂'], ['/capture', 'Quick capture', '＋'], ['/memories', 'Memory library', '▤'], ['/nearby', 'What’s nearby?', '⌖'], ['/spatial', 'Spatial walk', '⌖'],
-  ['/timeline', 'Timeline', '◷'], ['/graph', 'Associative graph', '⌘'], ['/review/weekly', 'Weekly review', '✓'], ['/review', 'Fading memories', '↻'], ['/settings', 'Parameters', '⚙'],
+  ['/timeline', 'Timeline', '◷'], ['/graph', 'Associative graph', '⌘'], ['/daily', 'Daily brief', '☼'], ['/review/weekly', 'Weekly review', '✓'], ['/review', 'Fading memories', '↻'], ['/settings', 'Parameters', '⚙'],
 ];
 
 export function Shell({ children }: { children: ReactNode }) {
