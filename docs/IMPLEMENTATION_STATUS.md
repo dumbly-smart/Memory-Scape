@@ -11,7 +11,7 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 - **Implemented and tested** — Person and Project context workspaces with latest-memory resume summary, recent linked memories, memory count, and actions to capture or filter by that context. Context tags in memory detail link to their workspace.
 - **Implemented and tested** — Follow-ups attach to memories or Person/Project contexts, support optional due dates, open/done/dismissed states, and idempotent completion/reopen. Memory detail and context workspaces expose follow-up controls.
 - **Implemented and tested** — Decision records store the choice, required rationale, alternatives, decision time, optional revisit time, and optional memory/context links. Context and memory detail workflows can create and review them; dates are validated against one another.
-- **Incomplete** — User-triggered nearby recall and place reminders.
+- **Implemented and tested** — User-triggered “What’s relevant here?” uses browser geolocation only after a click; PostGIS filters and orders memories/reminders by geography distance. Sensitive and archived memories are excluded. Place reminders have a GiST index and bounded meter radius.
 - **Incomplete** — Browser bookmarklet capture with URL/title/selection preview.
 - **Incomplete** — Memory attachments with content hashes and safe download.
 - **Incomplete** — Weekly review with keep/snooze/archive/dismiss actions.
@@ -26,6 +26,8 @@ Task 2 verification on 2026-10-23: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3001 PL
 Task 3 verification on 2026-10-23: migration 005 applied on the existing local database; Chromium `tests/ui/follow-ups.spec.ts tests/ui/contexts.spec.ts` passed (4 tests), covering invalid due dates, linked creation, listing, repeated completion, and the context UI; `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed.
 
 Task 4 verification on 2026-10-23: migration 006 applied; Chromium `tests/ui/decisions.spec.ts` passed (2 tests), including date-order validation, persistence, and project UI; `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed. The first run found that a refined Zod object cannot be extended; the route now applies cross-field refinements after building the full object schema.
+
+Task 5 verification on 2026-10-23: migration 007 applied; Chromium `tests/ui/nearby.spec.ts` passed (2 tests) against actual PostGIS data and a user-click-triggered geolocation fixture; it checks meter distances, invalid coordinates, and sensitive/archived exclusion. `npm test -- --reporter=dot` passed (26 tests); `npx tsc --noEmit` and `npm run build` passed after fixing complete browser geolocation test typings.
 
 ## Infrastructure and database
 
