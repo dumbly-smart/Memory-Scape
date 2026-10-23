@@ -37,6 +37,8 @@ Task 7 verification on 2026-10-23: migration 008 applied; Chromium `tests/ui/att
 
 Expanded workflow integration verification on 2026-10-23: `npm test -- --reporter=dot` passed (30 tests); `tests/database/algorithms.sql` passed; `tests/database/concurrency.sh` passed with 8 concurrent sessions; full Chromium `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3002 npm run test:e2e -- --reporter=line` passed (47 tests); `npx tsc --noEmit` and `npm run build` passed. A full 3.2 MiB backup containing 1,200 memories, 58 contexts, 4,293 context links, 7,832 graph edges, and 55 reinforcement rows restored into a separately migrated, isolated PostgreSQL/PostGIS/pg_cron database with matching table counts. Two generated-memory pairs from the first timed-out graph browser run and earlier weekly-review fixtures were identified by exact test titles and removed. The development database is back to its original 1,200 synthetic memories.
 
+Final Compose verification: the first bridge-network build hit an npm registry read timeout; `docker build --network=host -f docker/web.Dockerfile -t memory-scape-web .` completed, followed by `docker compose up -d --no-build web`. The rebuilt web container and existing PostgreSQL container are healthy, `/api/health` reports PostgreSQL 16.15/PostGIS 3.6.4, and the database remains at 1,200 memories.
+
 ## Infrastructure and database
 
 - **Implemented and tested** — PostgreSQL 16.15, PostGIS 3.6.4, and pg_cron 1.6 run in Compose. Host ports bind to localhost and PostgreSQL data persists in a named volume.

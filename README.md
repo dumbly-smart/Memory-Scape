@@ -93,6 +93,7 @@ The SQL contract test uses a rollback transaction and exercises actual database 
 - **Local map tiles:** set an XYZ URL template with `{z}`, `{x}`, and `{y}` under Settings. It is saved only in the browser that changed it; browser settings are not part of database backups.
 - **pg_cron extension error:** the database must start with `shared_preload_libraries=pg_cron` and `cron.database_name=memoryscape`; rebuild/start Compose and rerun migrations.
 - **Docker build fails on package mirrors:** the PostGIS image's OS package repositories may be stale; check the selected database image and apt repository availability.
+- **`npm ci` times out during Docker image build:** if the Docker bridge cannot reach npm but the host can, run `docker build --network=host -f docker/web.Dockerfile -t memory-scape-web .`, then `docker compose up -d --no-build web`.
 
 ## Research contributions and limits
 
