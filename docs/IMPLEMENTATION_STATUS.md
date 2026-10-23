@@ -14,7 +14,7 @@ Full design and task breakdown: [Everyday Memory Workflows design](superpowers/s
 - **Implemented and tested** — User-triggered “What’s relevant here?” uses browser geolocation only after a click; PostGIS filters and orders memories/reminders by geography distance. Sensitive and archived memories are excluded. Place reminders have a GiST index and bounded meter radius.
 - **Implemented and tested** — Capture page generates a bookmarklet for its current origin. The bookmarklet sends URL, page title, and up to 20,000 selected characters to a reviewable capture draft; it requires no extension or external service.
 - **Implemented but not fully tested** — PostgreSQL `bytea` attachments up to 10 MiB, SHA-256 metadata, safe forced-download headers, delete/list UI, and indexed full-text search for UTF-8 plain text/Markdown/CSV/JSON/XML. Binary documents/images are stored and downloadable, but PDF/OCR extraction is not implemented.
-- **Incomplete** — Weekly review with keep/snooze/archive/dismiss actions.
+- **Implemented and tested** — Weekly review with persisted keep/snooze/archive/dismiss actions. Migration `009_weekly_review.sql` adds the review ledger; the weekly queue combines due follow-ups with pinned/recent/fading memories and excludes sensitive/archived memories. Verification: `PLAYWRIGHT_BASE_URL=http://127.0.0.1:3002 npx playwright test tests/ui/weekly-review.spec.ts --reporter=line` (2 passed).
 - **Incomplete** — Versioned export and dry-run/transactional restore.
 - **Incomplete** — Seed-centered bounded graph exploration and configurable local map tile source.
 - **Incomplete** — End-to-end documentation and verification for the expanded workflows.
