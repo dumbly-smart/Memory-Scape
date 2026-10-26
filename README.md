@@ -6,6 +6,7 @@
 
 - Normalized PostgreSQL memory, context, directed edge, and reinforcement-history tables.
 - PostGIS geography route corridor queries with meter distance and route order.
+- Spatiotemporal route recall intersects a PostGIS corridor with a half-open event-time window.
 - Exponential decay, reinforcement, and atomic context-link reinforcement routines.
 - Recursive SQL activation with maximum three hops, cycle prevention, pruning, and best-path explanations.
 - Hourly fading-memory materialized view refreshed by pg_cron.
@@ -13,6 +14,8 @@
 - Independent importance, sensitive-data, and archive controls; place reminders use user-triggered nearby recall.
 - Preview-first portable JSON backup/restore with attachment digest checks and transactional, no-overwrite imports.
 - Seed-centered graph exploration bounded to at most 60 displayed nodes, 12 candidate outgoing edges per node, and three hops.
+- Alternate associative paths expose per-hop activation scores and relationship evidence.
+- Synthetic-ground-truth research lab measures ablations, parameter sweeps, radius sensitivity, and resilience to missing/noisy locations or removed graph edges.
 - Browser-local map tile configuration supports a local XYZ tile server for offline-compatible maps.
 - Next.js interface for memory CRUD, search, map route recall, timeline, graph exploration, review, and database settings.
 - Deterministic 1,200-row fictional campus seed dataset; refuses nonempty databases.
@@ -66,6 +69,8 @@ docker compose exec db psql -U memoryscape -d memoryscape -c "SELECT apply_memor
 - **Backup:** Open Settings → Backup & restore and create an encrypted file with a passphrase and one-time recovery key, or explicitly choose unencrypted JSON. Save the recovery key separately. Select a backup to preview before restoring. Restore rejects existing IDs/context labels and rolls back the whole import on error. Bundles are limited to 15 MiB overall and 10 MiB combined attachment bytes.
 - **Privacy and importance:** pin importance separately from strength; mark a memory sensitive or archive it from its detail view. Sensitive memories remain in the library but are excluded from nearby and review recall.
 - **Place recall:** `/nearby` asks for location only after an explicit user action. It sends coordinates to the local app, which queries PostGIS in meters.
+- **Spatiotemporal research recall:** `/research/spatiotemporal` draws a route, chooses an event-time interval and corridor radius, and retrieves SQL-ordered episodes satisfying both constraints.
+- **Alternate graph explanations:** on `/graph`, inspect up to five simple SQL paths to each retrieved memory, including each hop's activation, weight, relationship, and valence.
 
 ## Tests and evaluation
 
@@ -80,10 +85,12 @@ npm run db:benchmark
 npm run db:benchmark:fresh-buffers
 npm run study:validate
 DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run study:verify-db
+DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run test:research-db
+DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run research:evaluate -- --seed=497
 npm audit --audit-level=low
 ```
 
-The SQL contract test uses a rollback transaction and exercises actual database routines. The concurrency script checks row-lock serialization using eight simultaneous PostgreSQL sessions by default (`CONCURRENCY_COUNT` supports 1–32). Playwright tests exercise CRUD and the map, timeline, graph, review, settings, and API workflows against PostgreSQL. The matrix command runs Chromium and Firefox; `test:e2e:all-browsers` additionally runs WebKit on hosts with Playwright's WebKit system dependencies. The accessibility test scans all seven primary pages for WCAG 2.1 A/AA violations. `test:e2e:auth` expects an already-running server configured with the documented password and secret; use `E2E_AUTH_PASSWORD` for the test password. `npm run db:seed -- --large` creates 10,000 rows only in an empty database. For evaluation, use a separate disposable PostgreSQL database; the regular runner records five sequential repetitions by default. `db:benchmark:fresh-buffers` creates and removes a separate disposable PostgreSQL instance, restarting it between one-run trials; PostgreSQL shared buffers reset, while operating-system cache does not. Both runners save actual plans and measurements. Human study preparation/scoring commands use fictional scenarios; complete institutional ethics approval and consent before recruiting or collecting any data. See the [study runbook](docs/evaluation/study/STUDY_RUNBOOK.md), [methodology](docs/evaluation/METHODOLOGY.md), [results](docs/evaluation/RESULTS.md), and [implementation status](docs/IMPLEMENTATION_STATUS.md).
+The SQL contract tests run in rollback transactions and exercise actual database routines. `test:research-db` covers route/time intersection, interval boundaries, path scores, alternate paths, and cycle/depth limits. `research:evaluate` uses a deterministic labeled fixture inside a transaction and verifies persistent row counts are unchanged after rollback; set `RESEARCH_REPETITIONS=1..20`, `--seed=<uint32>`, or `--out=<directory>` to control the run. Its synthetic calibration output is not human or biological validation. The concurrency script checks row-lock serialization using eight simultaneous PostgreSQL sessions by default (`CONCURRENCY_COUNT` supports 1–32). Playwright tests exercise CRUD and map, timeline, graph, review, settings, research recall, and API workflows against PostgreSQL. The matrix command runs Chromium and Firefox; `test:e2e:all-browsers` additionally runs WebKit on hosts with Playwright's WebKit system dependencies. The accessibility test scans all eight primary pages for WCAG 2.1 A/AA violations. `test:e2e:auth` expects an already-running server configured with the documented password and secret; use `E2E_AUTH_PASSWORD` for the test password. `npm run db:seed -- --large` creates 10,000 rows only in an empty database. For evaluation, use a separate disposable PostgreSQL database; the regular runner records five sequential repetitions by default. `db:benchmark:fresh-buffers` creates and removes a separate disposable PostgreSQL instance, restarting it between one-run trials; PostgreSQL shared buffers reset, while operating-system cache does not. Both runners save actual plans and measurements. Human study preparation/scoring commands use fictional scenarios; complete institutional ethics approval and consent before recruiting or collecting any data. See the [study runbook](docs/evaluation/study/STUDY_RUNBOOK.md), [methodology](docs/evaluation/METHODOLOGY.md), [results](docs/evaluation/RESULTS.md), [synthetic research evaluation](docs/evaluation/research/RESULTS.md), and [implementation status](docs/IMPLEMENTATION_STATUS.md).
 
 ## Troubleshooting
 
