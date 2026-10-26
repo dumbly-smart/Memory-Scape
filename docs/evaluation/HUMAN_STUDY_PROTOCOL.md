@@ -20,6 +20,8 @@ The frozen v1 task pack in [`study/`](study/STUDY_RUNBOOK.md) contains three equ
 
 Run a small usability pilot after ethics approval to identify confusing instructions and estimate task-time variability. Set the confirmatory sample size from a preregistered power analysis on the primary paired outcome; do not choose a sample size after looking at confirmatory results. If recruitment or power is limited, label the study exploratory and report precision rather than claiming effectiveness.
 
+The local planning aid `npm run study:power` uses an exact two-sided conditional McNemar calculation for the paired binary accuracy outcome. It takes the pilot-estimated probability that only MemoryScape is correct and the probability that only conventional recall is correct; their sum is the discordant-pair probability. Use `--memoryscape-only=<rate> --conventional-only=<rate>` with `--alpha=0.05 --power=0.8` (the defaults), and raise `--max` if the default search cap of 2,000 is insufficient. Without rates it prints illustrative sensitivity scenarios, which are not empirical inputs or a justified sample size. The calculation follows the conditional binomial formulation for paired proportions described in the [SAS/STAT paired-frequency power documentation](https://support.sas.com/documentation/cdl/en/statug/67523/HTML/default/statug_power_details55.htm). It does not account for attrition, multiple comparisons, clustering, protocol deviations, or uncertainty in pilot estimates. A statistician should review the chosen inputs and analysis before preregistration.
+
 ## Participants and safeguards
 
 - Recruit adults able to provide informed consent under the institution's approved process.
@@ -77,4 +79,4 @@ Before a session, record the app commit, database migration version, determinist
 
 ## Current limitations
 
-This protocol has not been reviewed by an ethics committee, a power analysis has not been performed, and no participant data exist. Obtain institutional approval and preregister the analysis/sample-size plan before recruiting or collecting data. The v1 scenario task pack, exact answer key, validator, database compatibility check, CSV scorer, and aggregate report generator are implemented. Until an approved study is run, cognitive validity remains untested.
+This protocol has not been reviewed by an ethics committee, no pilot-based power analysis or sample-size justification has been established, and no participant data exist. A local calculator can explore hypothetical inputs but does not satisfy those requirements. Obtain institutional approval and preregister the analysis/sample-size plan before recruiting or collecting data. The v1 scenario task pack, exact answer key, validator, database compatibility check, CSV scorer, and aggregate report generator are implemented. Until an approved study is run, cognitive validity remains untested.

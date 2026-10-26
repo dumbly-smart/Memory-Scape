@@ -22,7 +22,8 @@
     "test:push-delivery": "tsx scripts/test-push-delivery.ts",
     "study:validate": "tsx scripts/human-study.ts validate",
     "study:verify-db": "tsx scripts/human-study.ts verify-db",
-    "study:score": "tsx scripts/human-study.ts score"
+    "study:score": "tsx scripts/human-study.ts score",
+    "study:power": "tsx scripts/study-power.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.0.0",

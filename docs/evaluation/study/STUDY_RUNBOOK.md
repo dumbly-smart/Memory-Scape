@@ -9,6 +9,10 @@ This is an execution kit for an exploratory study using fictional memories. It d
 - The stimuli and key share version `v1`. `npm run study:validate` checks the structure and prints SHA-256 hashes. Record both hashes in the study log and do not edit either file after preregistration.
 - The task IDs resolve to deterministic demo-seed memories (sessions 2, 262, and 522). All three targets are in the graph page's first 100 memories, have a searchable event-date interval, lie on their supplied 50 m route corridor, and have a direct incoming association from the supplied graph seed.
 
+## Sample-size sensitivity planning
+
+After ethics approval, run a usability pilot and estimate paired discordance rates for the primary binary accuracy outcome. `npm run study:power -- --memoryscape-only=0.20 --conventional-only=0.10 --alpha=0.05 --power=0.8` computes the smallest participant count up to `--max=2000` using the exact conditional McNemar test. The two supplied rates are respectively MemoryScape-correct/conventional-wrong and conventional-correct/MemoryScape-wrong. The default command prints several illustrative scenarios instead. Do not use those defaults as a sample-size justification: preregister pilot-supported rates, the primary contrast, exclusions, attrition allowance, and multiplicity handling with appropriate statistical review.
+
 ## Prepare an isolated database
 
 Use a new, empty study database. Do not seed the ordinary workspace or a database containing user memories.
