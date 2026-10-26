@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { confidenceInterval95, summarizeMeasurements } from './benchmark-stats';
-import { freshBufferCacheConfig, observeDatabaseReadiness } from './fresh-buffer-config';
+import { freshBufferCacheConfig, observeDatabaseReadiness, seedMemoryCount } from './fresh-buffer-config';
 
 type Plan = {
   'Planning Time'?: number;
@@ -101,6 +101,7 @@ async function main() {
   const volume = `memoryscape-buffer-data-${runId}`;
   const password = 'memoryscape_benchmark_only';
   const { evictPageCache, cacheStrategy } = freshBufferCacheConfig(process.env.FRESH_BUFFER_EVICT_PAGE_CACHE);
+  const memoryCount = seedMemoryCount(process.argv.slice(2));
   const cacheEvictorImage = process.env.PAGE_CACHE_EVICTOR_IMAGE ?? 'python:3.12-alpine';
   const machineLabel = process.env.MACHINE_LABEL?.trim() || os.hostname();
   let created = false;
@@ -128,9 +129,9 @@ async function main() {
     console.log(`Disposable benchmark database is listening on ${published}`);
     waitForDatabase(container);
     runNpm(['run', 'db:migrate'], databaseUrl);
-    runNpm(['run', 'db:seed', ...(process.argv.includes('--large') ? ['--', '--large'] : [])], databaseUrl);
+    runNpm(['run', 'db:seed', '--', `--memories=${memoryCount}`], databaseUrl);
 
-    const outputDirectory = path.resolve('docs/evaluation/fresh-buffer-trials');
+    const outputDirectory = path.resolve(process.env.FRESH_BUFFER_OUTPUT_DIR ?? 'docs/evaluation/fresh-buffer-trials');
     await mkdir(outputDirectory, { recursive: true });
     temporaryOutputDirectory = await mkdtemp(path.join(os.tmpdir(), 'memoryscape-buffer-trials-'));
     const measurements: Array<{ trial: number; cacheEviction: PageCacheEviction | null; evaluation: Evaluation }> = [];

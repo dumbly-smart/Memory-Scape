@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { freshBufferCacheConfig, observeDatabaseReadiness } from '../../scripts/fresh-buffer-config';
+import { freshBufferCacheConfig, observeDatabaseReadiness, seedMemoryCount } from '../../scripts/fresh-buffer-config';
 
 describe('fresh-buffer cache configuration', () => {
+  it('supports explicit dataset sizes and the legacy large preset', () => {
+    expect(seedMemoryCount([])).toBe(1200);
+    expect(seedMemoryCount(['--large'])).toBe(10000);
+    expect(seedMemoryCount(['--memories=50000'])).toBe(50000);
+  });
+
+  it('rejects malformed and conflicting dataset sizes', () => {
+    expect(() => seedMemoryCount(['--memories=1.5'])).toThrow('--memories must be a positive integer');
+    expect(() => seedMemoryCount(['--memories=1000001'])).toThrow('--memories must be between 1 and 1000000');
+    expect(() => seedMemoryCount(['--large', '--memories=10000'])).toThrow('Use either --large or --memories=N, not both');
+  });
+
   it('keeps the existing PostgreSQL restart-only benchmark as the default', () => {
     expect(freshBufferCacheConfig(undefined)).toEqual({
       evictPageCache: false,

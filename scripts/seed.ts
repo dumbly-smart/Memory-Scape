@@ -1,7 +1,8 @@
 import { pool } from '../lib/db/pool';
+import { seedMemoryCount } from './fresh-buffer-config';
 
 async function main() {
-  const count = process.argv.includes('--large') ? 10000 : 1200;
+  const count = seedMemoryCount(process.argv.slice(2));
   const client=await pool.connect();
   try {
     await client.query('BEGIN');

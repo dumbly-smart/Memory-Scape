@@ -1,0 +1,167 @@
+{
+  "generated_from": [
+    "fresh-buffer-trials/10000/fresh-buffer-pools.json",
+    "fresh-buffer-trials/50000/fresh-buffer-pools.json"
+  ],
+  "memory_counts": {
+    "10000": 10000,
+    "50000": 50000
+  },
+  "trials": {
+    "10000": 5,
+    "50000": 5
+  },
+  "cache_strategy": {
+    "10000": "postgres_restart_only",
+    "50000": "postgres_restart_only"
+  },
+  "queries": [
+    {
+      "query": "spatial_index_candidate",
+      "10000": {
+        "median_ms": 57.51,
+        "mean_ms": 61.1674,
+        "sd_ms": 12.869499555149764,
+        "shared_hits_median": 670,
+        "shared_reads_median": 80
+      },
+      "50000": {
+        "median_ms": 58.784,
+        "mean_ms": 62.3158,
+        "sd_ms": 8.150921064517801,
+        "shared_hits_median": 3152,
+        "shared_reads_median": 354
+      }
+    },
+    {
+      "query": "spatial_sequential_control",
+      "10000": {
+        "median_ms": 25.203,
+        "mean_ms": 29.486,
+        "sd_ms": 10.127127924540105,
+        "shared_hits_median": 455,
+        "shared_reads_median": 0
+      },
+      "50000": {
+        "median_ms": 49.212,
+        "mean_ms": 48.507799999999996,
+        "sd_ms": 1.4615494175702717,
+        "shared_hits_median": 3194,
+        "shared_reads_median": 213
+      }
+    },
+    {
+      "query": "associative_depth_1",
+      "10000": {
+        "median_ms": 0.405,
+        "mean_ms": 0.43699999999999994,
+        "sd_ms": 0.12366284809917649,
+        "shared_hits_median": 31,
+        "shared_reads_median": 4
+      },
+      "50000": {
+        "median_ms": 0.19,
+        "mean_ms": 0.18919999999999998,
+        "sd_ms": 0.012969194269498772,
+        "shared_hits_median": 36,
+        "shared_reads_median": 6
+      }
+    },
+    {
+      "query": "associative_depth_2",
+      "10000": {
+        "median_ms": 0.303,
+        "mean_ms": 0.34600000000000003,
+        "sd_ms": 0.09298118089161914,
+        "shared_hits_median": 53,
+        "shared_reads_median": 3
+      },
+      "50000": {
+        "median_ms": 0.166,
+        "mean_ms": 0.1626,
+        "sd_ms": 0.019552493447128422,
+        "shared_hits_median": 66,
+        "shared_reads_median": 4
+      }
+    },
+    {
+      "query": "associative_depth_3",
+      "10000": {
+        "median_ms": 0.445,
+        "mean_ms": 0.47840000000000005,
+        "sd_ms": 0.1385055955548367,
+        "shared_hits_median": 119,
+        "shared_reads_median": 6
+      },
+      "50000": {
+        "median_ms": 0.198,
+        "mean_ms": 0.196,
+        "sd_ms": 0.006819090848492934,
+        "shared_hits_median": 124,
+        "shared_reads_median": 5
+      }
+    },
+    {
+      "query": "fading_view",
+      "10000": {
+        "median_ms": 3.531,
+        "mean_ms": 3.6138,
+        "sd_ms": 1.1259350336498104,
+        "shared_hits_median": 3,
+        "shared_reads_median": 192
+      },
+      "50000": {
+        "median_ms": 7.493,
+        "mean_ms": 7.036,
+        "sd_ms": 1.1752572058915443,
+        "shared_hits_median": 3,
+        "shared_reads_median": 960
+      }
+    },
+    {
+      "query": "fading_direct",
+      "10000": {
+        "median_ms": 198.339,
+        "mean_ms": 212.57379999999998,
+        "sd_ms": 39.47461438317035,
+        "shared_hits_median": 456,
+        "shared_reads_median": 0
+      },
+      "50000": {
+        "median_ms": 205.908,
+        "mean_ms": 215.70239999999998,
+        "sd_ms": 20.90905946713051,
+        "shared_hits_median": 34809,
+        "shared_reads_median": 0
+      }
+    },
+    {
+      "query": "timeline",
+      "10000": {
+        "median_ms": 0.132,
+        "mean_ms": 0.145,
+        "sd_ms": 0.04417578522222327,
+        "shared_hits_median": 102,
+        "shared_reads_median": 0
+      },
+      "50000": {
+        "median_ms": 0.091,
+        "mean_ms": 0.0968,
+        "sd_ms": 0.010329569206893386,
+        "shared_hits_median": 102,
+        "shared_reads_median": 0
+      }
+    }
+  ],
+  "view": {
+    "10000": {
+      "creation_median_ms": 459.08976499999994,
+      "refresh_median_ms": 483.6336120000001
+    },
+    "50000": {
+      "creation_median_ms": 376.804969,
+      "refresh_median_ms": 415.968125
+    }
+  },
+  "limitations": "Same host and deterministic synthetic generator, independent disposable databases, five sequential PostgreSQL restarts per scale. Not cold-disk or independent-host evidence. Scale runs were not interleaved or randomized; differences are descriptive and can include time/order/system-load effects."
+}

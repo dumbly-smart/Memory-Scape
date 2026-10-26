@@ -11,6 +11,23 @@ export function freshBufferCacheConfig(value: string | undefined): {
   };
 }
 
+export function seedMemoryCount(args: string[]): number {
+  const countArgument = args.find((argument) => argument.startsWith('--memories='));
+  if (args.includes('--large') && countArgument) {
+    throw new Error('Use either --large or --memories=N, not both');
+  }
+  if (countArgument) {
+    const value = countArgument.slice('--memories='.length);
+    if (!/^\d+$/.test(value)) throw new Error('--memories must be a positive integer');
+    const count = Number(value);
+    if (!Number.isSafeInteger(count) || count < 1 || count > 1_000_000) {
+      throw new Error('--memories must be between 1 and 1000000');
+    }
+    return count;
+  }
+  return args.includes('--large') ? 10_000 : 1_200;
+}
+
 export type DatabaseReadinessState = { postmasterStart: string; stableSince: number };
 
 export function observeDatabaseReadiness(
