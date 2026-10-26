@@ -38,6 +38,22 @@
 1. Open **Associative graph**, choose a seed from the recent memory list, choose depth 1–3 and a pruning threshold, then explore.
 2. Observe the bounded graph and the ranked strongest-path explanations (edge types, weights, valence, and target strength).
 3. Click a recalled node to recenter the SQL traversal. The database prevents cycles, excludes sensitive/archived memories, caps outgoing traversal candidates, and limits returned nodes.
+4. Under a target, choose **Inspect alternate paths** to compare the top simple SQL paths, scores at each hop, and edge evidence.
+
+## O — Spatiotemporal route recall
+
+1. Open **Spatiotemporal recall**. Draw at least two points on the map.
+2. Select the corridor radius and event-time interval. The start time is included and the end time is excluded.
+3. Run the query and inspect the results ordered along the route. The database intersects PostGIS geography distance with event time.
+
+## P — Research evaluation
+
+1. Apply migrations, then run `DATABASE_URL=... npm run test:research-db` for the rollback-only SQL contracts.
+2. Run `DATABASE_URL=... npm run research:evaluate -- --seed=497`.
+3. Inspect `docs/evaluation/research/RESULTS.md` and `RESULTS.json` for measured ablations, calibration, corridor radius sensitivity, and robustness scenarios.
+4. Repeat with another fixture seed or `RESEARCH_REPETITIONS=...`. The runner rolls back all fixture changes and checks that persistent row counts remain unchanged.
+
+These parameter results use a small synthetic ground-truth graph only; they do not show biological calibration or human recall validity.
 
 ## F — Weekly and fading review
 

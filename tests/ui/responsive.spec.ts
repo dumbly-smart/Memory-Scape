@@ -4,6 +4,7 @@ const routes = [
   '/',
   '/memories',
   '/spatial',
+  '/research/spatiotemporal',
   '/timeline',
   '/graph',
   '/review',

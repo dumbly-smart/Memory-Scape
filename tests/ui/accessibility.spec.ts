@@ -5,6 +5,7 @@ const pages = [
   ['dashboard', '/'],
   ['memory library', '/memories'],
   ['spatial memory walk', '/spatial'],
+  ['spatiotemporal recall', '/research/spatiotemporal'],
   ['timeline', '/timeline'],
   ['associative graph', '/graph'],
   ['fading review', '/review'],

@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { ReactNode, useEffect, useState } from 'react';
 
 const nav = [
-  ['/', 'Overview', '⌂'], ['/capture', 'Quick capture', '＋'], ['/memories', 'Memory library', '▤'], ['/nearby', 'What’s nearby?', '⌖'], ['/spatial', 'Spatial walk', '⌖'],
+  ['/', 'Overview', '⌂'], ['/capture', 'Quick capture', '＋'], ['/memories', 'Memory library', '▤'], ['/nearby', 'What’s nearby?', '⌖'], ['/spatial', 'Spatial walk', '⌖'], ['/research/spatiotemporal', 'Spatiotemporal recall', '⊙'],
   ['/timeline', 'Timeline', '◷'], ['/graph', 'Associative graph', '⌘'], ['/daily', 'Daily brief', '☼'], ['/review/weekly', 'Weekly review', '✓'], ['/review', 'Fading memories', '↻'], ['/settings/import', 'Import', '⇧'], ['/settings/backup', 'Backup', '▣'], ['/settings', 'Parameters', '⚙'],
 ];
 

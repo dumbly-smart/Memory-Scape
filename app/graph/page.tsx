@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import cytoscape, { Core, ElementDefinition } from 'cytoscape';
+import { ActivationPathComparison } from '@/components/ActivationPathComparison';
 
 type Memory = { id: string; title: string; occurred_at: string; strength: number };
 type Edge = { id: string; src: string; dst: string; edge_type: string; weight: number; valence: number };
@@ -81,10 +82,13 @@ export default function GraphPage() {
     <div className="dashboard-grid" style={{ gridTemplateColumns: 'minmax(0,1.6fr) minmax(260px,.8fr)' }}>
       <div className="graph-canvas" aria-label="Seed centered associative subgraph"><div ref={host} />{!graph && <div className="empty">Choose a memory and explore its neighborhood.</div>}</div>
       <section className="panel"><div className="panel-title"><h2>Activation ranking</h2><span className="muted">{graph?.nodes.length ?? 0} recalled · max 60</span></div>
-        {graph?.nodes.map(result => <button className="result-card" key={result.memory_id} onClick={() => void recall(result.memory_id)} style={{ display: 'block', textAlign: 'left', width: '100%', cursor: 'pointer' }}>
-          <b>{result.title}</b><span>{result.hop_depth} hops · activation {result.activation.toFixed(4)} · strength {result.strength.toFixed(2)}</span>
-          <div className="algorithm-note">Path: {result.edge_types.join(' → ')}<br />Weights {result.edge_weights.map(value => value.toFixed(2)).join(' × ')} · valence {result.edge_valences.map(value => value.toFixed(1)).join(', ')}</div>
-        </button>)}
+        {graph?.nodes.map(result => <article className="result-card" key={result.memory_id}>
+          <button onClick={() => void recall(result.memory_id)} style={{ display: 'block', textAlign: 'left', width: '100%', cursor: 'pointer', border: 0, padding: 0, background: 'transparent', color: 'inherit' }}>
+            <b>{result.title}</b><span>{result.hop_depth} hops · activation {result.activation.toFixed(4)} · strength {result.strength.toFixed(2)}</span>
+            <div className="algorithm-note">Strongest path: {result.edge_types.join(' → ')}<br />Weights {result.edge_weights.map(value => value.toFixed(2)).join(' × ')} · valence {result.edge_valences.map(value => value.toFixed(1)).join(', ')}</div>
+          </button>
+          {graph.seed.id !== result.memory_id && <ActivationPathComparison seedId={graph.seed.id} targetId={result.memory_id} depth={depth} threshold={threshold}/>}
+        </article>)}
         {graph && graph.nodes.length === 0 && <div className="empty">No associated memories passed the pruning threshold.</div>}
         {!graph && !error && <div className="empty">The SQL traversal runs only after selecting a seed.</div>}
       </section>
