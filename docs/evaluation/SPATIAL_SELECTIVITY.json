@@ -1,0 +1,122 @@
+{
+  "dataset_memories": 50000,
+  "trials": 5,
+  "cache_strategy": "postgres_restart_only",
+  "route": {
+    "type": "LineString",
+    "coordinates": [
+      [
+        77.565,
+        13.018
+      ],
+      [
+        77.58,
+        13.03
+      ]
+    ]
+  },
+  "results": [
+    {
+      "radius_m": 25,
+      "planner_candidate": {
+        "execution_median_ms": 129.883,
+        "execution_mean_ms": 134.4812,
+        "execution_mean_ci95_ms": {
+          "lower": 116.83440731753905,
+          "upper": 152.12799268246096
+        },
+        "actual_rows_median": 2025,
+        "shared_hit_blocks_median": 3152,
+        "shared_read_blocks_median": 176,
+        "plan_nodes": [
+          "Gather",
+          "Bitmap Heap Scan",
+          "Bitmap Index Scan (memories_location_gix)"
+        ]
+      },
+      "seq_control": {
+        "execution_median_ms": 143.722,
+        "execution_mean_ms": 135.648,
+        "execution_mean_ci95_ms": {
+          "lower": 113.56412573978952,
+          "upper": 157.73187426021047
+        },
+        "actual_rows_median": 2025,
+        "shared_hit_blocks_median": 3194,
+        "shared_read_blocks_median": 213,
+        "plan_nodes": [
+          "Gather",
+          "Seq Scan"
+        ]
+      }
+    },
+    {
+      "radius_m": 150,
+      "planner_candidate": {
+        "execution_median_ms": 134.925,
+        "execution_mean_ms": 129.3746,
+        "execution_mean_ci95_ms": {
+          "lower": 106.15168363195237,
+          "upper": 152.5975163680476
+        },
+        "actual_rows_median": 14375,
+        "shared_hit_blocks_median": 3097,
+        "shared_read_blocks_median": 175,
+        "plan_nodes": [
+          "Gather",
+          "Bitmap Heap Scan",
+          "Bitmap Index Scan (memories_location_gix)"
+        ]
+      },
+      "seq_control": {
+        "execution_median_ms": 138.655,
+        "execution_mean_ms": 133.4812,
+        "execution_mean_ci95_ms": {
+          "lower": 108.72567508038833,
+          "upper": 158.23672491961167
+        },
+        "actual_rows_median": 14375,
+        "shared_hit_blocks_median": 3407,
+        "shared_read_blocks_median": 0,
+        "plan_nodes": [
+          "Gather",
+          "Seq Scan"
+        ]
+      }
+    },
+    {
+      "radius_m": 1000,
+      "planner_candidate": {
+        "execution_median_ms": 159.016,
+        "execution_mean_ms": 155.4036,
+        "execution_mean_ci95_ms": {
+          "lower": 140.19054440627622,
+          "upper": 170.6166555937238
+        },
+        "actual_rows_median": 49725,
+        "shared_hit_blocks_median": 2989,
+        "shared_read_blocks_median": 0,
+        "plan_nodes": [
+          "Gather",
+          "Seq Scan"
+        ]
+      },
+      "seq_control": {
+        "execution_median_ms": 144.809,
+        "execution_mean_ms": 145.227,
+        "execution_mean_ci95_ms": {
+          "lower": 128.75505368655044,
+          "upper": 161.69894631344957
+        },
+        "actual_rows_median": 49725,
+        "shared_hit_blocks_median": 3407,
+        "shared_read_blocks_median": 0,
+        "plan_nodes": [
+          "Gather",
+          "Seq Scan"
+        ]
+      }
+    }
+  ],
+  "limitations": "Five sequential PostgreSQL restarts on one host. Within each repetition the three radii were rotated and candidate/control order alternated. Shared OS cache was not cleared; query order and cache effects remain. Route geometry and clustered synthetic data are fixed. Nominal t intervals describe per-plan mean timing, not paired differences. This is descriptive, non-causal evidence."
+}

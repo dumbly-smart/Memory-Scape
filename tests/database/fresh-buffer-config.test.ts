@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { freshBufferCacheConfig, observeDatabaseReadiness, seedMemoryCount } from '../../scripts/fresh-buffer-config';
+import { freshBufferCacheConfig, observeDatabaseReadiness, parseSpatialRadiusMeters, parseSpatialRadiusSweep, seedMemoryCount } from '../../scripts/fresh-buffer-config';
 
 describe('fresh-buffer cache configuration', () => {
   it('supports explicit dataset sizes and the legacy large preset', () => {
@@ -12,6 +12,21 @@ describe('fresh-buffer cache configuration', () => {
     expect(() => seedMemoryCount(['--memories=1.5'])).toThrow('--memories must be a positive integer');
     expect(() => seedMemoryCount(['--memories=1000001'])).toThrow('--memories must be between 1 and 1000000');
     expect(() => seedMemoryCount(['--large', '--memories=10000'])).toThrow('Use either --large or --memories=N, not both');
+  });
+
+  it('validates the configured benchmark route radius', () => {
+    expect(parseSpatialRadiusMeters(undefined)).toBe(150);
+    expect(parseSpatialRadiusMeters('25')).toBe(25);
+    expect(() => parseSpatialRadiusMeters('0')).toThrow('between 1 and 50000');
+    expect(() => parseSpatialRadiusMeters('NaN')).toThrow('between 1 and 50000');
+    expect(() => parseSpatialRadiusMeters('50001')).toThrow('between 1 and 50000');
+  });
+
+  it('parses an ordered, unique route-radius sweep', () => {
+    expect(parseSpatialRadiusSweep(undefined)).toEqual([150]);
+    expect(parseSpatialRadiusSweep('25, 150,1000')).toEqual([25, 150, 1000]);
+    expect(() => parseSpatialRadiusSweep('25,,100')).toThrow('1 to 8 comma-separated radii');
+    expect(() => parseSpatialRadiusSweep('25,25')).toThrow('duplicate radii');
   });
 
   it('keeps the existing PostgreSQL restart-only benchmark as the default', () => {

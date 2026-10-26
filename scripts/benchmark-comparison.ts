@@ -14,6 +14,7 @@ export interface ComparisonArtifact {
   parameters: {
     cacheStrategy: string;
     radiusMeters?: number;
+    spatialRadiiMeters?: number[];
     recursionThreshold?: number;
   };
   summaries: {
@@ -63,6 +64,8 @@ export function compareBenchmarkArtifacts(artifacts: ComparisonArtifact[]): Benc
       throw new Error('Benchmark artifacts must use the same cache strategy');
     }
     if (artifact.parameters.radiusMeters !== baseline.parameters.radiusMeters
+      || JSON.stringify(artifact.parameters.spatialRadiiMeters ?? null)
+        !== JSON.stringify(baseline.parameters.spatialRadiiMeters ?? null)
       || artifact.parameters.recursionThreshold !== baseline.parameters.recursionThreshold) {
       throw new Error('Benchmark artifacts must use matching route-radius and recursion-threshold parameters');
     }

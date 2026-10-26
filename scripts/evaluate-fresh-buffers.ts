@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { confidenceInterval95, summarizeMeasurements } from './benchmark-stats';
-import { freshBufferCacheConfig, observeDatabaseReadiness, seedMemoryCount } from './fresh-buffer-config';
+import { freshBufferCacheConfig, observeDatabaseReadiness, parseSpatialRadiusSweep, seedMemoryCount } from './fresh-buffer-config';
 
 type Plan = {
   'Planning Time'?: number;
@@ -102,6 +102,9 @@ async function main() {
   const password = 'memoryscape_benchmark_only';
   const { evictPageCache, cacheStrategy } = freshBufferCacheConfig(process.env.FRESH_BUFFER_EVICT_PAGE_CACHE);
   const memoryCount = seedMemoryCount(process.argv.slice(2));
+  const spatialRadiiMeters = parseSpatialRadiusSweep(
+    process.env.BENCHMARK_SPATIAL_RADII_METERS ?? process.env.BENCHMARK_RADIUS_METERS,
+  );
   const cacheEvictorImage = process.env.PAGE_CACHE_EVICTOR_IMAGE ?? 'python:3.12-alpine';
   const machineLabel = process.env.MACHINE_LABEL?.trim() || os.hostname();
   let created = false;
@@ -153,6 +156,7 @@ async function main() {
         BENCHMARK_RUNS: '1',
         BENCHMARK_LABEL: label,
         BENCHMARK_OUTPUT_DIR: temporaryOutputDirectory,
+        BENCHMARK_SPATIAL_RADII_METERS: spatialRadiiMeters.join(','),
       });
       const file = path.join(temporaryOutputDirectory, `latest-${label}.json`);
       measurements.push({ trial, cacheEviction, evaluation: JSON.parse(await readFile(file, 'utf8')) as Evaluation });

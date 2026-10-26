@@ -4,6 +4,7 @@ import path from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { pool } from '../lib/db/pool';
 import { summarizeMeasurements } from './benchmark-stats';
+import { parseSpatialRadiusSweep } from './fresh-buffer-config';
 
 type PlanNode = {
   'Node Type'?: string;
@@ -30,6 +31,9 @@ function parseRunCount(value: string | undefined): number {
 
 async function main() {
   const runCount = parseRunCount(process.env.BENCHMARK_RUNS);
+  const spatialRadiiMeters = parseSpatialRadiusSweep(
+    process.env.BENCHMARK_SPATIAL_RADII_METERS ?? process.env.BENCHMARK_RADIUS_METERS,
+  );
   const client = await pool.connect();
   try {
     const version = await client.query(`
@@ -67,18 +71,34 @@ async function main() {
     const runs: BenchmarkRun[] = [];
     for (let run = 1; run <= runCount; run++) {
       const plans: Record<string, ExplainPlan> = {};
-      plans.spatial_index_candidate = await explain(
-        'SELECT id FROM memories WHERE location IS NOT NULL AND ST_DWithin(location, ST_GeomFromGeoJSON($1)::geometry::geography, 150)',
-        [route],
-      );
-      try {
-        await client.query('SET enable_indexscan=off; SET enable_bitmapscan=off; SET enable_seqscan=on');
-        plans.spatial_sequential_control = await explain(
-          'SELECT id FROM memories WHERE location IS NOT NULL AND ST_DWithin(location, ST_GeomFromGeoJSON($1)::geometry::geography, 150)',
-          [route],
+      const orderedRadii = spatialRadiiMeters.map((_, index) =>
+        spatialRadiiMeters[(index + run - 1) % spatialRadiiMeters.length]);
+      for (const radiusMeters of orderedRadii) {
+        const suffix = spatialRadiiMeters.length === 1 ? '' : `_${radiusMeters}m`;
+        const candidateName = `spatial_index_candidate${suffix}`;
+        const sequentialName = `spatial_sequential_control${suffix}`;
+        const candidate = () => explain(
+          'SELECT id FROM memories WHERE location IS NOT NULL AND ST_DWithin(location, ST_GeomFromGeoJSON($1)::geometry::geography, $2)',
+          [route, radiusMeters],
         );
-      } finally {
-        await client.query('RESET enable_indexscan; RESET enable_bitmapscan; RESET enable_seqscan');
+        const sequential = async () => {
+          await client.query('SET enable_indexscan=off; SET enable_bitmapscan=off; SET enable_seqscan=on');
+          try {
+            return await explain(
+              'SELECT id FROM memories WHERE location IS NOT NULL AND ST_DWithin(location, ST_GeomFromGeoJSON($1)::geometry::geography, $2)',
+              [route, radiusMeters],
+            );
+          } finally {
+            await client.query('RESET enable_indexscan; RESET enable_bitmapscan; RESET enable_seqscan');
+          }
+        };
+        if ((run + spatialRadiiMeters.indexOf(radiusMeters)) % 2 === 0) {
+          plans[sequentialName] = await sequential();
+          plans[candidateName] = await candidate();
+        } else {
+          plans[candidateName] = await candidate();
+          plans[sequentialName] = await sequential();
+        }
       }
       for (const depth of [1, 2, 3]) {
         plans[`associative_depth_${depth}`] = await explain(
@@ -129,7 +149,11 @@ async function main() {
         ...version.rows[0], platform: os.platform(), arch: os.arch(), cpus: os.cpus().length,
         totalMemoryBytes: os.totalmem(), node: process.version,
       },
-      parameters: { radiusMeters: 150, recursionThreshold: 0.01, route, recursionDepths: [1, 2, 3], runCount },
+      parameters: {
+        radiusMeters: spatialRadiiMeters[0],
+        ...(spatialRadiiMeters.length > 1 ? { spatialRadiiMeters } : {}),
+        recursionThreshold: 0.01, route, recursionDepths: [1, 2, 3], runCount,
+      },
       summaries: { plans: planSummaries },
       measurements: { fadingViewInitialCreationMs: initialCreation, fadingViewRefreshMs: refresh },
       plans: runs[0].plans,
@@ -148,7 +172,7 @@ async function main() {
       const summary = planSummaries[name];
       return `| ${name} | ${fmt(summary.planningMs)} | ${fmt(summary.executionMs)} | ${summary.executionMs.mean.toFixed(3)} | ${summary.actualRows.median.toFixed(0)} |`;
     });
-    const report = `# Evaluation results\n\nCaptured ${result.capturedAt} over ${runCount} sequential runs. Values are median ± sample standard deviation; timing units are milliseconds.\n\n## Environment\n\n- PostgreSQL: ${version.rows[0].postgres}\n- PostGIS: ${version.rows[0].postgis}\n- Memories: ${version.rows[0].memory_count}; edges: ${version.rows[0].edge_count}\n- Host: ${os.platform()} ${os.arch()}, ${os.cpus().length} CPUs; Node ${process.version}\n- Parameters: 150 m route radius; recursive pruning threshold 0.01; ${runCount} repetitions per query.\n\n## Query plans\n\n| Query | Planning ms (median ± SD) | Execution ms (median ± SD) | Execution mean ms | Actual rows median |\n|---|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Materialized view\n\n- Initial creation: ${fmt(initialCreation)} (temporary generated schema dropped transactionally).\n- Refresh: ${fmt(refresh)}.\n\nEach repetition runs sequentially in one database session, so these are repeated observations with changing cache state, not independent cold-start samples. The spatial comparison disables index and bitmap scans at the session level without dropping production indexes. Full plans and per-run values are in [${jsonName}](${jsonName}). Results depend on dataset selectivity, planner choices, cache state, host load, and hardware.\n`;
+    const report = `# Evaluation results\n\nCaptured ${result.capturedAt} over ${runCount} sequential runs. Values are median ± sample standard deviation; timing units are milliseconds.\n\n## Environment\n\n- PostgreSQL: ${version.rows[0].postgres}\n- PostGIS: ${version.rows[0].postgis}\n- Memories: ${version.rows[0].memory_count}; edges: ${version.rows[0].edge_count}\n- Host: ${os.platform()} ${os.arch()}, ${os.cpus().length} CPUs; Node ${process.version}\n- Parameters: ${spatialRadiiMeters.join(', ')} m route radius${spatialRadiiMeters.length === 1 ? '' : 's'}; recursive pruning threshold 0.01; ${runCount} repetitions per query.\n\n## Query plans\n\n| Query | Planning ms (median ± SD) | Execution ms (median ± SD) | Execution mean ms | Actual rows median |\n|---|---:|---:|---:|---:|\n${rows.join('\n')}\n\n## Materialized view\n\n- Initial creation: ${fmt(initialCreation)} (temporary generated schema dropped transactionally).\n- Refresh: ${fmt(refresh)}.\n\nEach repetition runs sequentially in one database session, so these are repeated observations with changing cache state, not independent cold-start samples. Spatial radii are rotated across repetitions and candidate/control query order alternates to reduce fixed-order bias. The controlled scan disables index and bitmap scans without dropping production indexes. Full plans and per-run values are in [${jsonName}](${jsonName}). Results depend on dataset selectivity, planner choices, cache state, host load, and hardware.\n`;
     await writeFile(path.join(directory, 'RESULTS.md'), report);
     if (label && /^[a-z0-9-]+$/i.test(label)) {
       await writeFile(path.join(directory, `latest-${label}.json`), JSON.stringify(result, null, 2));

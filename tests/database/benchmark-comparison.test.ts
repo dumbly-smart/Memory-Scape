@@ -43,4 +43,13 @@ describe('benchmark artifact comparison', () => {
     expect(() => compareBenchmarkArtifacts([artifact('machine-a', 4), other]))
       .toThrow('same cache strategy');
   });
+
+  it('rejects comparisons with different spatial radius sweeps', () => {
+    const baseline = artifact('machine-a', 4);
+    const comparison = artifact('machine-b', 3);
+    baseline.parameters.spatialRadiiMeters = [25, 150, 1000];
+    comparison.parameters.spatialRadiiMeters = [50, 150, 1000];
+    expect(() => compareBenchmarkArtifacts([baseline, comparison]))
+      .toThrow('matching route-radius and recursion-threshold parameters');
+  });
 });

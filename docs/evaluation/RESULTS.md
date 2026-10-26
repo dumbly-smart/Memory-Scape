@@ -10,6 +10,8 @@ Fresh PostgreSQL shared-buffer trials include five-restart 10,000-memory runs us
 
 A five-trial 50,000-memory restart-only run extends the local scale evidence; its raw plans and descriptive comparison against the matching 10,000-memory trials are in [`fresh-buffer-trials/50000/`](fresh-buffer-trials/50000/) and [`SCALE_RESULTS.md`](SCALE_RESULTS.md). This scale comparison is same-host, sequential, synthetic, and not randomized; treat it as descriptive only. It does not imply a causal scaling trend or general performance guarantee.
 
+A blocked, five-restart 50K spatial-radius sweep tests 25, 150, and 1,000 m against the same route and dataset in each trial. It records returned rows and planner-selected nodes alongside the index-candidate and controlled sequential plans. See [`SPATIAL_SELECTIVITY.md`](SPATIAL_SELECTIVITY.md) and its [raw plans](spatial-radius/sweep-50k/fresh-buffer-pools.json); confidence intervals overlap, so it does not establish an index speedup.
+
 Captured 2026-10-21T16:08:54.526Z over 5 sequential runs. Values are median ± sample standard deviation; timing units are milliseconds.
 
 ## Environment

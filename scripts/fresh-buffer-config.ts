@@ -28,6 +28,27 @@ export function seedMemoryCount(args: string[]): number {
   return args.includes('--large') ? 10_000 : 1_200;
 }
 
+export function parseSpatialRadiusMeters(value: string | undefined): number {
+  const radius = Number(value ?? '150');
+  if (!Number.isFinite(radius) || radius < 1 || radius > 50_000) {
+    throw new Error('BENCHMARK_RADIUS_METERS must be between 1 and 50000');
+  }
+  return radius;
+}
+
+export function parseSpatialRadiusSweep(value: string | undefined): number[] {
+  if (!value) return [parseSpatialRadiusMeters(undefined)];
+  const entries = value.split(',').map(entry => entry.trim());
+  if (entries.length > 8 || entries.some(entry => !entry)) {
+    throw new Error('BENCHMARK_SPATIAL_RADII_METERS must contain 1 to 8 comma-separated radii');
+  }
+  const radii = entries.map(parseSpatialRadiusMeters);
+  if (new Set(radii).size !== radii.length) {
+    throw new Error('BENCHMARK_SPATIAL_RADII_METERS must not contain duplicate radii');
+  }
+  return radii;
+}
+
 export type DatabaseReadinessState = { postmasterStart: string; stableSince: number };
 
 export function observeDatabaseReadiness(
