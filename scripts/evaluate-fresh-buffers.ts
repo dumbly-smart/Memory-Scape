@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { confidenceInterval95, summarizeMeasurements } from './benchmark-stats';
-import { freshBufferCacheConfig } from './fresh-buffer-config';
+import { freshBufferCacheConfig, observeDatabaseReadiness } from './fresh-buffer-config';
 
 type Plan = {
   'Planning Time'?: number;
@@ -45,17 +45,29 @@ function runNpm(args: string[], databaseUrl: string, extraEnv: Record<string, st
 }
 
 function waitForDatabase(container: string) {
-  const deadline = Date.now() + 60_000;
+  const deadline = Date.now() + 90_000;
+  const stableDurationMs = 3_000;
+  let readinessState: ReturnType<typeof observeDatabaseReadiness>['state'] | null = null;
   while (Date.now() < deadline) {
     try {
-      docker(['exec', container, 'pg_isready', '-U', 'memoryscape', '-d', 'memoryscape'], true);
-      docker(['exec', container, 'psql', '-U', 'memoryscape', '-d', 'memoryscape', '-tAc', 'SELECT PostGIS_Full_Version()'], true);
-      return;
+      const observation = docker([
+        'exec', container, 'psql', '-U', 'memoryscape', '-d', 'memoryscape', '-tAc',
+        "SELECT pg_postmaster_start_time()::text || '|' || PostGIS_Full_Version()",
+      ], true);
+      const delimiter = observation.indexOf('|');
+      if (delimiter <= 0) throw new Error('PostgreSQL/PostGIS readiness query returned incomplete data');
+      const postmasterStart = observation.slice(0, delimiter).trim();
+      const postgisVersion = observation.slice(delimiter + 1).trim();
+      if (!postmasterStart || !postgisVersion) throw new Error('PostgreSQL/PostGIS readiness query returned incomplete data');
+      const result = observeDatabaseReadiness(readinessState, postmasterStart, Date.now(), stableDurationMs);
+      readinessState = result.state;
+      if (result.ready) return;
     } catch {
-      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
+      readinessState = null;
     }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
   }
-  throw new Error(`Timed out waiting for disposable database ${container}`);
+  throw new Error(`Timed out waiting for disposable database ${container} to finish PostgreSQL/PostGIS initialization`);
 }
 
 function evictRelationFilePages(container: string, volume: string, helperImage: string): PageCacheEviction {
