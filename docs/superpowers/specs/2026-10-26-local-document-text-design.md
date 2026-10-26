@@ -14,7 +14,7 @@ Make attached PDFs searchable from the MemoryScape library, including scanned PD
 
 ## Non-goals
 
-- No cloud OCR, machine-learning service, searchable OCR for arbitrary image attachments, or full-document OCR beyond the page cap.
+- No cloud OCR, retrieval model, or OCR for unsupported image formats; scanned-PDF OCR remains capped at the first 10 pages.
 - No changes to attachment bytes, hashes, backups, or PostgreSQL full-text search semantics.
 
 ## Approach

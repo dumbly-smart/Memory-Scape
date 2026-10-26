@@ -54,6 +54,24 @@ test('indexes searchable and scanned PDFs for ordinary memory search', async ({ 
     const ocrSearch = await request.get('/api/memories?q=CAMPUS%20MEMORY');
     expect((await ocrSearch.json()).data.some((row: { id: string }) => row.id === memoryId)).toBe(true);
 
+    const png = await readFile(resolve(process.cwd(), 'tests/fixtures/photo-note.png'));
+    const pngUpload = await request.post(`/api/memories/${memoryId}/attachments`, {
+      multipart: { file: { name: 'photo-note.png', mimeType: 'image/png', buffer: png } },
+    });
+    expect(pngUpload.status()).toBe(201);
+    expect((await pngUpload.json()).data.searchable).toBe(true);
+    const pngSearch = await request.get('/api/memories?q=IMAGE%20CLUE%20QUARTZ');
+    expect((await pngSearch.json()).data.some((row: { id: string }) => row.id === memoryId)).toBe(true);
+
+    const jpeg = await readFile(resolve(process.cwd(), 'tests/fixtures/photo-note.jpg'));
+    const jpegUpload = await request.post(`/api/memories/${memoryId}/attachments`, {
+      multipart: { file: { name: 'photo-note.jpg', mimeType: 'image/jpeg', buffer: jpeg } },
+    });
+    expect(jpegUpload.status()).toBe(201);
+    expect((await jpegUpload.json()).data.searchable).toBe(true);
+    const jpegSearch = await request.get('/api/memories?q=JPEG%20CLUE%20AMBER');
+    expect((await jpegSearch.json()).data.some((row: { id: string }) => row.id === memoryId)).toBe(true);
+
     await page.goto('/memories');
     await page.getByRole('button', { name: title }).click();
     await expect(page.getByText('Searchable text indexed').last()).toBeVisible();

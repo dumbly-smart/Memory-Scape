@@ -17,7 +17,7 @@
 
 1. Open a memory detail and add a dated follow-up; complete and reopen it to demonstrate its state.
 2. Add a decision with a rationale and revisit date.
-3. Upload a plain text or Markdown attachment, then use the memory library’s search to find its indexed text. Upload a text-layer PDF and search its contents; then upload a scanned PDF and search OCR text from its first 10 pages. The attachment list reports whether searchable text was indexed. Extraction runs locally in the web container; if extraction fails, the original attachment remains downloadable.
+3. Upload a plain text or Markdown attachment, then use the memory library’s search to find its indexed text. Upload a text-layer PDF and search its contents; then upload a scanned PDF and search OCR text from its first 10 pages. Upload PNG and JPEG photos up to 12 megapixels and search their OCR text too. The attachment list reports whether searchable text was indexed. Extraction runs locally in the web container; unsupported or oversized images remain downloadable without being indexed.
 
 ## C — Spatial Memory Walk and place recall
 

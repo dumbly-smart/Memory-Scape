@@ -43,12 +43,13 @@ export function AttachmentWidget({ memoryId }: { memoryId: string }) {
       <input aria-label="Attachment file" name="file" type="file" required accept="image/*,.pdf,.txt,.md,.csv,.json,.xml" />
       <button className="button secondary" disabled={busy}>{busy ? 'Uploading and indexing…' : 'Add attachment'}</button>
     </form>
+    <p className="muted" style={{ fontSize: 12 }}>Text files, PDFs, and PNG/JPEG images up to 12 megapixels are indexed locally; other files remain downloadable.</p>
     {error && <div role="alert" className="error">{error}</div>}
     {items.map(item => <article className="memory-row" key={item.id}>
       <div className="memory-row-main"><b>{item.file_name}</b><span>{item.media_type} · {(item.size_bytes / 1024).toFixed(1)} KiB · {item.searchable ? 'Searchable text indexed' : 'No searchable text detected'} · SHA-256 {item.sha256.slice(0,12)}…</span></div>
       <a className="button secondary" href={`/api/attachments/${item.id}`}>Download</a>
       <button className="button ghost" onClick={() => remove(item)} aria-label={`Delete ${item.file_name}`}>Delete</button>
     </article>)}
-    {!items.length && <div className="empty">No files attached. Text files and PDFs with readable text are indexed for ordinary database search; scanned PDFs use local OCR.</div>}
+    {!items.length && <div className="empty">No files attached yet. Scanned PDFs and supported images use local OCR.</div>}
   </section>;
 }

@@ -10,7 +10,7 @@
 - Exponential decay, reinforcement, and atomic context-link reinforcement routines.
 - Recursive SQL activation with maximum three hops, cycle prevention, pruning, and best-path explanations.
 - Hourly fading-memory materialized view refreshed by pg_cron.
-- Everyday workflows: quick capture and bookmarklet, people/project workspaces, follow-ups, decision notes, weekly review, and searchable attachments with local PDF text extraction and scanned-page OCR.
+- Everyday workflows: quick capture and bookmarklet, people/project workspaces, follow-ups, decision notes, weekly review, and searchable attachments with local PDF/image text extraction and OCR.
 - Independent importance, sensitive-data, and archive controls; place reminders use user-triggered nearby recall.
 - Preview-first portable JSON backup/restore with attachment digest checks and transactional, no-overwrite imports.
 - Seed-centered graph exploration bounded to at most 60 displayed nodes, 12 candidate outgoing edges per node, and three hops.
@@ -48,7 +48,7 @@ npm run dev
 
 Set `DATABASE_URL` from `.env.example`. Manual refresh endpoint controls are enabled in local Compose by `ALLOW_MANUAL_MAINTENANCE=true`; disable them for environments where only scheduled maintenance should run. Optional single-user password authentication is available. To enable it, set `MEMORYSCAPE_PASSWORD` (at least 12 characters) and `MEMORYSCAPE_SESSION_SECRET` (at least 32 characters) in `.env`, then recreate the web container. Generate the session secret with `openssl rand -hex 32`. With both values empty, local mode is open; setting only one value or an invalid value fails closed. Keep open mode bound to localhost. Before deployment beyond a trusted local machine, use managed secret storage and review TLS, rate limits, authorization, and database network access controls.
 
-Text-layer PDFs are indexed with Poppler for at most 100 pages. Scanned PDFs fall back to local English OCR on at most the first 10 pages, each rendered at no more than 1,600 pixels per side. Extraction is bounded by subprocess timeouts and the normal 10 MiB upload limit. If the tools are missing or a PDF has no readable text, the original file is still attached and the UI reports that no text was indexed.
+Text-layer PDFs are indexed with Poppler for at most 100 pages. Scanned PDFs fall back to local English OCR on at most the first 10 pages, each rendered at no more than 1,600 pixels per side. PNG and JPEG attachments are OCR-indexed when they are at most 12 megapixels. Extraction is bounded by subprocess timeouts and the normal 10 MiB upload limit. If the tools are missing, a file format is unsupported, or no readable text is found, the original file is still attached and the UI reports that no text was indexed.
 
 ## Database operations
 
