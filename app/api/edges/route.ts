@@ -1,4 +1,4 @@
 import{NextRequest,NextResponse}from'next/server';import{z}from'zod';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
-const schema=z.object({src:z.string().uuid(),dst:z.string().uuid(),type:z.string().trim().min(1).max(80),weight:z.number().min(0).max(1).default(.5),valence:z.number().min(-1).max(1).default(0)});
+const schema=z.object({src:z.guid(),dst:z.guid(),type:z.string().trim().min(1).max(80),weight:z.number().min(0).max(1).default(.5),valence:z.number().min(-1).max(1).default(0)});
 export async function GET(req:NextRequest){try{const memory=req.nextUrl.searchParams.get('memory');const r=await pool.query('SELECT * FROM memory_edges WHERE $1::uuid IS NULL OR src=$1 OR dst=$1 ORDER BY created_at DESC LIMIT 1000',[memory]);return NextResponse.json({data:r.rows});}catch(e){return jsonError(e);}}
 export async function POST(req:NextRequest){try{const v=schema.parse(await req.json());const r=await pool.query('INSERT INTO memory_edges(src,dst,edge_type,weight,valence) VALUES($1,$2,$3,$4,$5) RETURNING *',[v.src,v.dst,v.type,v.weight,v.valence]);return NextResponse.json({data:r.rows[0]},{status:201});}catch(e){return jsonError(e);}}

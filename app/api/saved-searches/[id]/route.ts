@@ -5,7 +5,7 @@ import { pool } from '@/lib/db/pool';
 import { filtersSchema } from '@/app/api/saved-searches/route';
 type Params={params:Promise<{id:string}>};
 const patch=z.object({name:z.string().trim().min(1).max(80).optional(),filters:filtersSchema.optional()}).strict().refine(value=>Object.keys(value).length>0,{message:'Provide a name or filter update'});
-const idSchema=z.string().uuid();
+const idSchema=z.guid();
 export async function GET(_request:NextRequest,{params}:Params) {
   try {const id=idSchema.parse((await params).id);const result=await pool.query('SELECT id,name,filters,created_at,updated_at FROM saved_searches WHERE id=$1',[id]);if(!result.rowCount)return NextResponse.json({error:'Saved search not found'},{status:404});return NextResponse.json({data:result.rows[0]});}
   catch(error){return jsonError(error);}

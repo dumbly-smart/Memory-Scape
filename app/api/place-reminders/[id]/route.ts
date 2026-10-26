@@ -6,7 +6,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const id = z.string().uuid().parse((await params).id);
+    const id = z.guid().parse((await params).id);
     const result = await pool.query('DELETE FROM place_reminders WHERE id=$1 RETURNING id',[id]);
     if (!result.rowCount) return NextResponse.json({ error: 'Place reminder not found' }, { status: 404 });
     return NextResponse.json({ data: { deleted: true,id } });

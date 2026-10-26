@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
-const schema = z.object({ kind: z.enum(['memory','follow_up']), id: z.string().uuid(), action: z.enum(['keep','snooze','archive','dismiss']), snoozeDays: z.number().int().min(1).max(90).default(7) });
+const schema = z.object({ kind: z.enum(['memory','follow_up']), id: z.guid(), action: z.enum(['keep','snooze','archive','dismiss']), snoozeDays: z.number().int().min(1).max(90).default(7) });
 
 export async function POST(request: NextRequest) {
   const client = await pool.connect();

@@ -8,7 +8,7 @@ const patch = z.object({ choice: z.string().trim().min(1).max(1000).optional(), 
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const id = z.string().uuid().parse((await params).id);
+    const id = z.guid().parse((await params).id);
     const value = patch.parse(await request.json());
     const result = await pool.query(
       `UPDATE decisions SET choice=coalesce($2,choice),rationale=coalesce($3,rationale),alternatives=coalesce($4,alternatives),
@@ -23,7 +23,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const id = z.string().uuid().parse((await params).id);
+    const id = z.guid().parse((await params).id);
     const result = await pool.query('DELETE FROM decisions WHERE id=$1 RETURNING id',[id]);
     if (!result.rowCount) return NextResponse.json({ error: 'Decision not found' }, { status: 404 });
     return NextResponse.json({ data: { deleted: true,id } });

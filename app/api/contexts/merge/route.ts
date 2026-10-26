@@ -2,7 +2,7 @@ import { NextRequest,NextResponse } from 'next/server';
 import { z } from 'zod';
 import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
-const schema=z.object({sourceId:z.string().uuid(),targetId:z.string().uuid()}).refine(v=>v.sourceId!==v.targetId,{message:'Choose two different contexts'});
+const schema=z.object({sourceId:z.guid(),targetId:z.guid()}).refine(v=>v.sourceId!==v.targetId,{message:'Choose two different contexts'});
 
 export async function POST(request:NextRequest) {
   const client=await pool.connect();

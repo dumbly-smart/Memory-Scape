@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
-const id = z.string().uuid();
+const id = z.guid();
 const filters = z.object({ memoryId: id.optional(), contextId: id.optional(), status: z.enum(['open','done','dismissed']).optional() });
 const create = z.object({ title: z.string().trim().min(1).max(240), description: z.string().max(4000).default(''), dueAt: z.string().datetime().nullable().optional(), memoryId: id.optional(), contextId: id.optional() }).refine(v => v.memoryId || v.contextId, { message: 'A follow-up must be linked to a memory or context' });
 

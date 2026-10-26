@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
-const create=z.object({type:z.enum(['Person','Place','Topic','Activity','Project','Emotion','Event','Custom']),label:z.string().trim().min(1).max(160),memoryId:z.string().uuid().optional()});
+const create=z.object({type:z.enum(['Person','Place','Topic','Activity','Project','Emotion','Event','Custom']),label:z.string().trim().min(1).max(160),memoryId:z.guid().optional()});
 export async function GET() {
   try {
     const result=await pool.query(

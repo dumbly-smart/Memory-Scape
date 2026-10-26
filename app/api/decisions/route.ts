@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
-const uuid = z.string().uuid();
+const uuid = z.guid();
 const create = z.object({
   memoryId: uuid.optional(),
   contextId: uuid.optional(),

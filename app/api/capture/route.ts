@@ -10,8 +10,8 @@ const schema = z.object({
   occurredAt: z.string().datetime().optional(),
   sourceUrl: z.string().max(4096).optional(),
   sourceTitle: z.string().max(500).optional(),
-  contextId: z.string().uuid().optional(),
-  captureKey: z.string().uuid().optional(),
+  contextId: z.guid().optional(),
+  captureKey: z.guid().optional(),
   isPinned: z.boolean().default(false),
   isSensitive: z.boolean().default(false),
 });

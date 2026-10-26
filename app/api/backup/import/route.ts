@@ -5,7 +5,7 @@ import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
 type Row = Record<string, unknown>;
-const rows = z.array(z.record(z.unknown())).max(20000);
+const rows = z.array(z.record(z.string(), z.unknown())).max(20000);
 const bundleSchema = z.object({
   format: z.literal('memoryscape-backup'), version: z.literal(1), exportedAt: z.string().datetime(), apply: z.boolean().optional(),
   memories: rows, contexts: rows, memoryContexts: rows, memoryEdges: rows, reinforcements: rows, followUps: rows, decisions: rows, attachments: rows, placeReminders: rows, reviewActions: rows,
@@ -14,7 +14,7 @@ const collectionTables = [
   ['memories', 'memories'], ['contexts', 'contexts'], ['memoryEdges', 'memory_edges'], ['reinforcements', 'memory_reinforcements'],
   ['followUps', 'follow_ups'], ['decisions', 'decisions'], ['attachments', 'memory_attachments'], ['placeReminders', 'place_reminders'], ['reviewActions', 'review_actions'],
 ] as const;
-const id = (row: Row, key = 'id') => z.string().uuid().parse(row[key]);
+const id = (row: Row, key = 'id') => z.guid().parse(row[key]);
 const str = (row: Row, key: string) => z.string().parse(row[key]);
 const nullable = (row: Row, key: string) => row[key] === null || row[key] === undefined ? null : row[key];
 

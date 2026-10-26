@@ -1,2 +1,2 @@
 import{NextResponse}from'next/server';import{z}from'zod';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
-export async function GET(_req:Request,{params}:{params:Promise<{id:string}>}){try{const id=z.string().uuid().parse((await params).id),r=await pool.query('SELECT * FROM memory_reinforcements WHERE memory_id=$1 ORDER BY created_at DESC LIMIT 200',[id]);return NextResponse.json({data:r.rows});}catch(e){return jsonError(e);}}
+export async function GET(_req:Request,{params}:{params:Promise<{id:string}>}){try{const id=z.guid().parse((await params).id),r=await pool.query('SELECT * FROM memory_reinforcements WHERE memory_id=$1 ORDER BY created_at DESC LIMIT 200',[id]);return NextResponse.json({data:r.rows});}catch(e){return jsonError(e);}}

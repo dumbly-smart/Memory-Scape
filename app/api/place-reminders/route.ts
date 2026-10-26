@@ -4,7 +4,7 @@ import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
 const create = z.object({
-  memoryId: z.string().uuid(), title: z.string().trim().min(1).max(240),
+  memoryId: z.guid(), title: z.string().trim().min(1).max(240),
   latitude: z.number().min(-90).max(90), longitude: z.number().min(-180).max(180),
   radiusMeters: z.number().min(1).max(50000).default(100), locationLabel: z.string().max(240).nullable().optional(),
 });

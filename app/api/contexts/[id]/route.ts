@@ -4,7 +4,7 @@ import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
 
 type Params = { params: Promise<{ id: string }> };
-const idSchema = z.string().uuid();
+const idSchema = z.guid();
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {

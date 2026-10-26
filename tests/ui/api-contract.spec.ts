@@ -17,7 +17,9 @@ test('rejects invalid payloads and reports missing memory records with client er
 
   const badId = await request.get('/api/memories/not-a-uuid');
   expect(badId.status()).toBe(400);
-  const missingId = '00000000-0000-4000-8000-000000000001';
+  // PostgreSQL's md5(... )::uuid seed IDs are valid UUID-shaped database
+  // identifiers, but are not required to carry RFC 4122 version bits.
+  const missingId = '00000000-0000-0000-0000-000000000001';
   expect((await request.get(`/api/memories/${missingId}`)).status()).toBe(404);
   expect((await request.delete(`/api/memories/${missingId}`)).status()).toBe(404);
 

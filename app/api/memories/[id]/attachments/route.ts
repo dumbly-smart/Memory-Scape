@@ -10,7 +10,7 @@ const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const memoryId = z.string().uuid().parse((await params).id);
+    const memoryId = z.guid().parse((await params).id);
     const result = await pool.query('SELECT id,memory_id,file_name,media_type,size_bytes,sha256,created_at FROM memory_attachments WHERE memory_id=$1 ORDER BY created_at DESC,id',[memoryId]);
     return NextResponse.json({ data: result.rows });
   } catch (error) { return jsonError(error); }
@@ -18,7 +18,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function POST(request: NextRequest, { params }: Params) {
   try {
-    const memoryId = z.string().uuid().parse((await params).id);
+    const memoryId = z.guid().parse((await params).id);
     const length = Number(request.headers.get('content-length'));
     if (Number.isFinite(length) && length > MAX_FILE_BYTES + 64 * 1024) return NextResponse.json({ error: 'Attachment exceeds the 10 MiB limit' }, { status: 413 });
     const form = await request.formData();

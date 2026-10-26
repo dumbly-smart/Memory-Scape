@@ -8,7 +8,7 @@ const schema = z.object({ title: z.string().trim().min(1).max(240).optional(), d
 
 export async function PATCH(request: NextRequest, { params }: Params) {
   try {
-    const followUpId = z.string().uuid().parse((await params).id);
+    const followUpId = z.guid().parse((await params).id);
     const value = schema.parse(await request.json());
     const result = await pool.query(
       `UPDATE follow_ups SET title=coalesce($2,title),description=coalesce($3,description),
@@ -24,7 +24,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const followUpId = z.string().uuid().parse((await params).id);
+    const followUpId = z.guid().parse((await params).id);
     const result = await pool.query('DELETE FROM follow_ups WHERE id=$1 RETURNING id', [followUpId]);
     if (!result.rowCount) return NextResponse.json({ error: 'Follow-up not found' }, { status: 404 });
     return NextResponse.json({ data: { deleted: true, id: followUpId } });

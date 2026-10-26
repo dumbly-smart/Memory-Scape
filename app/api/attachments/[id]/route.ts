@@ -8,7 +8,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
-    const id = z.string().uuid().parse((await params).id);
+    const id = z.guid().parse((await params).id);
     const result = await pool.query('SELECT file_name,media_type,size_bytes,sha256,content FROM memory_attachments WHERE id=$1',[id]);
     if (!result.rowCount) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
     const item = result.rows[0] as { file_name: string; media_type: string; size_bytes: number; sha256: string; content: Buffer };
@@ -26,7 +26,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
   try {
-    const id = z.string().uuid().parse((await params).id);
+    const id = z.guid().parse((await params).id);
     const result = await pool.query('DELETE FROM memory_attachments WHERE id=$1 RETURNING id',[id]);
     if (!result.rowCount) return NextResponse.json({ error: 'Attachment not found' }, { status: 404 });
     return NextResponse.json({ data: { deleted: true,id } });
