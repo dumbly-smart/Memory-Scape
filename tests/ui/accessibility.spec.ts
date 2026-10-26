@@ -30,6 +30,8 @@ test('primary application pages have no WCAG 2.1 A/AA axe violations', async ({ 
 });
 
 test('primary application pages have no WCAG 2.1 A/AA axe violations at mobile width', async ({ page }) => {
+  // Eight sequential axe scans need headroom when the full browser suite shares one worker.
+  test.setTimeout(60_000);
   await page.setViewportSize({ width: 390, height: 844 });
   for (const [name, path] of pages) {
     await page.goto(path);

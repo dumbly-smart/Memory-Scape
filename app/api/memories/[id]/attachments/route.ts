@@ -7,11 +7,12 @@ import { extractSearchableText, safeMediaType, sanitizeAttachmentFilename } from
 
 type Params = { params: Promise<{ id: string }> };
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
+export const runtime = 'nodejs';
 
 export async function GET(_request: NextRequest, { params }: Params) {
   try {
     const memoryId = z.guid().parse((await params).id);
-    const result = await pool.query('SELECT id,memory_id,file_name,media_type,size_bytes,sha256,created_at FROM memory_attachments WHERE memory_id=$1 ORDER BY created_at DESC,id',[memoryId]);
+    const result = await pool.query('SELECT id,memory_id,file_name,media_type,size_bytes,sha256,extracted_text IS NOT NULL AS searchable,created_at FROM memory_attachments WHERE memory_id=$1 ORDER BY created_at DESC,id',[memoryId]);
     return NextResponse.json({ data: result.rows });
   } catch (error) { return jsonError(error); }
 }
@@ -29,10 +30,10 @@ export async function POST(request: NextRequest, { params }: Params) {
     const fileName = sanitizeAttachmentFilename(file.name);
     const mediaType = safeMediaType(file.type);
     const sha256 = createHash('sha256').update(bytes).digest('hex');
-    const extractedText = extractSearchableText(bytes, mediaType);
+    const extractedText = await extractSearchableText(bytes, mediaType);
     const result = await pool.query(
       `INSERT INTO memory_attachments(memory_id,file_name,media_type,size_bytes,sha256,extracted_text,content)
-       SELECT id,$2,$3,$4,$5,$6,$7 FROM memories WHERE id=$1 RETURNING id,memory_id,file_name,media_type,size_bytes,sha256,created_at`,
+       SELECT id,$2,$3,$4,$5,$6,$7 FROM memories WHERE id=$1 RETURNING id,memory_id,file_name,media_type,size_bytes,sha256,extracted_text IS NOT NULL AS searchable,created_at`,
       [memoryId,fileName,mediaType,bytes.byteLength,sha256,extractedText,Buffer.from(bytes)],
     );
     if (!result.rowCount) return NextResponse.json({ error: 'Memory not found' }, { status: 404 });

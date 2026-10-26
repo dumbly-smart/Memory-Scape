@@ -2,7 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 
-type Attachment = { id: string; file_name: string; media_type: string; size_bytes: number; sha256: string; created_at: string };
+type Attachment = { id: string; file_name: string; media_type: string; size_bytes: number; sha256: string; searchable: boolean; created_at: string };
 
 export function AttachmentWidget({ memoryId }: { memoryId: string }) {
   const [items, setItems] = useState<Attachment[]>([]);
@@ -41,14 +41,14 @@ export function AttachmentWidget({ memoryId }: { memoryId: string }) {
     <div className="panel-title"><h2>Files and sources</h2><span className="muted">Up to 10 MiB per file</span></div>
     <form onSubmit={upload} className="toolbar" style={{ flexWrap: 'wrap' }}>
       <input aria-label="Attachment file" name="file" type="file" required accept="image/*,.pdf,.txt,.md,.csv,.json,.xml" />
-      <button className="button secondary" disabled={busy}>{busy ? 'Uploading…' : 'Add attachment'}</button>
+      <button className="button secondary" disabled={busy}>{busy ? 'Uploading and indexing…' : 'Add attachment'}</button>
     </form>
     {error && <div role="alert" className="error">{error}</div>}
     {items.map(item => <article className="memory-row" key={item.id}>
-      <div className="memory-row-main"><b>{item.file_name}</b><span>{item.media_type} · {(item.size_bytes / 1024).toFixed(1)} KiB · SHA-256 {item.sha256.slice(0,12)}…</span></div>
+      <div className="memory-row-main"><b>{item.file_name}</b><span>{item.media_type} · {(item.size_bytes / 1024).toFixed(1)} KiB · {item.searchable ? 'Searchable text indexed' : 'No searchable text detected'} · SHA-256 {item.sha256.slice(0,12)}…</span></div>
       <a className="button secondary" href={`/api/attachments/${item.id}`}>Download</a>
       <button className="button ghost" onClick={() => remove(item)} aria-label={`Delete ${item.file_name}`}>Delete</button>
     </article>)}
-    {!items.length && <div className="empty">No files attached. Text files are indexed for ordinary database search.</div>}
+    {!items.length && <div className="empty">No files attached. Text files and PDFs with readable text are indexed for ordinary database search; scanned PDFs use local OCR.</div>}
   </section>;
 }
