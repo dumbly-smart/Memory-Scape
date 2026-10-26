@@ -6,7 +6,7 @@ import { performance } from 'node:perf_hooks';
 import type { PoolClient } from 'pg';
 import { pool } from '../lib/db/pool';
 import { createResearchFixture, createSeededRandom, seededShuffle, type ResearchEdge, type ResearchFixture } from '../lib/research/fixture';
-import { rankCalibrationCandidates, scoreRetrieval, type RetrievalMetrics } from '../lib/research/metrics';
+import { rankCalibrationCandidates, scoreRetrieval, summarizeMetricTrials, type MetricTrialSummary, type RetrievalMetrics } from '../lib/research/metrics';
 import { summarizeMeasurements } from './benchmark-stats';
 
 type Scenario = { name: string; metrics: RetrievalMetrics; candidateCount: number; topActivation: number | null; elapsedMs: ReturnType<typeof summarizeMeasurements> };
@@ -254,6 +254,12 @@ async function main() {
   if (JSON.stringify(before.rows[0]) !== JSON.stringify(after.rows[0]) || fixtureCheck.rows[0].memories !== 0 || fixtureCheck.rows[0].edges !== 0) {
     throw new Error(`Research evaluation changed persistent row counts: before=${JSON.stringify(before.rows[0])}; after=${JSON.stringify(after.rows[0])}`);
   }
+  const edgeRemovalSummary = [0.25, 0.5, 0.75].map(fraction => ({
+    fraction,
+    ...summarizeMetricTrials(results.robustness
+      .filter(scenario => scenario.name.startsWith(`edge_removal_${fraction}_trial_`))
+      .map(scenario => scenario.metrics)),
+  }));
   const output = path.resolve(argument('out', 'docs/evaluation/research'));
   await mkdir(output, { recursive: true });
   const artifact = {
@@ -266,6 +272,7 @@ async function main() {
     calibration: results.calibration,
     radiusSensitivity: results.radiusSensitivity,
     robustness: results.robustness,
+    edgeRemovalSummary,
     calibrationSelection: 'Highest synthetic-ground-truth F1, then reciprocal rank, then lower pruning threshold, then lower valence salience. Runtime is reported but does not influence the selected coefficients. This is a synthetic fixture result, not human or biological calibration.',
     timingLimitations: 'Elapsed time is client-observed PostgreSQL round-trip time for the query and result transfer. Scenarios run sequentially in one session with changing cache state; these values are local workload observations, not cold-cache or cross-machine claims.',
   };
@@ -285,13 +292,15 @@ function renderReport(value: {
   calibration: Array<Scenario & { valenceSalience: number; valenceBase: number; threshold: number }>;
   radiusSensitivity: Scenario[];
   robustness: Scenario[];
+  edgeRemovalSummary: Array<{ fraction: number } & MetricTrialSummary>;
   calibrationSelection: string;
   timingLimitations: string;
 }): string {
   const row = (scenario: Scenario) => `| ${scenario.name} | ${scenario.candidateCount} | ${scenario.metrics.precision.toFixed(3)} | ${scenario.metrics.recall.toFixed(3)} | ${scenario.metrics.f1.toFixed(3)} | ${scenario.metrics.reciprocalRank.toFixed(3)} | ${scenario.topActivation?.toFixed(5) ?? '—'} | ${scenario.elapsedMs.median.toFixed(3)} |`;
   const table = (scenarios: Scenario[]) => `| Scenario | Candidates | Precision | Recall | F1 | MRR | Top activation | Median round-trip ms |\n|---|---:|---:|---:|---:|---:|---:|---:|\n${scenarios.map(row).join('\n')}`;
+  const edgeTable = `| Edges removed | Trials | F1 mean ± sample SD | F1 range | MRR mean ± sample SD | MRR range |\n|---:|---:|---:|---:|---:|---:|\n${value.edgeRemovalSummary.map(item => `| ${(item.fraction * 100).toFixed(0)}% | ${item.count} | ${item.f1.mean.toFixed(3)} ± ${item.f1.sampleStandardDeviation.toFixed(3)} | ${item.f1.minimum.toFixed(3)}–${item.f1.maximum.toFixed(3)} | ${item.reciprocalRank.mean.toFixed(3)} ± ${item.reciprocalRank.sampleStandardDeviation.toFixed(3)} | ${item.reciprocalRank.minimum.toFixed(3)}–${item.reciprocalRank.maximum.toFixed(3)} |`).join('\n')}`;
   const best = value.calibration[0];
-  return `# Synthetic research evaluation results\n\nCaptured ${value.capturedAt}. These are generated from the fixed labeled fixture, not participant observations.\n\n## Environment and protocol\n\n- PostgreSQL: ${String(value.environment.postgres)}\n- PostGIS: ${String(value.environment.postgis)}\n- Persistent workspace rows before/after: equal (see JSON for counts).\n- Host: ${String(value.environment.platform)} ${String(value.environment.arch)}, ${String(value.environment.cpus)} CPUs; Node ${String(value.environment.node)}\n- Fixture: seed ${value.fixture.seed}, ${value.fixture.memoryCount} memories, ${value.fixture.edgeCount} directed edges.\n- Spatiotemporal truth: ${value.fixture.routeRelevant.join(', ')} within ${value.fixture.radiusMeters} m and [${value.fixture.from}, ${value.fixture.untilExclusive}).\n- Associative truth: ${value.fixture.graphRelevant.join(', ')}.\n- Query repetitions: ${value.repetitions} per scenario. Metrics are precision, recall, F1, and mean reciprocal rank.\n\n## Ablation and pruning sensitivity\n\n${table(value.ablations)}\n\n## Synthetic parameter calibration\n\n${table(value.calibration)}\n\nSelected configuration: salience ${best?.valenceSalience ?? 'n/a'}, base ${best?.valenceBase ?? 'n/a'}, threshold ${best?.threshold ?? 'n/a'} under the selection rule: ${value.calibrationSelection}\n\n## Route radius sensitivity\n\n${table(value.radiusSensitivity)}\n\n## Robustness under location and graph corruption\n\n${table(value.robustness)}\n\n## Interpretation limits\n\n${value.timingLimitations} The selected parameter setting optimizes this small synthetic fixture only. It is not evidence of biological constants, cognitive validity, or general retrieval quality. Run with multiple fixture seeds and other machines before making broader performance claims.\n`;
+  return `# Synthetic research evaluation results\n\nCaptured ${value.capturedAt}. These are generated from the fixed labeled fixture, not participant observations.\n\n## Environment and protocol\n\n- PostgreSQL: ${String(value.environment.postgres)}\n- PostGIS: ${String(value.environment.postgis)}\n- Persistent workspace rows before/after: equal (see JSON for counts).\n- Host: ${String(value.environment.platform)} ${String(value.environment.arch)}, ${String(value.environment.cpus)} CPUs; Node ${String(value.environment.node)}\n- Fixture: seed ${value.fixture.seed}, ${value.fixture.memoryCount} memories, ${value.fixture.edgeCount} directed edges.\n- Spatiotemporal truth: ${value.fixture.routeRelevant.join(', ')} within ${value.fixture.radiusMeters} m and [${value.fixture.from}, ${value.fixture.untilExclusive}).\n- Associative truth: ${value.fixture.graphRelevant.join(', ')}.\n- Query repetitions: ${value.repetitions} per scenario. Metrics are precision, recall, F1, and mean reciprocal rank.\n\n## Ablation and pruning sensitivity\n\n${table(value.ablations)}\n\n## Synthetic parameter calibration\n\n${table(value.calibration)}\n\nSelected configuration: salience ${best?.valenceSalience ?? 'n/a'}, base ${best?.valenceBase ?? 'n/a'}, threshold ${best?.threshold ?? 'n/a'} under the selection rule: ${value.calibrationSelection}\n\n## Route radius sensitivity\n\n${table(value.radiusSensitivity)}\n\n## Robustness under location and graph corruption\n\n${table(value.robustness)}\n\n### Descriptive variability across seeded edge-removal trials\n\n${edgeTable}\n\nThese sample standard deviations and ranges describe only the five deterministic corruptions at each edge-removal fraction. They are not confidence intervals and do not estimate human, real-world, or population variability.\n\n## Interpretation limits\n\n${value.timingLimitations} The selected parameter setting optimizes this small synthetic fixture only. It is not evidence of biological constants, cognitive validity, or general retrieval quality. Run with multiple fixture seeds and other machines before making broader performance claims.\n`;
 }
 
 main().catch(error => {

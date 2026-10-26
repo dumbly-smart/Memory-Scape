@@ -1,6 +1,6 @@
 # Synthetic research evaluation results
 
-Captured 2026-10-26T07:21:00.615Z. These are generated from the fixed labeled fixture, not participant observations.
+Captured 2026-10-26T09:07:44.912Z. These are generated from the fixed labeled fixture, not participant observations.
 
 ## Environment and protocol
 
@@ -17,45 +17,45 @@ Captured 2026-10-26T07:21:00.615Z. These are generated from the fixed labeled fi
 
 | Scenario | Candidates | Precision | Recall | F1 | MRR | Top activation | Median round-trip ms |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| baseline | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.848 |
-| edge_weight_disabled | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.78000 | 1.743 |
-| target_strength_disabled | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.85500 | 1.932 |
-| valence_salience_disabled | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.64125 | 1.731 |
-| one_hop_depth_ablation | 4 | 0.750 | 0.600 | 0.667 | 1.000 | 0.68400 | 1.875 |
-| temporal_decay_1d_lambda_0.2 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.56001 | 1.845 |
-| temporal_decay_7d_lambda_0.2 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.16867 | 1.967 |
-| temporal_decay_30d_lambda_0.2 | 0 | 0.000 | 0.000 | 0.000 | 0.000 | — | 1.708 |
-| pruning_threshold_0 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.844 |
-| pruning_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.789 |
-| pruning_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.732 |
-| pruning_threshold_0.1 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.783 |
-| pruning_threshold_0.2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.722 |
-| pruning_threshold_0.35 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.801 |
+| baseline | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.962 |
+| edge_weight_disabled | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.78000 | 0.952 |
+| target_strength_disabled | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.85500 | 1.003 |
+| valence_salience_disabled | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.64125 | 1.029 |
+| one_hop_depth_ablation | 4 | 0.750 | 0.600 | 0.667 | 1.000 | 0.68400 | 0.762 |
+| temporal_decay_1d_lambda_0.2 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.56001 | 0.831 |
+| temporal_decay_7d_lambda_0.2 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.16867 | 0.860 |
+| temporal_decay_30d_lambda_0.2 | 0 | 0.000 | 0.000 | 0.000 | 0.000 | — | 0.909 |
+| pruning_threshold_0 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.920 |
+| pruning_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.809 |
+| pruning_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.844 |
+| pruning_threshold_0.1 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.830 |
+| pruning_threshold_0.2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.468 |
+| pruning_threshold_0.35 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.487 |
 
 ## Synthetic parameter calibration
 
 | Scenario | Candidates | Precision | Recall | F1 | MRR | Top activation | Median round-trip ms |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| salience_0.25_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 3.600 |
-| salience_0.5_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.64800 | 1.915 |
-| salience_0.75_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.61200 | 1.814 |
-| salience_0.25_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 2.549 |
-| salience_0.5_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.64800 | 1.842 |
-| salience_0.25_threshold_0.1 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.964 |
-| salience_0_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 2.248 |
-| salience_0_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 3.074 |
-| salience_0_threshold_0.1 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 3.081 |
-| salience_0_threshold_0.2 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 2.995 |
-| salience_0.75_threshold_0.05 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.61200 | 1.755 |
-| salience_0.5_threshold_0.1 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.64800 | 1.717 |
-| salience_0.75_threshold_0.1 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.61200 | 1.716 |
-| salience_0.25_threshold_0.2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.893 |
-| salience_0.5_threshold_0.2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.64800 | 1.913 |
-| salience_1_threshold_0.01 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 1.701 |
-| salience_1_threshold_0.05 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 1.631 |
-| salience_1_threshold_0.1 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 1.681 |
-| salience_1_threshold_0.2 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 1.626 |
-| salience_0.75_threshold_0.2 | 4 | 0.750 | 0.600 | 0.667 | 1.000 | 0.61200 | 1.653 |
+| salience_0.25_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.824 |
+| salience_0.5_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.64800 | 1.015 |
+| salience_0.75_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.61200 | 0.892 |
+| salience_0.25_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.911 |
+| salience_0.5_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.64800 | 1.247 |
+| salience_0.25_threshold_0.1 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 0.838 |
+| salience_0_threshold_0.01 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 1.169 |
+| salience_0_threshold_0.05 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 0.830 |
+| salience_0_threshold_0.1 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 0.818 |
+| salience_0_threshold_0.2 | 6 | 0.833 | 1.000 | 0.909 | 0.500 | 0.85500 | 0.889 |
+| salience_0.75_threshold_0.05 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.61200 | 0.956 |
+| salience_0.5_threshold_0.1 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.64800 | 1.003 |
+| salience_0.75_threshold_0.1 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.61200 | 0.800 |
+| salience_0.25_threshold_0.2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 0.882 |
+| salience_0.5_threshold_0.2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.64800 | 0.939 |
+| salience_1_threshold_0.01 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 0.755 |
+| salience_1_threshold_0.05 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 0.750 |
+| salience_1_threshold_0.1 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 0.935 |
+| salience_1_threshold_0.2 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.57600 | 0.805 |
+| salience_0.75_threshold_0.2 | 4 | 0.750 | 0.600 | 0.667 | 1.000 | 0.61200 | 0.765 |
 
 Selected configuration: salience 0.25, base 0.75, threshold 0.01 under the selection rule: Highest synthetic-ground-truth F1, then reciprocal rank, then lower pruning threshold, then lower valence salience. Runtime is reported but does not influence the selected coefficients. This is a synthetic fixture result, not human or biological calibration.
 
@@ -63,40 +63,50 @@ Selected configuration: salience 0.25, base 0.75, threshold 0.01 under the selec
 
 | Scenario | Candidates | Precision | Recall | F1 | MRR | Top activation | Median round-trip ms |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| corridor_radius_25m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 1.138 |
-| corridor_radius_50m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.858 |
-| corridor_radius_75m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.899 |
-| corridor_radius_150m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.853 |
-| corridor_radius_500m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.840 |
-| corridor_radius_1500m | 7 | 0.857 | 1.000 | 0.923 | 1.000 | — | 0.933 |
+| corridor_radius_25m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.264 |
+| corridor_radius_50m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.117 |
+| corridor_radius_75m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.104 |
+| corridor_radius_150m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.101 |
+| corridor_radius_500m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.097 |
+| corridor_radius_1500m | 7 | 0.857 | 1.000 | 0.923 | 1.000 | — | 0.107 |
 
 ## Robustness under location and graph corruption
 
 | Scenario | Candidates | Precision | Recall | F1 | MRR | Top activation | Median round-trip ms |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| location_noise_0m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.913 |
-| location_noise_5m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.815 |
-| location_noise_25m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.701 |
-| location_noise_75m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.517 |
-| location_noise_150m | 1 | 1.000 | 0.167 | 0.286 | 1.000 | — | 0.864 |
-| location_noise_300m | 0 | 0.000 | 0.000 | 0.000 | 0.000 | — | 0.858 |
-| edge_removal_0.25_trial_1 | 4 | 1.000 | 0.800 | 0.889 | 1.000 | 0.68400 | 1.720 |
-| edge_removal_0.25_trial_2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.807 |
-| edge_removal_0.25_trial_3 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.616 |
-| edge_removal_0.25_trial_4 | 4 | 0.750 | 0.600 | 0.667 | 1.000 | 0.68400 | 1.697 |
-| edge_removal_0.25_trial_5 | 4 | 0.750 | 0.600 | 0.667 | 0.500 | 0.64125 | 1.726 |
-| edge_removal_0.5_trial_1 | 1 | 0.000 | 0.000 | 0.000 | 0.000 | 0.64125 | 1.755 |
-| edge_removal_0.5_trial_2 | 2 | 1.000 | 0.400 | 0.571 | 1.000 | 0.68400 | 1.753 |
-| edge_removal_0.5_trial_3 | 4 | 0.750 | 0.600 | 0.667 | 0.500 | 0.64125 | 1.838 |
-| edge_removal_0.5_trial_4 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.927 |
-| edge_removal_0.5_trial_5 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.68400 | 1.739 |
-| edge_removal_0.75_trial_1 | 2 | 0.500 | 0.200 | 0.286 | 0.500 | 0.64125 | 1.631 |
-| edge_removal_0.75_trial_2 | 2 | 1.000 | 0.400 | 0.571 | 1.000 | 0.35100 | 1.671 |
-| edge_removal_0.75_trial_3 | 2 | 0.500 | 0.200 | 0.286 | 0.500 | 0.64125 | 1.732 |
-| edge_removal_0.75_trial_4 | 2 | 0.500 | 0.200 | 0.286 | 1.000 | 0.68400 | 1.466 |
-| edge_removal_0.75_trial_5 | 2 | 1.000 | 0.400 | 0.571 | 1.000 | 0.35100 | 1.605 |
-| missing_locations_0.25 | 5 | 1.000 | 0.833 | 0.909 | 1.000 | — | 0.424 |
-| missing_locations_0.5 | 3 | 1.000 | 0.500 | 0.667 | 1.000 | — | 0.652 |
+| location_noise_0m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.124 |
+| location_noise_5m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.341 |
+| location_noise_25m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.250 |
+| location_noise_75m | 6 | 1.000 | 1.000 | 1.000 | 1.000 | — | 0.208 |
+| location_noise_150m | 1 | 1.000 | 0.167 | 0.286 | 1.000 | — | 0.181 |
+| location_noise_300m | 0 | 0.000 | 0.000 | 0.000 | 0.000 | — | 0.195 |
+| edge_removal_0.25_trial_1 | 4 | 1.000 | 0.800 | 0.889 | 1.000 | 0.68400 | 1.196 |
+| edge_removal_0.25_trial_2 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 1.379 |
+| edge_removal_0.25_trial_3 | 6 | 0.833 | 1.000 | 0.909 | 1.000 | 0.68400 | 1.130 |
+| edge_removal_0.25_trial_4 | 4 | 0.750 | 0.600 | 0.667 | 1.000 | 0.68400 | 1.018 |
+| edge_removal_0.25_trial_5 | 4 | 0.750 | 0.600 | 0.667 | 0.500 | 0.64125 | 0.859 |
+| edge_removal_0.5_trial_1 | 1 | 0.000 | 0.000 | 0.000 | 0.000 | 0.64125 | 0.861 |
+| edge_removal_0.5_trial_2 | 2 | 1.000 | 0.400 | 0.571 | 1.000 | 0.68400 | 0.944 |
+| edge_removal_0.5_trial_3 | 4 | 0.750 | 0.600 | 0.667 | 0.500 | 0.64125 | 1.215 |
+| edge_removal_0.5_trial_4 | 5 | 0.800 | 0.800 | 0.800 | 1.000 | 0.68400 | 0.790 |
+| edge_removal_0.5_trial_5 | 3 | 1.000 | 0.600 | 0.750 | 1.000 | 0.68400 | 0.775 |
+| edge_removal_0.75_trial_1 | 2 | 0.500 | 0.200 | 0.286 | 0.500 | 0.64125 | 0.698 |
+| edge_removal_0.75_trial_2 | 2 | 1.000 | 0.400 | 0.571 | 1.000 | 0.35100 | 0.665 |
+| edge_removal_0.75_trial_3 | 2 | 0.500 | 0.200 | 0.286 | 0.500 | 0.64125 | 0.645 |
+| edge_removal_0.75_trial_4 | 2 | 0.500 | 0.200 | 0.286 | 1.000 | 0.68400 | 0.661 |
+| edge_removal_0.75_trial_5 | 2 | 1.000 | 0.400 | 0.571 | 1.000 | 0.35100 | 0.669 |
+| missing_locations_0.25 | 5 | 1.000 | 0.833 | 0.909 | 1.000 | — | 0.110 |
+| missing_locations_0.5 | 3 | 1.000 | 0.500 | 0.667 | 1.000 | — | 0.095 |
+
+### Descriptive variability across seeded edge-removal trials
+
+| Edges removed | Trials | F1 mean ± sample SD | F1 range | MRR mean ± sample SD | MRR range |
+|---:|---:|---:|---:|---:|---:|
+| 25% | 5 | 0.786 ± 0.117 | 0.667–0.909 | 0.900 ± 0.224 | 0.500–1.000 |
+| 50% | 5 | 0.558 ± 0.324 | 0.000–0.800 | 0.700 ± 0.447 | 0.000–1.000 |
+| 75% | 5 | 0.400 ± 0.156 | 0.286–0.571 | 0.800 ± 0.274 | 0.500–1.000 |
+
+These sample standard deviations and ranges describe only the five deterministic corruptions at each edge-removal fraction. They are not confidence intervals and do not estimate human, real-world, or population variability.
 
 ## Interpretation limits
 

@@ -8,6 +8,33 @@ export type RetrievalMetrics = {
   expectedCount: number;
 };
 
+export type MetricTrialSummary = {
+  count: number;
+  f1: { mean: number; sampleStandardDeviation: number; minimum: number; maximum: number };
+  reciprocalRank: { mean: number; sampleStandardDeviation: number; minimum: number; maximum: number };
+};
+
+export function summarizeMetricTrials(trials: readonly RetrievalMetrics[]): MetricTrialSummary {
+  if (!trials.length) throw new Error('at least one metric trial is required');
+  const summarize = (values: number[]) => {
+    const mean = values.reduce((total, value) => total + value, 0) / values.length;
+    const variance = values.length > 1
+      ? values.reduce((total, value) => total + (value - mean) ** 2, 0) / (values.length - 1)
+      : 0;
+    return {
+      mean,
+      sampleStandardDeviation: Math.sqrt(variance),
+      minimum: Math.min(...values),
+      maximum: Math.max(...values),
+    };
+  };
+  return {
+    count: trials.length,
+    f1: summarize(trials.map(trial => trial.f1)),
+    reciprocalRank: summarize(trials.map(trial => trial.reciprocalRank)),
+  };
+}
+
 export function scoreRetrieval(expectedIds: readonly string[], rankedIds: readonly string[]): RetrievalMetrics {
   const expected = new Set(expectedIds);
   const ranked = [...new Set(rankedIds)];

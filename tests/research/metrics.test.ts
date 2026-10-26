@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { scoreRetrieval, selectCalibrationResult } from '../../lib/research/metrics';
+import { scoreRetrieval, selectCalibrationResult, summarizeMetricTrials } from '../../lib/research/metrics';
 
 describe('synthetic retrieval metrics', () => {
   it('computes precision, recall, F1, and reciprocal rank from ranked IDs', () => {
@@ -32,5 +32,21 @@ describe('synthetic retrieval metrics', () => {
     ];
     expect(selectCalibrationResult(candidates)).toBe(candidates[3]);
     expect(selectCalibrationResult([])).toBeUndefined();
+  });
+
+  it('summarizes synthetic metric trials with descriptive sample variability', () => {
+    expect(summarizeMetricTrials([
+      { precision: 0, recall: 0, f1: 0.2, reciprocalRank: 0.4, relevantRetrieved: 1, resultCount: 2, expectedCount: 5 },
+      { precision: 0, recall: 0, f1: 0.6, reciprocalRank: 0.8, relevantRetrieved: 3, resultCount: 4, expectedCount: 5 },
+      { precision: 0, recall: 0, f1: 1, reciprocalRank: 1, relevantRetrieved: 5, resultCount: 5, expectedCount: 5 },
+    ])).toEqual({
+      count: 3,
+      f1: { mean: 0.6, sampleStandardDeviation: 0.4, minimum: 0.2, maximum: 1 },
+      reciprocalRank: { mean: 0.7333333333333334, sampleStandardDeviation: 0.30550504633038933, minimum: 0.4, maximum: 1 },
+    });
+  });
+
+  it('rejects empty trial sets instead of reporting misleading zero variability', () => {
+    expect(() => summarizeMetricTrials([])).toThrow('at least one metric trial');
   });
 });

@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-10-26T07:21:00.615Z",
+  "capturedAt": "2026-10-26T09:07:44.912Z",
   "fixture": {
     "seed": 497,
     "memoryCount": 8,
@@ -91,11 +91,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 2.0929213999999887,
-        "median": 1.8483650000000011,
-        "standardDeviation": 0.6622966953030084,
-        "minimum": 1.6118379999999775,
-        "maximum": 3.220923999999968
+        "mean": 1.0783200000000022,
+        "median": 0.9618569999999806,
+        "standardDeviation": 0.25097494628348466,
+        "minimum": 0.8858590000000106,
+        "maximum": 1.5085909999999956
       }
     },
     {
@@ -113,11 +113,11 @@
       "topActivation": 0.78,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8043586000000005,
-        "median": 1.7428539999999657,
-        "standardDeviation": 0.1766552749150034,
-        "minimum": 1.6037730000000465,
-        "maximum": 2.0314050000000066
+        "mean": 0.9498905999999977,
+        "median": 0.9515769999999861,
+        "standardDeviation": 0.14777321903613322,
+        "minimum": 0.8100880000000075,
+        "maximum": 1.1766190000000165
       }
     },
     {
@@ -135,11 +135,11 @@
       "topActivation": 0.855,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8769840000000044,
-        "median": 1.9317259999999692,
-        "standardDeviation": 0.10471781624918314,
-        "minimum": 1.7597020000000043,
-        "maximum": 1.9874300000000176
+        "mean": 1.0048764000000119,
+        "median": 1.0030509999999992,
+        "standardDeviation": 0.00914821514285655,
+        "minimum": 0.9956780000000265,
+        "maximum": 1.0200630000000217
       }
     },
     {
@@ -157,11 +157,11 @@
       "topActivation": 0.64125,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7295035999999868,
-        "median": 1.7309359999999856,
-        "standardDeviation": 0.060850332417316945,
-        "minimum": 1.6527120000000082,
-        "maximum": 1.8044509999999718
+        "mean": 1.0466164000000049,
+        "median": 1.0291939999999897,
+        "standardDeviation": 0.11672865498154725,
+        "minimum": 0.9150490000000104,
+        "maximum": 1.1893870000000106
       }
     },
     {
@@ -179,11 +179,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8634712000000035,
-        "median": 1.8749770000000012,
-        "standardDeviation": 0.05953793823437346,
-        "minimum": 1.7897629999999936,
-        "maximum": 1.9424290000000042
+        "mean": 0.7399019999999951,
+        "median": 0.7624739999999974,
+        "standardDeviation": 0.04634027862994386,
+        "minimum": 0.6627859999999828,
+        "maximum": 0.7780199999999979
       }
     },
     {
@@ -201,11 +201,11 @@
       "topActivation": 0.5600118351053396,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.951558,
-        "median": 1.8446370000000343,
-        "standardDeviation": 0.18243430064547508,
-        "minimum": 1.8180999999999585,
-        "maximum": 2.240399000000025
+        "mean": 0.8562568000000056,
+        "median": 0.8311439999999948,
+        "standardDeviation": 0.09627019330872773,
+        "minimum": 0.7570690000000013,
+        "maximum": 1.0079680000000053
       }
     },
     {
@@ -223,11 +223,11 @@
       "topActivation": 0.1686723233360588,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.943477200000018,
-        "median": 1.9669430000000148,
-        "standardDeviation": 0.17402925565459382,
-        "minimum": 1.7568050000000426,
-        "maximum": 2.1964059999999677
+        "mean": 0.8517597999999964,
+        "median": 0.859642000000008,
+        "standardDeviation": 0.03811836217231995,
+        "minimum": 0.7970709999999883,
+        "maximum": 0.8959579999999789
       }
     },
     {
@@ -245,11 +245,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7181644000000005,
-        "median": 1.7081290000000422,
-        "standardDeviation": 0.021055168339380714,
-        "minimum": 1.7001730000000066,
-        "maximum": 1.7521449999999845
+        "mean": 0.8903751999999997,
+        "median": 0.9087020000000052,
+        "standardDeviation": 0.06084077240385902,
+        "minimum": 0.8028130000000147,
+        "maximum": 0.9572209999999757
       }
     },
     {
@@ -267,11 +267,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8065624000000184,
-        "median": 1.8436440000000403,
-        "standardDeviation": 0.10335638262005088,
-        "minimum": 1.6401740000000018,
-        "maximum": 1.8958160000000248
+        "mean": 0.907200000000006,
+        "median": 0.919667000000004,
+        "standardDeviation": 0.04568872919003165,
+        "minimum": 0.835644000000002,
+        "maximum": 0.9582149999999956
       }
     },
     {
@@ -289,11 +289,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.767180200000007,
-        "median": 1.7890799999999558,
-        "standardDeviation": 0.07598554955516193,
-        "minimum": 1.66463200000004,
-        "maximum": 1.8630700000000502
+        "mean": 0.8219790000000046,
+        "median": 0.8088600000000099,
+        "standardDeviation": 0.07012204945664137,
+        "minimum": 0.7566810000000146,
+        "maximum": 0.9238420000000076
       }
     },
     {
@@ -311,11 +311,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7338531999999873,
-        "median": 1.7319709999999873,
-        "standardDeviation": 0.15592988609371564,
-        "minimum": 1.5284649999999829,
-        "maximum": 1.9672519999999736
+        "mean": 0.8402963999999941,
+        "median": 0.8441249999999911,
+        "standardDeviation": 0.01697878778947698,
+        "minimum": 0.8113209999999924,
+        "maximum": 0.855039000000005
       }
     },
     {
@@ -333,11 +333,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.780509399999994,
-        "median": 1.782718999999986,
-        "standardDeviation": 0.04473044589873886,
-        "minimum": 1.7257609999999772,
-        "maximum": 1.84379899999999
+        "mean": 0.8926026000000036,
+        "median": 0.8302949999999782,
+        "standardDeviation": 0.1040255682647355,
+        "minimum": 0.8036310000000242,
+        "maximum": 1.041103000000021
       }
     },
     {
@@ -355,11 +355,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.716052000000002,
-        "median": 1.7218539999999507,
-        "standardDeviation": 0.11249808585260311,
-        "minimum": 1.554394000000002,
-        "maximum": 1.8525250000000142
+        "mean": 1.464944200000008,
+        "median": 1.4678380000000004,
+        "standardDeviation": 0.12248137713831292,
+        "minimum": 1.300108000000023,
+        "maximum": 1.605497000000014
       }
     },
     {
@@ -377,11 +377,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8537689999999998,
-        "median": 1.800647999999967,
-        "standardDeviation": 0.12611926654359723,
-        "minimum": 1.7545440000000099,
-        "maximum": 2.0703269999999634
+        "mean": 1.5074195999999973,
+        "median": 1.487209000000007,
+        "standardDeviation": 0.03986684501938674,
+        "minimum": 1.4661179999999945,
+        "maximum": 1.5606650000000002
       }
     }
   ],
@@ -401,11 +401,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 3.611949600000048,
-        "median": 3.600155000000086,
-        "standardDeviation": 0.1505248084679314,
-        "minimum": 3.398768000000018,
-        "maximum": 3.822191000000089
+        "mean": 0.809354200000007,
+        "median": 0.8239960000000224,
+        "standardDeviation": 0.025896894499139858,
+        "minimum": 0.7796040000000062,
+        "maximum": 0.834354999999988
       },
       "valenceSalience": 0.25,
       "valenceBase": 0.75,
@@ -426,11 +426,11 @@
       "topActivation": 0.6480000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.9038290000000189,
-        "median": 1.9152380000000448,
-        "standardDeviation": 0.08273163175292346,
-        "minimum": 1.7780970000000025,
-        "maximum": 2.0065650000000232
+        "mean": 0.9826818000000117,
+        "median": 1.0152340000000208,
+        "standardDeviation": 0.18255399084983293,
+        "minimum": 0.7681420000000116,
+        "maximum": 1.2444540000000188
       },
       "valenceSalience": 0.5,
       "valenceBase": 0.5,
@@ -451,11 +451,11 @@
       "topActivation": 0.6120000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8140385999999808,
-        "median": 1.8138519999999971,
-        "standardDeviation": 0.025005311101845916,
-        "minimum": 1.7819769999999835,
-        "maximum": 1.8386410000000524
+        "mean": 0.8645343999999795,
+        "median": 0.8920349999999644,
+        "standardDeviation": 0.06858653536445275,
+        "minimum": 0.7517619999999852,
+        "maximum": 0.9240939999999682
       },
       "valenceSalience": 0.75,
       "valenceBase": 0.25,
@@ -476,11 +476,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 2.5035943999999746,
-        "median": 2.548940000000016,
-        "standardDeviation": 0.3579176795791331,
-        "minimum": 2.0756719999999405,
-        "maximum": 3.0222589999999627
+        "mean": 0.9064982000000044,
+        "median": 0.9112869999999873,
+        "standardDeviation": 0.031195888394142304,
+        "minimum": 0.8613720000000171,
+        "maximum": 0.9351560000000063
       },
       "valenceSalience": 0.25,
       "valenceBase": 0.75,
@@ -501,11 +501,11 @@
       "topActivation": 0.6480000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8677265999999917,
-        "median": 1.842326000000071,
-        "standardDeviation": 0.07402537251374536,
-        "minimum": 1.799325999999951,
-        "maximum": 1.9926759999999604
+        "mean": 1.2442929999999932,
+        "median": 1.2471859999999992,
+        "standardDeviation": 0.08232288675393744,
+        "minimum": 1.1221289999999726,
+        "maximum": 1.3307590000000005
       },
       "valenceSalience": 0.5,
       "valenceBase": 0.5,
@@ -526,11 +526,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.9552559999999857,
-        "median": 1.9643720000000258,
-        "standardDeviation": 0.09769808386553885,
-        "minimum": 1.8101110000000062,
-        "maximum": 2.079980999999975
+        "mean": 0.8208857999999963,
+        "median": 0.8382250000000226,
+        "standardDeviation": 0.06365337484140797,
+        "minimum": 0.7447019999999895,
+        "maximum": 0.8982430000000079
       },
       "valenceSalience": 0.25,
       "valenceBase": 0.75,
@@ -551,11 +551,11 @@
       "topActivation": 0.855,
       "elapsedMs": {
         "count": 5,
-        "mean": 2.3114219999999817,
-        "median": 2.247874999999965,
-        "standardDeviation": 0.1460030954517936,
-        "minimum": 2.1708139999999503,
-        "maximum": 2.5462670000000003
+        "mean": 1.2139684000000046,
+        "median": 1.1687150000000202,
+        "standardDeviation": 0.17701727403645662,
+        "minimum": 0.9833340000000135,
+        "maximum": 1.4245779999999968
       },
       "valenceSalience": 0,
       "valenceBase": 1,
@@ -576,11 +576,11 @@
       "topActivation": 0.855,
       "elapsedMs": {
         "count": 5,
-        "mean": 3.0178909999999974,
-        "median": 3.073879999999974,
-        "standardDeviation": 0.10050941369842853,
-        "minimum": 2.8965129999999704,
-        "maximum": 3.1102600000000393
+        "mean": 0.8326806000000033,
+        "median": 0.8298649999999839,
+        "standardDeviation": 0.04799856396601926,
+        "minimum": 0.7751340000000084,
+        "maximum": 0.9082280000000083
       },
       "valenceSalience": 0,
       "valenceBase": 1,
@@ -601,11 +601,11 @@
       "topActivation": 0.855,
       "elapsedMs": {
         "count": 5,
-        "mean": 2.8408178000000133,
-        "median": 3.08108500000003,
-        "standardDeviation": 0.484087745609919,
-        "minimum": 2.1783080000000155,
-        "maximum": 3.2508270000000152
+        "mean": 0.799972200000002,
+        "median": 0.818240000000003,
+        "standardDeviation": 0.03924508507061619,
+        "minimum": 0.7481539999999995,
+        "maximum": 0.8343500000000006
       },
       "valenceSalience": 0,
       "valenceBase": 1,
@@ -626,11 +626,11 @@
       "topActivation": 0.855,
       "elapsedMs": {
         "count": 5,
-        "mean": 2.8143299999999956,
-        "median": 2.9950450000000046,
-        "standardDeviation": 0.3384385910449807,
-        "minimum": 2.365903000000003,
-        "maximum": 3.149917999999957
+        "mean": 0.9188212000000021,
+        "median": 0.8891040000000032,
+        "standardDeviation": 0.1312071618994215,
+        "minimum": 0.7722899999999981,
+        "maximum": 1.10818900000001
       },
       "valenceSalience": 0,
       "valenceBase": 1,
@@ -651,11 +651,11 @@
       "topActivation": 0.6120000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7401960000000372,
-        "median": 1.7552540000000363,
-        "standardDeviation": 0.050547320873589104,
-        "minimum": 1.6749510000000782,
-        "maximum": 1.795174999999972
+        "mean": 0.9519245999999952,
+        "median": 0.9560999999999922,
+        "standardDeviation": 0.15104797599538713,
+        "minimum": 0.7281869999999913,
+        "maximum": 1.1392960000000016
       },
       "valenceSalience": 0.75,
       "valenceBase": 0.25,
@@ -676,11 +676,11 @@
       "topActivation": 0.6480000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7392975999999862,
-        "median": 1.7168040000000246,
-        "standardDeviation": 0.07593882462089056,
-        "minimum": 1.6578539999999293,
-        "maximum": 1.8354779999999664
+        "mean": 1.0437645999999972,
+        "median": 1.0034350000000245,
+        "standardDeviation": 0.14682163409661553,
+        "minimum": 0.9002189999999928,
+        "maximum": 1.2429710000000114
       },
       "valenceSalience": 0.5,
       "valenceBase": 0.5,
@@ -701,11 +701,11 @@
       "topActivation": 0.6120000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7071149999999988,
-        "median": 1.7163630000000012,
-        "standardDeviation": 0.0529192568589282,
-        "minimum": 1.621264999999994,
-        "maximum": 1.7667820000000347
+        "mean": 0.8098651999999902,
+        "median": 0.7998360000000275,
+        "standardDeviation": 0.08021347029458438,
+        "minimum": 0.7344489999999837,
+        "maximum": 0.9441919999999868
       },
       "valenceSalience": 0.75,
       "valenceBase": 0.25,
@@ -726,11 +726,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.9642891999999847,
-        "median": 1.892814000000044,
-        "standardDeviation": 0.20920759756206952,
-        "minimum": 1.7961460000000216,
-        "maximum": 2.3295819999999594
+        "mean": 0.8861306000000126,
+        "median": 0.8818699999999922,
+        "standardDeviation": 0.06766385666514105,
+        "minimum": 0.8118160000000216,
+        "maximum": 0.9575440000000413
       },
       "valenceSalience": 0.25,
       "valenceBase": 0.75,
@@ -751,11 +751,11 @@
       "topActivation": 0.6480000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.9093042000000424,
-        "median": 1.9134680000000799,
-        "standardDeviation": 0.1561712406613581,
-        "minimum": 1.692181000000005,
-        "maximum": 2.065050000000042
+        "mean": 0.9281794000000219,
+        "median": 0.9394900000000348,
+        "standardDeviation": 0.040535095451951005,
+        "minimum": 0.8627830000000358,
+        "maximum": 0.9663439999999923
       },
       "valenceSalience": 0.5,
       "valenceBase": 0.5,
@@ -776,11 +776,11 @@
       "topActivation": 0.5760000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.651644199999987,
-        "median": 1.7013429999999516,
-        "standardDeviation": 0.10066772015750523,
-        "minimum": 1.4785619999998971,
-        "maximum": 1.7217520000000377
+        "mean": 0.7526554000000033,
+        "median": 0.755359999999996,
+        "standardDeviation": 0.02144074173857177,
+        "minimum": 0.7258870000000002,
+        "maximum": 0.7836560000000077
       },
       "valenceSalience": 1,
       "valenceBase": 0,
@@ -801,11 +801,11 @@
       "topActivation": 0.5760000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.6099076000000196,
-        "median": 1.6311050000000478,
-        "standardDeviation": 0.050044116060730066,
-        "minimum": 1.5274980000000369,
-        "maximum": 1.6487680000000182
+        "mean": 0.7692502000000104,
+        "median": 0.7502489999999966,
+        "standardDeviation": 0.04830631684573765,
+        "minimum": 0.7311779999999999,
+        "maximum": 0.8511920000000259
       },
       "valenceSalience": 1,
       "valenceBase": 0,
@@ -826,11 +826,11 @@
       "topActivation": 0.5760000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7362421999999924,
-        "median": 1.6811579999999822,
-        "standardDeviation": 0.11016715404198117,
-        "minimum": 1.6533029999999371,
-        "maximum": 1.920355000000086
+        "mean": 0.9015637999999967,
+        "median": 0.9351369999999974,
+        "standardDeviation": 0.07687369464062663,
+        "minimum": 0.7945129999999949,
+        "maximum": 0.97195099999999
       },
       "valenceSalience": 1,
       "valenceBase": 0,
@@ -851,11 +851,11 @@
       "topActivation": 0.5760000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.619531599999982,
-        "median": 1.625990999999999,
-        "standardDeviation": 0.028241182762043734,
-        "minimum": 1.5888129999999592,
-        "maximum": 1.655518999999913
+        "mean": 0.8620259999999916,
+        "median": 0.8052139999999781,
+        "standardDeviation": 0.1349024402614844,
+        "minimum": 0.7550569999999652,
+        "maximum": 1.0928920000000062
       },
       "valenceSalience": 1,
       "valenceBase": 0,
@@ -876,11 +876,11 @@
       "topActivation": 0.6120000000000001,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.664440999999988,
-        "median": 1.6530500000000075,
-        "standardDeviation": 0.10961236723563497,
-        "minimum": 1.5268839999999955,
-        "maximum": 1.8312379999999848
+        "mean": 0.7579716000000076,
+        "median": 0.7651460000000156,
+        "standardDeviation": 0.02720792336435713,
+        "minimum": 0.7131709999999885,
+        "maximum": 0.7813010000000418
       },
       "valenceSalience": 0.75,
       "valenceBase": 0.25,
@@ -903,11 +903,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 2.010827600000016,
-        "median": 1.1383220000000165,
-        "standardDeviation": 2.0642086477113657,
-        "minimum": 0.9962530000000243,
-        "maximum": 5.701888000000054
+        "mean": 0.8783490000000029,
+        "median": 0.26395500000000993,
+        "standardDeviation": 1.2930288053533587,
+        "minimum": 0.2303489999999897,
+        "maximum": 3.1847890000000234
       }
     },
     {
@@ -925,11 +925,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.8713901999999962,
-        "median": 0.8578800000000228,
-        "standardDeviation": 0.11637853149615199,
-        "minimum": 0.7116320000000087,
-        "maximum": 1.0365580000000136
+        "mean": 0.12547680000001266,
+        "median": 0.11682700000000068,
+        "standardDeviation": 0.02857882123531871,
+        "minimum": 0.10123800000002348,
+        "maximum": 0.16996900000003734
       }
     },
     {
@@ -947,11 +947,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.8655974000000015,
-        "median": 0.898871999999983,
-        "standardDeviation": 0.11353486679782628,
-        "minimum": 0.6693970000000036,
-        "maximum": 0.9527540000000272
+        "mean": 0.1042096000000015,
+        "median": 0.10384900000002517,
+        "standardDeviation": 0.006770972884312884,
+        "minimum": 0.09832899999997835,
+        "maximum": 0.11484699999999748
       }
     },
     {
@@ -969,11 +969,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.8494498000000249,
-        "median": 0.8525039999999535,
-        "standardDeviation": 0.05211462929160448,
-        "minimum": 0.7673690000000306,
-        "maximum": 0.9033960000000434
+        "mean": 0.10121160000001055,
+        "median": 0.10051000000004251,
+        "standardDeviation": 0.0021488306820039646,
+        "minimum": 0.09869500000002063,
+        "maximum": 0.10387399999996205
       }
     },
     {
@@ -991,11 +991,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.856298199999992,
-        "median": 0.8403999999999314,
-        "standardDeviation": 0.04479057495386031,
-        "minimum": 0.8217570000000478,
-        "maximum": 0.9339649999999438
+        "mean": 0.09744580000000269,
+        "median": 0.09743700000001354,
+        "standardDeviation": 0.0016572655792055286,
+        "minimum": 0.09581499999995913,
+        "maximum": 0.09980699999999842
       }
     },
     {
@@ -1013,11 +1013,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.9348506000000043,
-        "median": 0.9326330000000098,
-        "standardDeviation": 0.01200379593296615,
-        "minimum": 0.9189930000000004,
-        "maximum": 0.9501770000000533
+        "mean": 0.10895339999999579,
+        "median": 0.10736800000000812,
+        "standardDeviation": 0.004566761303150207,
+        "minimum": 0.10569400000002815,
+        "maximum": 0.1169879999999921
       }
     }
   ],
@@ -1037,11 +1037,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.9182203999999728,
-        "median": 0.9131259999999202,
-        "standardDeviation": 0.01611273127992875,
-        "minimum": 0.9013860000000022,
-        "maximum": 0.9412469999999757
+        "mean": 0.1411636000000044,
+        "median": 0.12428900000003296,
+        "standardDeviation": 0.0427945040256403,
+        "minimum": 0.10707600000000639,
+        "maximum": 0.21448900000001458
       }
     },
     {
@@ -1059,11 +1059,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.8100481999999601,
-        "median": 0.8146509999999125,
-        "standardDeviation": 0.09379800709343984,
-        "minimum": 0.6640559999999596,
-        "maximum": 0.917964999999981
+        "mean": 0.34597499999999853,
+        "median": 0.3410440000000108,
+        "standardDeviation": 0.07092024452511161,
+        "minimum": 0.2632289999999671,
+        "maximum": 0.45368300000001227
       }
     },
     {
@@ -1081,11 +1081,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.724284399999965,
-        "median": 0.7013999999999214,
-        "standardDeviation": 0.20200128712782972,
-        "minimum": 0.4658399999999574,
-        "maximum": 1.029600999999957
+        "mean": 0.2613127999999733,
+        "median": 0.25048799999996163,
+        "standardDeviation": 0.052260474109977695,
+        "minimum": 0.21250099999997474,
+        "maximum": 0.3299629999999638
       }
     },
     {
@@ -1103,11 +1103,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.5898370000000114,
-        "median": 0.5169660000000249,
-        "standardDeviation": 0.22948562671438016,
-        "minimum": 0.324779000000035,
-        "maximum": 0.927864999999997
+        "mean": 0.21172299999999494,
+        "median": 0.20824600000003102,
+        "standardDeviation": 0.009923160056165394,
+        "minimum": 0.20156599999995706,
+        "maximum": 0.22793100000001232
       }
     },
     {
@@ -1125,11 +1125,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.8318903999999975,
-        "median": 0.8641010000000051,
-        "standardDeviation": 0.14753764330098562,
-        "minimum": 0.6453649999999698,
-        "maximum": 1.0152990000000273
+        "mean": 0.18805300000000216,
+        "median": 0.1809910000000059,
+        "standardDeviation": 0.016836627854165107,
+        "minimum": 0.17290800000000672,
+        "maximum": 0.21133899999995265
       }
     },
     {
@@ -1147,11 +1147,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.8260846000000128,
-        "median": 0.8575990000000502,
-        "standardDeviation": 0.10639452048292905,
-        "minimum": 0.64181700000006,
-        "maximum": 0.9182089999999334
+        "mean": 0.21576379999999062,
+        "median": 0.19491699999997536,
+        "standardDeviation": 0.037953325726482634,
+        "minimum": 0.188761999999997,
+        "maximum": 0.2763170000000059
       }
     },
     {
@@ -1169,11 +1169,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7916262000000187,
-        "median": 1.720405000000028,
-        "standardDeviation": 0.20590660969285682,
-        "minimum": 1.6067649999999958,
-        "maximum": 2.016155000000026
+        "mean": 1.137650799999983,
+        "median": 1.1962729999999624,
+        "standardDeviation": 0.13280865075437429,
+        "minimum": 0.9903489999999806,
+        "maximum": 1.266715999999974
       }
     },
     {
@@ -1191,11 +1191,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8051063999999997,
-        "median": 1.8066370000000234,
-        "standardDeviation": 0.07875247533123678,
-        "minimum": 1.693394000000012,
-        "maximum": 1.8953010000000177
+        "mean": 1.3533085999999912,
+        "median": 1.3793589999999654,
+        "standardDeviation": 0.19598264805665597,
+        "minimum": 1.1176419999999894,
+        "maximum": 1.613790999999992
       }
     },
     {
@@ -1213,11 +1213,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.5858454000000393,
-        "median": 1.6159200000000737,
-        "standardDeviation": 0.05701936011831395,
-        "minimum": 1.4937330000000202,
-        "maximum": 1.6309330000000273
+        "mean": 1.1036331999999902,
+        "median": 1.130205999999987,
+        "standardDeviation": 0.051834326934004214,
+        "minimum": 1.0274279999999862,
+        "maximum": 1.1455270000000155
       }
     },
     {
@@ -1235,11 +1235,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.6678924000000053,
-        "median": 1.6972620000000234,
-        "standardDeviation": 0.13711979573646185,
-        "minimum": 1.4690299999999752,
-        "maximum": 1.806534000000056
+        "mean": 0.9949700000000121,
+        "median": 1.0179699999999912,
+        "standardDeviation": 0.054087963009347505,
+        "minimum": 0.9335120000000074,
+        "maximum": 1.0553960000000302
       }
     },
     {
@@ -1257,11 +1257,11 @@
       "topActivation": 0.64125,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7178613999999925,
-        "median": 1.7260190000000648,
-        "standardDeviation": 0.09581603720307046,
-        "minimum": 1.5843609999999444,
-        "maximum": 1.8464719999999488
+        "mean": 0.9254198000000088,
+        "median": 0.8593890000000215,
+        "standardDeviation": 0.19583097841939934,
+        "minimum": 0.7800300000000107,
+        "maximum": 1.2660060000000044
       }
     },
     {
@@ -1279,11 +1279,11 @@
       "topActivation": 0.64125,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.7179226000000427,
-        "median": 1.7545350000000326,
-        "standardDeviation": 0.09152048369787266,
-        "minimum": 1.5903890000000729,
-        "maximum": 1.819676999999956
+        "mean": 0.8504037999999923,
+        "median": 0.8610699999999838,
+        "standardDeviation": 0.10772977881345874,
+        "minimum": 0.7115650000000073,
+        "maximum": 0.9566259999999716
       }
     },
     {
@@ -1301,11 +1301,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.818644600000016,
-        "median": 1.7526770000000624,
-        "standardDeviation": 0.16024114948822,
-        "minimum": 1.6768710000000056,
-        "maximum": 2.0850800000000618
+        "mean": 0.9391145999999821,
+        "median": 0.9439009999999826,
+        "standardDeviation": 0.11239663776244634,
+        "minimum": 0.8032209999999509,
+        "maximum": 1.088989999999967
       }
     },
     {
@@ -1323,11 +1323,11 @@
       "topActivation": 0.64125,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.8341488000000026,
-        "median": 1.8381219999999985,
-        "standardDeviation": 0.06677027343962112,
-        "minimum": 1.7376299999999674,
-        "maximum": 1.898121999999944
+        "mean": 1.1560521999999878,
+        "median": 1.2148960000000102,
+        "standardDeviation": 0.10306510367336172,
+        "minimum": 0.995081999999968,
+        "maximum": 1.2344699999999875
       }
     },
     {
@@ -1345,11 +1345,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.9325046000000157,
-        "median": 1.9265040000000226,
-        "standardDeviation": 0.12193165869165422,
-        "minimum": 1.805702999999994,
-        "maximum": 2.0599540000000616
+        "mean": 0.8119603999999981,
+        "median": 0.7901979999999753,
+        "standardDeviation": 0.07146763860170366,
+        "minimum": 0.7160849999999641,
+        "maximum": 0.8876590000000419
       }
     },
     {
@@ -1367,11 +1367,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.770612200000005,
-        "median": 1.7388650000000325,
-        "standardDeviation": 0.15152698963123276,
-        "minimum": 1.656129999999962,
-        "maximum": 2.0295690000000377
+        "mean": 0.7541238000000249,
+        "median": 0.7750310000000127,
+        "standardDeviation": 0.052561050348148404,
+        "minimum": 0.6897880000000214,
+        "maximum": 0.8110390000000507
       }
     },
     {
@@ -1389,11 +1389,11 @@
       "topActivation": 0.64125,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.636869999999999,
-        "median": 1.6309529999999768,
-        "standardDeviation": 0.09828106873142942,
-        "minimum": 1.4854370000000472,
-        "maximum": 1.7279589999999416
+        "mean": 0.7220265999999924,
+        "median": 0.6978859999999827,
+        "standardDeviation": 0.07922594624427962,
+        "minimum": 0.6358369999999809,
+        "maximum": 0.8446210000000178
       }
     },
     {
@@ -1411,11 +1411,11 @@
       "topActivation": 0.351,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.6786419999999906,
-        "median": 1.671069999999986,
-        "standardDeviation": 0.08349564739553979,
-        "minimum": 1.5841199999999844,
-        "maximum": 1.7886379999999917
+        "mean": 0.6632130000000075,
+        "median": 0.664715000000001,
+        "standardDeviation": 0.02434170166608753,
+        "minimum": 0.6278189999999881,
+        "maximum": 0.6962670000000344
       }
     },
     {
@@ -1433,11 +1433,11 @@
       "topActivation": 0.64125,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.733983000000012,
-        "median": 1.7324040000000878,
-        "standardDeviation": 0.21128671622587208,
-        "minimum": 1.5020279999999957,
-        "maximum": 2.0237190000000282
+        "mean": 0.6511432000000014,
+        "median": 0.6448710000000233,
+        "standardDeviation": 0.024104421185721443,
+        "minimum": 0.6238880000000222,
+        "maximum": 0.6898399999999469
       }
     },
     {
@@ -1455,11 +1455,11 @@
       "topActivation": 0.684,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.4901717999999846,
-        "median": 1.4664940000000115,
-        "standardDeviation": 0.10564697569118241,
-        "minimum": 1.3456220000000485,
-        "maximum": 1.6232189999999491
+        "mean": 0.6642449999999712,
+        "median": 0.6612059999999929,
+        "standardDeviation": 0.022036896696212838,
+        "minimum": 0.6376149999999825,
+        "maximum": 0.6888659999999618
       }
     },
     {
@@ -1477,11 +1477,11 @@
       "topActivation": 0.351,
       "elapsedMs": {
         "count": 5,
-        "mean": 1.5833451999999852,
-        "median": 1.6049970000000258,
-        "standardDeviation": 0.09454500364484773,
-        "minimum": 1.4787529999999833,
-        "maximum": 1.7118659999999863
+        "mean": 0.6633853999999928,
+        "median": 0.6688130000000001,
+        "standardDeviation": 0.02451105828600215,
+        "minimum": 0.6333529999999996,
+        "maximum": 0.6883540000000039
       }
     },
     {
@@ -1499,11 +1499,11 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.4907257999999956,
-        "median": 0.42354599999998754,
-        "standardDeviation": 0.14555692352031785,
-        "minimum": 0.3724659999999176,
-        "maximum": 0.7243989999999485
+        "mean": 0.135507999999993,
+        "median": 0.10969199999999546,
+        "standardDeviation": 0.05080938253905099,
+        "minimum": 0.10217999999997573,
+        "maximum": 0.22355399999997871
       }
     },
     {
@@ -1521,11 +1521,61 @@
       "topActivation": null,
       "elapsedMs": {
         "count": 5,
-        "mean": 0.6709158000000116,
-        "median": 0.651634999999942,
-        "standardDeviation": 0.09663059924374581,
-        "minimum": 0.5681720000000041,
-        "maximum": 0.8280480000000807
+        "mean": 0.11507039999999051,
+        "median": 0.0949579999999628,
+        "standardDeviation": 0.03919844771544796,
+        "minimum": 0.0857679999999732,
+        "maximum": 0.17883399999999483
+      }
+    }
+  ],
+  "edgeRemovalSummary": [
+    {
+      "fraction": 0.25,
+      "count": 5,
+      "f1": {
+        "mean": 0.7862626262626262,
+        "sampleStandardDeviation": 0.11663408526641818,
+        "minimum": 0.6666666666666665,
+        "maximum": 0.9090909090909091
+      },
+      "reciprocalRank": {
+        "mean": 0.9,
+        "sampleStandardDeviation": 0.22360679774997896,
+        "minimum": 0.5,
+        "maximum": 1
+      }
+    },
+    {
+      "fraction": 0.5,
+      "count": 5,
+      "f1": {
+        "mean": 0.5576190476190477,
+        "sampleStandardDeviation": 0.32356608496235895,
+        "minimum": 0,
+        "maximum": 0.8000000000000002
+      },
+      "reciprocalRank": {
+        "mean": 0.7,
+        "sampleStandardDeviation": 0.4472135954999579,
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    {
+      "fraction": 0.75,
+      "count": 5,
+      "f1": {
+        "mean": 0.4000000000000001,
+        "sampleStandardDeviation": 0.15649215928719035,
+        "minimum": 0.28571428571428575,
+        "maximum": 0.5714285714285715
+      },
+      "reciprocalRank": {
+        "mean": 0.8,
+        "sampleStandardDeviation": 0.27386127875258304,
+        "minimum": 0.5,
+        "maximum": 1
       }
     }
   ],
