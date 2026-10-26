@@ -1,0 +1,225 @@
+{
+  "generatedAt": "2026-10-26T11:01:56.130Z",
+  "sourceFiles": [
+    "docs/evaluation/fresh-buffer-trials/10000/fresh-buffer-pools.json",
+    "docs/evaluation/cross-machine/github-runner-10000.json"
+  ],
+  "rows": [
+    {
+      "query": "associative_depth_1",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 0.405,
+          "meanMs": 0.43699999999999994,
+          "confidenceInterval95": {
+            "lower": 0.2834769095673227,
+            "upper": 0.5905230904326773
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 0.277,
+          "meanMs": 0.2806,
+          "confidenceInterval95": {
+            "lower": 0.25612077930652205,
+            "upper": 0.305079220693478
+          },
+          "percentChangeVsBaseline": -31.604938271604937
+        }
+      ]
+    },
+    {
+      "query": "associative_depth_2",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 0.303,
+          "meanMs": 0.34600000000000003,
+          "confidenceInterval95": {
+            "lower": 0.23056712374024466,
+            "upper": 0.4614328762597554
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 0.204,
+          "meanMs": 0.19899999999999998,
+          "confidenceInterval95": {
+            "lower": 0.18041945413073124,
+            "upper": 0.21758054586926873
+          },
+          "percentChangeVsBaseline": -32.67326732673268
+        }
+      ]
+    },
+    {
+      "query": "associative_depth_3",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 0.445,
+          "meanMs": 0.47840000000000005,
+          "confidenceInterval95": {
+            "lower": 0.30645015897140243,
+            "upper": 0.6503498410285977
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 0.295,
+          "meanMs": 0.291,
+          "confidenceInterval95": {
+            "lower": 0.26200441755025433,
+            "upper": 0.31999558244974563
+          },
+          "percentChangeVsBaseline": -33.70786516853933
+        }
+      ]
+    },
+    {
+      "query": "fading_direct",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 198.339,
+          "meanMs": 212.57379999999998,
+          "confidenceInterval95": {
+            "lower": 163.56745017954103,
+            "upper": 261.5801498204589
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 139.075,
+          "meanMs": 139.28540000000004,
+          "confidenceInterval95": {
+            "lower": 138.2308763378696,
+            "upper": 140.33992366213047
+          },
+          "percentChangeVsBaseline": -29.880154684656073
+        }
+      ]
+    },
+    {
+      "query": "fading_view",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 3.531,
+          "meanMs": 3.6138,
+          "confidenceInterval95": {
+            "lower": 2.2159911297586357,
+            "upper": 5.011608870241364
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 2.817,
+          "meanMs": 2.8762,
+          "confidenceInterval95": {
+            "lower": 1.8826566857503193,
+            "upper": 3.86974331424968
+          },
+          "percentChangeVsBaseline": -20.22090059473237
+        }
+      ]
+    },
+    {
+      "query": "spatial_index_candidate",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 57.51,
+          "meanMs": 61.1674,
+          "confidenceInterval95": {
+            "lower": 45.19036749267807,
+            "upper": 77.14443250732192
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 43.71,
+          "meanMs": 44.12220000000001,
+          "confidenceInterval95": {
+            "lower": 42.102191301508476,
+            "upper": 46.14220869849154
+          },
+          "percentChangeVsBaseline": -23.995826812728215
+        }
+      ]
+    },
+    {
+      "query": "spatial_sequential_control",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 25.203,
+          "meanMs": 29.486,
+          "confidenceInterval95": {
+            "lower": 16.91352572756882,
+            "upper": 42.058474272431184
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 18.324,
+          "meanMs": 19.044800000000002,
+          "confidenceInterval95": {
+            "lower": 16.922396786917474,
+            "upper": 21.16720321308253
+          },
+          "percentChangeVsBaseline": -27.29436971789072
+        }
+      ]
+    },
+    {
+      "query": "timeline",
+      "memoryCount": 10000,
+      "cacheStrategy": "postgres_restart_only",
+      "machines": [
+        {
+          "label": "archlinux-10k",
+          "medianMs": 0.132,
+          "meanMs": 0.145,
+          "confidenceInterval95": {
+            "lower": 0.09015731140069808,
+            "upper": 0.1998426885993019
+          },
+          "percentChangeVsBaseline": 0
+        },
+        {
+          "label": "github-Linux-X64",
+          "medianMs": 0.102,
+          "meanMs": 0.10379999999999998,
+          "confidenceInterval95": {
+            "lower": 0.08645499751974647,
+            "upper": 0.12114500248025348
+          },
+          "percentChangeVsBaseline": -22.727272727272734
+        }
+      ]
+    }
+  ]
+}
