@@ -9,7 +9,6 @@ from docx.enum.table import WD_TABLE_ALIGNMENT, WD_CELL_VERTICAL_ALIGNMENT
 from docx.enum.style import WD_STYLE_TYPE
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
-from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "AC1855A5C7148BFEF7B640F739CB02C7-4_ImplementationBasedtemplate_1.docx"
@@ -27,132 +26,6 @@ PALE_BLUE = "FFFFFF"
 LINE = "000000"
 WHITE = "FFFFFF"
 BULLET_NUM_ID = None
-
-FONT_REG = next(path for path in (
-    "/usr/share/fonts/noto/NotoSans-Regular.ttf",
-    "/usr/share/fonts/liberation/LiberationSans-Regular.ttf",
-) if Path(path).exists())
-FONT_BOLD = next(path for path in (
-    "/usr/share/fonts/noto/NotoSans-Bold.ttf",
-    "/usr/share/fonts/liberation/LiberationSans-Bold.ttf",
-) if Path(path).exists())
-
-
-def font(size, bold=False):
-    path = FONT_BOLD if bold else FONT_REG
-    return ImageFont.truetype(path, size)
-
-
-def rounded(draw, box, fill, radius=24, outline=None, width=2):
-    draw.rounded_rectangle(box, radius=radius, fill=fill, outline=outline, width=width)
-
-
-def center_text(draw, box, text, fnt, fill, spacing=8):
-    x0, y0, x1, y1 = box
-    bbox = draw.multiline_textbbox((0, 0), text, font=fnt, spacing=spacing, align="center")
-    w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
-    draw.multiline_text(((x0 + x1 - w) / 2, (y0 + y1 - h) / 2), text, font=fnt, fill=fill, spacing=spacing, align="center")
-
-
-def arrow(draw, start, end, fill="#000000", width=5, head=14):
-    draw.line([start, end], fill=fill, width=width)
-    import math
-    angle = math.atan2(end[1] - start[1], end[0] - start[0])
-    left = (end[0] - head * math.cos(angle - 0.48), end[1] - head * math.sin(angle - 0.48))
-    right = (end[0] - head * math.cos(angle + 0.48), end[1] - head * math.sin(angle + 0.48))
-    draw.polygon([end, left, right], fill=fill)
-
-
-def make_architecture():
-    w, h = 1700, 820
-    im = Image.new("RGB", (w, h), "#FFFFFF")
-    d = ImageDraw.Draw(im)
-    d.text((60, 34), "Database-centered recall architecture", font=font(38, True), fill=f"#{NAVY}")
-    d.text((60, 88), "Inputs and rendering stay in the application; recall computation runs in PostgreSQL.", font=font(23), fill=f"#{MUTED}")
-    cards = [(70, 170, 550, 330), (610, 170, 1090, 330), (1150, 170, 1630, 330)]
-    labels = ["INTERACTIVE WORKSPACE\nLibrary · capture · timeline", "RECALL INTERFACES\nMap · graph · weekly review", "LOCAL API LAYER\nTypeScript · validation · SQL"]
-    fills = ["#FFFFFF", "#FFFFFF", "#FFFFFF"]
-    for b, label, fill in zip(cards, labels, fills):
-        rounded(d, b, fill, radius=0, outline="#000000", width=3)
-        center_text(d, b, label, font(25, True), f"#{NAVY}")
-    arrow(d, (552, 250), (602, 250))
-    arrow(d, (1092, 250), (1142, 250))
-    rounded(d, (205, 430, 1495, 740), "#FFFFFF", radius=0, outline="#000000", width=3)
-    d.text((250, 455), "POSTGRESQL 16 + POSTGIS", font=font(30, True), fill=f"#{NAVY}")
-    blocks = [(250, 530, 620, 685), (665, 530, 1035, 685), (1080, 530, 1450, 685)]
-    texts = ["SPATIAL ENGINE\nST_DWithin · geography\nST_LineLocatePoint", "TEMPORAL ENGINE\nExponential decay\nTransactional reinforcement", "ASSOCIATIVE ENGINE\nRecursive CTE · path arrays\nPruning · 32-hop bound"]
-    colors = ["#FFFFFF", "#FFFFFF", "#FFFFFF"]
-    for b, label, fill in zip(blocks, texts, colors):
-        rounded(d, b, fill, radius=0, outline="#000000", width=2)
-        center_text(d, b, label, font(22, True), f"#{INK}")
-    d.text((250, 700), "Normalized tables · GiST/B-tree indexes · scheduled jobs · materialized review view", font=font(20), fill=f"#{MUTED}")
-    im.save(ASSETS / "architecture.png", dpi=(180, 180))
-
-
-def make_data_model():
-    w, h = 1700, 900
-    im = Image.new("RGB", (w, h), "#FFFFFF")
-    d = ImageDraw.Draw(im)
-    d.text((60, 34), "Core relational model", font=font(38, True), fill=f"#{NAVY}")
-    d.text((60, 88), "Reusable context entities and explicit relationship history preserve queryable provenance.", font=font(23), fill=f"#{MUTED}")
-    boxes = {
-        "memories": (570, 300, 1130, 600),
-        "contexts": (80, 330, 440, 520),
-        "memory_contexts": (80, 650, 500, 820),
-        "memory_edges": (1260, 290, 1630, 500),
-        "reinforcements": (1190, 650, 1630, 830),
-    }
-    def entity(name, fields, b, fill):
-        rounded(d, b, fill, radius=0, outline="#000000", width=3)
-        x0, y0, x1, y1 = b
-        d.rectangle((x0, y0, x1, y0 + 54), fill=f"#{NAVY}", outline="#000000", width=2)
-        d.rectangle((x0, y0 + 28, x1, y0 + 54), fill=f"#{NAVY}")
-        d.text((x0 + 18, y0 + 11), name, font=font(23, True), fill="#FFFFFF")
-        y = y0 + 69
-        for fld in fields:
-            d.text((x0 + 18, y), fld, font=font(18), fill=f"#{INK}")
-            y += 31
-    entity("memories", ["PK id · title · content", "occurred_at · last_strength_at", "location geography(Point,4326)", "strength · decay_rate"], boxes["memories"], "#FFFFFF")
-    entity("contexts", ["PK id · type · label"], boxes["contexts"], "#FFFFFF")
-    entity("memory_contexts", ["PK/FK memory_id", "PK/FK context_id", "created_at"], boxes["memory_contexts"], "#FFFFFF")
-    entity("memory_edges", ["PK id · FK src · FK dst", "edge_type · weight · valence"], boxes["memory_edges"], "#FFFFFF")
-    entity("memory_reinforcements", ["PK id · FK memory_id", "before · after · amount", "type · created_at"], boxes["reinforcements"], "#FFFFFF")
-    arrow(d, (440, 425), (560, 425))
-    arrow(d, (480, 680), (620, 595))
-    arrow(d, (1140, 375), (1250, 375))
-    arrow(d, (1110, 580), (1220, 690))
-    d.text((640, 645), "1 memory ↔ many contexts", font=font(19, True), fill=f"#{VIOLET}")
-    d.text((1260, 525), "directed self-relation", font=font(18), fill=f"#{MUTED}")
-    im.save(ASSETS / "data-model.png", dpi=(180, 180))
-
-
-def make_benchmark_chart():
-    w, h = 1700, 920
-    im = Image.new("RGB", (w, h), "#FFFFFF")
-    d = ImageDraw.Draw(im)
-    d.text((65, 32), "Measured query medians", font=font(38, True), fill=f"#{NAVY}")
-    d.text((65, 88), "Five restart-only trials; PostgreSQL shared buffers restarted, OS cache not cleared.", font=font(23), fill=f"#{MUTED}")
-    panels = [
-        ("Spatial route plan", [("10K index", 57.510, "solid"), ("10K seq. control", 25.203, "outline"), ("50K index", 58.784, "solid"), ("50K seq. control", 49.212, "outline")]),
-        ("Fading-memory lookup", [("10K direct", 198.339, "solid"), ("10K view", 3.531, "outline"), ("50K direct", 205.908, "solid"), ("50K view", 7.493, "outline")]),
-    ]
-    for pi, (title, vals) in enumerate(panels):
-        x0 = 65 + pi * 820
-        y0 = 160
-        rounded(d, (x0, y0, x0 + 770, 820), "#FFFFFF", 0, "#000000", 3)
-        d.text((x0 + 34, y0 + 27), title, font=font(28, True), fill=f"#{NAVY}")
-        max_value = max(v for _, v, _ in vals)
-        chart_x, chart_y, chart_w = x0 + 245, y0 + 115, 460
-        for j, (label, value, style) in enumerate(vals):
-            yy = chart_y + j * 125
-            d.text((x0 + 28, yy + 13), label, font=font(18, True), fill=f"#{INK}")
-            bar_w = max(4, int(chart_w * value / max_value))
-            d.rectangle((chart_x, yy, chart_x + bar_w, yy + 54), fill="#000000" if style == "solid" else "#FFFFFF", outline="#000000", width=2)
-            d.text((min(chart_x + bar_w + 12, x0 + 630), yy + 13), f"{value:.3f} ms", font=font(17, True), fill=f"#{INK}")
-        d.text((x0 + 28, y0 + 620), "Median execution time · lower is faster", font=font(17), fill=f"#{MUTED}")
-    d.text((65, 852), "Interpretation: the tested broad, clustered route favored the sequential control; the MV lookup was faster but requires refresh work.", font=font(20, True), fill=f"#{NAVY}")
-    im.save(ASSETS / "benchmark-medians.png", dpi=(180, 180))
-
 
 def set_cell_shading(cell, fill):
     tc_pr = cell._tc.get_or_add_tcPr()
@@ -350,14 +223,14 @@ def add_table(doc, headers, rows, widths=None, font_size=8.8):
     set_repeat_table_header(hdr)
     for i, title in enumerate(headers):
         cell = hdr.cells[i]
-        set_cell_shading(cell, NAVY)
+        set_cell_shading(cell, "FFFFFF")
         set_cell_margins(cell)
         cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
         p = cell.paragraphs[0]
         p.paragraph_format.space_after = Pt(0)
         r = p.add_run(title)
         r.font.name, r.font.size, r.font.bold = "Arial", Pt(font_size), True
-        r.font.color.rgb = RGBColor(255, 255, 255)
+        r.font.color.rgb = RGBColor(0, 0, 0)
     for ridx, row in enumerate(rows):
         cells = table.add_row().cells
         for i, value in enumerate(row):
@@ -436,9 +309,6 @@ def add_reference(doc, number, text, url=None):
 
 
 def generate():
-    make_architecture()
-    make_data_model()
-    make_benchmark_chart()
     doc = setup_document()
 
     # Cover page: formal VIT title-page structure, with restrained project identity.
@@ -463,13 +333,13 @@ def generate():
     band = doc.add_table(rows=1, cols=1)
     band.alignment = WD_TABLE_ALIGNMENT.CENTER
     cell = band.cell(0, 0)
-    set_cell_shading(cell, NAVY)
+    set_cell_shading(cell, "FFFFFF")
     set_cell_margins(cell, top=220, bottom=220, start=250, end=250)
     p = cell.paragraphs[0]
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     r = p.add_run("IMPLEMENTATION-BASED PROJECT REPORT")
     r.font.name, r.font.size, r.font.bold = "Arial", Pt(11), True
-    r.font.color.rgb = RGBColor(255, 255, 255)
+    r.font.color.rgb = RGBColor(0, 0, 0)
     p = doc.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p.paragraph_format.space_before = Pt(26)
@@ -505,9 +375,9 @@ def generate():
         ("2. Literature Study", "Memory cues, spatial context, association, forgetting", "5"),
         ("3. Objectives", "Research questions and measurable objectives", "6"),
         ("4. Design", "Architecture, schema, and three recall engines", "7"),
-        ("5. Implementation and Evaluation", "Features, data, validation, measurements, limitations", "9"),
-        ("6. Conclusion and Future Work", "Findings and next research steps", "12"),
-        ("References", "Research literature and primary technical documentation", "13"),
+        ("5. Implementation and Evaluation", "Features, data, validation, measurements, limitations", "10"),
+        ("6. Conclusion and Future Work", "Findings and next research steps", "14"),
+        ("References", "Research literature and primary technical documentation", "15"),
     ]
     add_table(doc, ["Section", "Coverage", "Page"], toc_rows, [2.35, 3.45, 0.55], 9.2)
     add_p(doc, "Document version: final implementation-based report · 27 October 2026", style="Caption")
