@@ -46,3 +46,63 @@ test('weekly review page exposes explicit keep, snooze, archive, and dismiss act
     await request.delete(`/api/memories/${memoryId}`);
   }
 });
+
+test('weekly review shows one card and a right swipe keeps it before advancing', async ({ page, request }) => {
+  const created = await request.post('/api/memories', { data: { title: `Swipe review ${Date.now()}`, content: 'Swipe interaction fixture', occurredAt: new Date().toISOString(), isPinned: true } });
+  expect(created.status()).toBe(201);
+  const memoryId = (await created.json()).data.id as string;
+  try {
+    const response = await request.get('/api/review/weekly');
+    const queue = (await response.json()).data as { kind: 'memory'|'follow_up'; id: string; title: string }[];
+    expect(queue.length).toBeGreaterThan(1);
+    await page.goto('/review/weekly');
+
+    const card = page.getByTestId('weekly-card');
+    await expect(card).toHaveCount(1);
+    await expect(card.getByRole('heading', { level: 2 })).toHaveText(queue[0].title);
+    await expect(page.getByTestId('weekly-progress')).toHaveText(`Review 1 of ${queue.length}`);
+
+    const bounds = await card.boundingBox();
+    if (!bounds) throw new Error('Weekly review card is not laid out');
+    const x = bounds.x + bounds.width / 2;
+    const y = bounds.y + bounds.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x + 190, y, { steps: 8 });
+    await page.mouse.up();
+
+    await expect(page.getByRole('status')).toContainText('kept');
+    await expect(card.getByRole('heading', { level: 2 })).toHaveText(queue[1].title);
+    await expect(page.getByTestId('weekly-progress')).toHaveText(`Review 2 of ${queue.length}`);
+  } finally {
+    await request.delete(`/api/memories/${memoryId}`);
+  }
+});
+
+test('weekly review archives the current memory on a left swipe', async ({ page, request }) => {
+  const created = await request.post('/api/memories', { data: { title: `Archive swipe ${Date.now()}`, content: 'Archive swipe fixture', occurredAt: new Date().toISOString(), isPinned: true } });
+  expect(created.status()).toBe(201);
+  const memory = (await created.json()).data as { id: string; title: string };
+  try {
+    const queue = (await (await request.get('/api/review/weekly')).json()).data as { kind: string; id: string; title: string }[];
+    expect(queue[0]?.id).toBe(memory.id);
+    await page.goto('/review/weekly');
+    const card = page.getByTestId('weekly-card');
+    await expect(card.getByRole('heading', { level: 2 })).toHaveText(memory.title);
+    const bounds = await card.boundingBox();
+    if (!bounds) throw new Error('Weekly review card is not laid out');
+    const x = bounds.x + bounds.width / 2;
+    const y = bounds.y + bounds.height / 2;
+    await page.mouse.move(x, y);
+    await page.mouse.down();
+    await page.mouse.move(x - 190, y, { steps: 8 });
+    await page.mouse.up();
+
+    await expect(page.getByRole('status')).toContainText('archived');
+    await expect(card.getByRole('heading', { level: 2 })).toHaveText(queue[1].title);
+    const archived = (await (await request.get(`/api/memories/${memory.id}`)).json()).data;
+    expect(archived.archived_at).toBeTruthy();
+  } finally {
+    await request.delete(`/api/memories/${memory.id}`);
+  }
+});

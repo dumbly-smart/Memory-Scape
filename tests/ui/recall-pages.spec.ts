@@ -26,13 +26,16 @@ test('map draws and edits a route, shows its corridor, and supports sequential a
     expect(context.status()).toBe(201);
     const edge = await request.post('/api/edges', { data: { src: id, dst: relatedId, type: 'Map association', weight: 0.8, valence: 0.3 } });
     expect(edge.status()).toBe(201);
-    await page.goto('/spatial');
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition: (success: PositionCallback) => success({ coords: { latitude: 13.021, longitude: 77.568, accuracy: 15 } as GeolocationCoordinates, timestamp: Date.now() } as GeolocationPosition) } });
+    });
+    await page.goto('/spatial', { waitUntil: 'domcontentloaded' });
     const map = page.locator('.leaflet-container');
     await expect(map).toBeVisible();
     const bounds = await map.boundingBox();
     if (!bounds) throw new Error('Map has no visible bounds');
-    await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-    await page.mouse.click(bounds.x + bounds.width / 2 + 12, bounds.y + bounds.height / 2);
+    await page.getByRole('button', { name: 'Start route at my location' }).click();
+    await page.mouse.click(bounds.x + bounds.width / 2 + 70, bounds.y + bounds.height / 2);
     await expect(page.getByRole('button', { name: 'Undo last point' })).toBeEnabled();
     await expect(page.locator('.leaflet-overlay-pane path')).toHaveCount(2);
     const radius = page.getByRole('slider', { name: /Corridor radius/ });
@@ -49,7 +52,7 @@ test('map draws and edits a route, shows its corridor, and supports sequential a
       walkPayload.data.some(memory => memory.memory_id === id),
       `Spatial walk omitted the fixture for route ${JSON.stringify(walkResponse.request().postDataJSON())}; returned ${JSON.stringify(walkPayload.data)}`,
     ).toBe(true);
-    const result = page.locator('.result-card').filter({ hasText: title });
+    const result = page.locator('.spatial-result').filter({ hasText: title });
     await expect(result).toBeVisible({ timeout: 20_000 });
     await result.click();
     const details = page.getByLabel('Selected memory details');
@@ -64,8 +67,20 @@ test('map draws and edits a route, shows its corridor, and supports sequential a
     await expect(details.locator('h3')).toHaveText(relatedTitle);
     await page.getByRole('button', { name: 'Undo last point' }).click();
     await page.getByRole('button', { name: 'Clear route' }).click();
-    await expect(page.getByText('Draw a route to discover memories.')).toBeVisible();
+    await expect(page.getByText('Draw or start a route to reveal memories around it.')).toBeVisible();
   } finally { for (const id of ids) await request.delete(`/api/memories/${id}`); }
+});
+
+test('spatial walk focuses on browser location and can start a route there', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition: (success: PositionCallback) => success({ coords: { latitude: 12.9698, longitude: 79.1559, accuracy: 15 } as GeolocationCoordinates, timestamp: Date.now() } as GeolocationPosition) } });
+  });
+  await page.goto('/spatial', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('current-location-status')).toContainText('Centered on your current location');
+  await expect(page.getByRole('button', { name: 'Start route at my location' })).toBeEnabled();
+  await page.getByRole('button', { name: 'Start route at my location' }).click();
+  await expect(page.locator('.map-tools')).toContainText('1 vertex');
+  await expect(page.locator('.current-location-marker')).toBeVisible();
 });
 
 test('timeline filters event dates and reinforces a memory', async ({ page, request }) => {
@@ -100,8 +115,8 @@ test('graph page runs bounded associative recall from a selected memory', async 
     await page.getByLabel('Hops').selectOption('1');
     await page.locator('select').first().selectOption({ label: firstTitle });
     await page.getByRole('button', { name: 'Spread activation' }).click();
-    await expect(page.locator('.result-card b').filter({ hasText: secondTitle })).toBeVisible();
-    await expect(page.getByText(/1 hops · activation/)).toBeVisible();
+    await expect(page.locator('.graph-result b').filter({ hasText: secondTitle })).toBeVisible();
+    await expect(page.getByText(/1 hops · 0\.\d+ activation/)).toBeVisible();
   } finally { for (const id of ids) await request.delete(`/api/memories/${id}`); }
 });
 

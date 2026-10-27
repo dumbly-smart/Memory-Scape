@@ -117,3 +117,15 @@ Compose binds application and database ports to localhost. The project’s open 
 1. Open `/daily` in a browser that supports service workers and Push API, then choose **Enable background reminders** and grant notification permission.
 2. PostgreSQL stores the browser subscription and generated VAPID keys. Keep the server and its database running; the Node scheduler checks due items every minute.
 3. Create a due follow-up or decision, close the page, and wait for the browser push service. Sensitive and archived linked memories are excluded. Disable reminders on `/daily` to revoke the subscription.
+
+## Q — Current-location Memory Walk
+
+1. Open **Spatial walk** and allow location access. The map centers on the browser's current position and shows a location marker. If permission is denied, use the map manually; it opens near VIT Vellore.
+2. Set the corridor radius, then choose **Start route at my location** to add the current position as the first route point. Add further points on the map to draw the walk, or start by clicking the map when location is unavailable.
+3. Run **Walk this route**. PostgreSQL performs the PostGIS corridor filter and orders results along the route. Select a result to inspect it and use the previous/next controls for sequential recall.
+
+## R — One-card Weekly Review
+
+1. Open **Weekly review**. Only the active memory is shown; the progress counter tracks the remaining session.
+2. Swipe right to **Keep**, or swipe left to **Archive**. Archive is recoverable, not permanent deletion. The handled card leaves the queue and the next card becomes active.
+3. Use the visible action buttons as an alternative to swiping: **Keep**, **Snooze**, **Archive**, or **Dismiss**. Each decision removes that card from the current session.

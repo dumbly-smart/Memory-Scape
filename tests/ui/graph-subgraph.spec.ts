@@ -35,7 +35,37 @@ test('graph page can start an exploration from a chosen memory', async ({ page, 
     await page.goto('/graph');
     await page.getByLabel('Seed memory').selectOption(seed.id);
     await page.getByRole('button', { name: 'Spread activation' }).click();
-    await expect(page.getByRole('heading', { name: 'Activation ranking' })).toBeVisible();
-    await expect(page.getByText('No associated memories passed the pruning threshold.')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Strongest activations' })).toBeVisible();
+    await expect(page.getByText('No memories passed this threshold. Lower the pruning value or choose another seed.')).toBeVisible();
   } finally { await request.delete(`/api/memories/${seed.id}`); }
+});
+
+test('graph page inspects an activated memory before deliberately recentering', async ({ page, request }) => {
+  const suffix = Date.now();
+  const create = async (title: string) => {
+    const response = await request.post('/api/memories', { data: { title: `${title} ${suffix}`, content: 'A synthetic graph interaction fixture.', occurredAt: new Date().toISOString(), strength: 1, decayRate: 0 } });
+    expect(response.status()).toBe(201);
+    return (await response.json()).data as { id: string; title: string };
+  };
+  const seed = await create('Network seed');
+  const neighbor = await create('Network neighbor');
+  try {
+    const edge = await request.post('/api/edges', { data: { src: seed.id, dst: neighbor.id, type: 'Reminds me of', weight: 0.9, valence: 0.7 } });
+    expect(edge.status()).toBe(201);
+    await page.goto('/graph');
+    await page.getByLabel('Seed memory').selectOption(seed.id);
+    await page.getByRole('button', { name: 'Spread activation' }).click();
+
+    const inspect = page.getByRole('button', { name: `Inspect ${neighbor.title}` });
+    await expect(inspect).toBeVisible();
+    await inspect.click();
+    const selected = page.getByRole('region', { name: 'Selected memory' });
+    await expect(selected).toContainText(neighbor.title);
+    await expect(selected).toContainText('Reminds me of');
+
+    await selected.getByRole('button', { name: 'Explore from this memory' }).click();
+    await expect(page.getByText(`Current seed · ${neighbor.title}`)).toBeVisible();
+  } finally {
+    await Promise.all([request.delete(`/api/memories/${seed.id}`), request.delete(`/api/memories/${neighbor.id}`)]);
+  }
 });
