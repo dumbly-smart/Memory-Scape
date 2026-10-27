@@ -38,5 +38,5 @@ test('nearby page requests location only after the user activates it', async ({ 
   await page.goto('/nearby');
   await expect(page.getByRole('button', { name: 'What’s relevant here?' })).toBeVisible();
   await page.getByRole('button', { name: 'What’s relevant here?' }).click();
-  await expect(page.getByText(/Nearby results/)).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Nearby results' })).toBeVisible();
 });

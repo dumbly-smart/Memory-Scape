@@ -90,6 +90,10 @@ test('spatiotemporal recall page draws a route and applies its event-time window
     if (!bounds) throw new Error('Research map has no visible bounds');
     await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
     await page.mouse.click(bounds.x + bounds.width / 2 + 12, bounds.y + bounds.height / 2);
+    // WebKit can render this responsive map with a click center offset from
+    // the configured geographic center. Keep the UI fixture inside the route
+    // corridor; route filtering itself is asserted with exact radii at the API.
+    await page.locator('#st-radius').press('End');
     const from = new Date(now - 86400000).toISOString().slice(0, 16);
     const until = new Date(now + 86400000).toISOString().slice(0, 16);
     await page.getByLabel('Event time from').fill(from);
