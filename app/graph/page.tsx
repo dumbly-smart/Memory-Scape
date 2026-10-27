@@ -88,23 +88,18 @@ export default function GraphPage() {
   useEffect(() => {
     if (!host.current || !graph) return;
 
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const visibleResults = graph.nodes.filter(node => node.memory_id !== graph.seed.id);
     const elements: ElementDefinition[] = [
       { data: { id: graph.seed.id, label: graph.seed.title, role: 'seed', depth: 0, activation: 1, strength: graph.seed.strength }, position: { x: 0, y: 0 } },
-      ...visibleResults.map(node => {
-        const layer = visibleResults.filter(candidate => candidate.hop_depth === node.hop_depth);
-        const layerIndex = layer.findIndex(candidate => candidate.memory_id === node.memory_id);
-        const angle = -Math.PI / 2 + (layerIndex / Math.max(1, layer.length)) * Math.PI * 2;
-        const radius = 136 * node.hop_depth;
-        return { data: {
+      ...visibleResults.map(node => ({ data: {
           id: node.memory_id,
           label: node.title,
           role: 'recalled',
           depth: node.hop_depth,
           activation: node.activation,
           strength: node.strength,
-        }, position: { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius } };
-      }),
+        } })),
       ...graph.edges.map(edge => ({ data: {
         id: edge.id,
         source: edge.src,
@@ -126,95 +121,93 @@ export default function GraphPage() {
         {
           selector: 'node',
           style: {
-            'background-color': '#70c3a8',
-            'border-color': '#a5e3cf',
-            'border-width': 1.4,
-            'width': 'mapData(activation,0,1,18,42)',
-            'height': 'mapData(activation,0,1,18,42)',
+            'background-color': '#9aa9f7',
+            'border-color': '#d2d8ff',
+            'border-width': 1,
+            'width': 'mapData(activation,0,1,7,18)',
+            'height': 'mapData(activation,0,1,7,18)',
             'label': 'data(label)',
             'font-family': 'Inter, ui-sans-serif, system-ui, sans-serif',
-            'font-size': 10,
-            'font-weight': 600,
-            'color': '#f0f6f1',
-            'text-outline-color': '#10221f',
+            'font-size': 9,
+            'font-weight': 500,
+            'color': '#eef0ff',
+            'text-outline-color': '#0b0d16',
             'text-outline-width': 2,
             'text-wrap': 'wrap',
             'text-max-width': '132px',
             'text-halign': 'center',
             'text-valign': 'bottom',
-            'text-margin-y': 8,
+            'text-margin-y': 7,
             'text-opacity': 0,
-            'opacity': 0.94,
+            'opacity': 0.9,
             'overlay-opacity': 0,
             'transition-property': 'background-color, border-color, border-width, width, height, opacity, text-opacity',
             'transition-duration': 180,
           },
         },
-        { selector: 'node[depth = 1]', style: { 'background-color': '#61c3a0', 'border-color': '#a1e7cf' } },
-        { selector: 'node[depth = 2]', style: { 'background-color': '#79a9e4', 'border-color': '#bdd5f2' } },
-        { selector: 'node[depth >= 3]', style: { 'background-color': '#ae96df', 'border-color': '#d2c3f0' } },
+        { selector: 'node[depth = 1]', style: { 'background-color': '#b4b7ff', 'border-color': '#e1e2ff' } },
+        { selector: 'node[depth = 2]', style: { 'background-color': '#899bea', 'border-color': '#c8d0ff', 'opacity': 0.86 } },
+        { selector: 'node[depth >= 3]', style: { 'background-color': '#707fc2', 'border-color': '#aab5ec', 'opacity': 0.76 } },
         {
           selector: 'node[role = "seed"]',
           style: {
-            'background-color': '#e4aa67',
-            'border-color': '#ffe0ae',
-            'border-width': 2.5,
-            'width': 48,
-            'height': 48,
-            'font-size': 11,
+            'background-color': '#e1d8ff',
+            'border-color': '#ffffff',
+            'border-width': 1.8,
+            'width': 16,
+            'height': 16,
+            'font-size': 10,
             'text-opacity': 1,
             'z-index': 50,
           },
         },
-        { selector: 'node:selected', style: { 'border-color': '#ffffff', 'border-width': 3, 'text-opacity': 0, 'z-index': 100, 'opacity': 1 } },
-        { selector: 'node.is-hovered', style: { 'border-color': '#ffffff', 'border-width': 3, 'text-opacity': 1, 'z-index': 100, 'opacity': 1 } },
+        { selector: 'node:selected', style: { 'border-color': '#ffffff', 'border-width': 2, 'text-opacity': 0, 'z-index': 100, 'opacity': 1 } },
+        { selector: 'node.is-hovered', style: { 'border-color': '#ffffff', 'border-width': 2, 'text-opacity': 1, 'z-index': 100, 'opacity': 1 } },
         { selector: 'node.focus-neighbor', style: { 'text-opacity': 0, 'opacity': 1 } },
         {
           selector: 'edge',
           style: {
-            'width': 'mapData(weight,0,1,1,3.8)',
-            'line-color': '#6e8880',
-            'target-arrow-color': '#819b91',
-            'target-arrow-shape': 'triangle',
-            'arrow-scale': 0.82,
-            'curve-style': 'bezier',
-            'opacity': 0.38,
+            'width': 'mapData(weight,0,1,0.45,1.8)',
+            'line-color': '#7480aa',
+            'target-arrow-shape': 'none',
+            'curve-style': 'straight',
+            'opacity': 0.3,
             'label': 'data(label)',
             'font-family': 'Inter, ui-sans-serif, system-ui, sans-serif',
             'font-size': 8,
             'font-weight': 600,
-            'color': '#ecf3ee',
-            'text-outline-color': '#10221f',
+            'color': '#dfe3ff',
+            'text-outline-color': '#0b0d16',
             'text-outline-width': 2,
             'text-rotation': 'autorotate',
             'text-opacity': 0,
             'overlay-opacity': 0,
           },
         },
-        { selector: 'edge[polarity = "positive"]', style: { 'line-color': '#57c7a2', 'target-arrow-color': '#57c7a2' } },
-        { selector: 'edge[polarity = "negative"]', style: { 'line-color': '#dd8c84', 'target-arrow-color': '#dd8c84', 'line-style': 'dashed' } },
-        { selector: 'edge.activation-path', style: { 'line-color': '#f0b56e', 'target-arrow-color': '#f0b56e', 'width': 3.4, 'opacity': 0.95, 'text-opacity': 0, 'z-index': 20 } },
+        { selector: 'edge[polarity = "positive"]', style: { 'line-color': '#8792c4' } },
+        { selector: 'edge[polarity = "negative"]', style: { 'line-color': '#8792c4', 'line-style': 'dashed' } },
+        { selector: 'edge.activation-path', style: { 'line-color': '#c0adff', 'width': 2.2, 'opacity': 0.94, 'text-opacity': 0, 'z-index': 20 } },
         { selector: 'edge.focus-neighbor', style: { 'opacity': 0.9, 'text-opacity': 0 } },
-        { selector: 'edge.is-hovered', style: { 'line-color': '#ffffff', 'target-arrow-color': '#ffffff', 'width': 4, 'opacity': 1, 'text-opacity': 1, 'z-index': 90 } },
-        { selector: 'edge:selected', style: { 'line-color': '#ffffff', 'target-arrow-color': '#ffffff', 'width': 4, 'opacity': 1, 'text-opacity': 1, 'z-index': 80 } },
+        { selector: 'edge.is-hovered', style: { 'line-color': '#dfe3ff', 'width': 2.4, 'opacity': 1, 'text-opacity': 1, 'z-index': 90 } },
+        { selector: 'edge:selected', style: { 'line-color': '#dfe3ff', 'width': 2.4, 'opacity': 1, 'text-opacity': 1, 'z-index': 80 } },
       ],
       layout: {
         name: 'cose',
         fit: true,
-        padding: 82,
-        randomize: false,
-        nodeRepulsion: node => node.data('role') === 'seed' ? 15000 : 6200 + Number(node.data('activation')) * 6800,
-        nodeOverlap: 16,
-        idealEdgeLength: edge => edge.data('weight') >= 0.7 ? 118 : 142,
-        edgeElasticity: 92,
-        nestingFactor: 1.18,
-        gravity: 0.16,
-        numIter: 900,
-        initialTemp: 190,
+        padding: 86,
+        randomize: true,
+        nodeRepulsion: node => node.data('role') === 'seed' ? 16000 : 7800 + Number(node.data('activation')) * 3600,
+        nodeOverlap: 10,
+        idealEdgeLength: edge => edge.data('weight') >= 0.7 ? 105 : 132,
+        edgeElasticity: 48,
+        nestingFactor: 1,
+        gravity: 0.08,
+        numIter: 1100,
+        initialTemp: 230,
         coolingFactor: 0.96,
         minTemp: 1,
-        animate: true,
-        animationDuration: 1050,
+        animate: !reducedMotion,
+        animationDuration: reducedMotion ? 0 : 1500,
         animationEasing: 'ease-out-cubic',
       },
     });
@@ -284,7 +277,7 @@ export default function GraphPage() {
   const selectedEdge = graph?.edges.find(edge => edge.id === selectedEdgeId);
 
   return <>
-    <div className="page-head">
+    <div className="page-head graph-page-head">
       <div>
         <div className="eyebrow">POSTGRESQL WITH RECURSIVE · BOUNDED SPREADING ACTIVATION</div>
         <h1>Associative graph</h1>
@@ -299,7 +292,7 @@ export default function GraphPage() {
       </select>
       <label className="muted">Hops <select aria-label="Hops" value={depth} onChange={event => void changeDepth(Number(event.target.value))}>{[1, 2, 3].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
       <label className="muted">Prune below <input aria-label="Activation pruning threshold" className="input" style={{ width: 85, minWidth: 0 }} type="number" min="0" max="1" step=".01" value={threshold} onChange={event => void changeThreshold(Number(event.target.value))} /></label>
-      <button className="button" disabled={!seedId || busy} onClick={() => void recall(seedId)}>{busy ? 'Calculating…' : 'Spread activation'}</button>
+      <button className="button graph-spread-button" disabled={!seedId || busy} onClick={() => void recall(seedId)}>{busy ? 'Calculating…' : 'Spread activation'}</button>
     </div>
 
     {error && <div className="error" role="alert">{error}</div>}
@@ -309,16 +302,16 @@ export default function GraphPage() {
         <div ref={host} className="graph-cytoscape" />
         {graph && <>
           <div className="graph-stage-heading">
-            <span className="graph-stage-kicker">SPREADING ACTIVATION</span>
+            <span className="graph-stage-kicker">MEMORY NETWORK · {graph.limits.depth} HOPS</span>
             <span className="graph-stage-count">{graph.nodes.filter(node => node.memory_id !== graph.seed.id).length} memories · {graph.edges.length} links</span>
           </div>
           <div className="graph-key" aria-label="Network legend">
-            <span><i className="graph-key-seed" /> Seed</span>
+            <span><i className="graph-key-seed" /> Selected memory</span>
             <span><i className="graph-key-hop graph-key-hop--one" /> 1 hop</span>
             <span><i className="graph-key-hop graph-key-hop--two" /> 2 hops</span>
             <span><i className="graph-key-hop graph-key-hop--three" /> 3 hops</span>
-            <span><i className="graph-key-link" /> Positive link</span>
-            <span><i className="graph-key-link graph-key-link--negative" /> Negative link</span>
+            <span><i className="graph-key-link" /> Positive</span>
+            <span><i className="graph-key-link graph-key-link--negative" /> Negative</span>
           </div>
           <div className="graph-stage-tools"><span>Drag to arrange</span><span>Scroll to zoom</span><button className="graph-fit-button" onClick={() => cy.current?.fit(undefined, 90)}>Fit network</button></div>
         </>}

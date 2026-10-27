@@ -20,6 +20,26 @@
 @media(prefers-reduced-motion:reduce){.current-location-marker:before{animation:none}.weekly-card,.map-locate-button,.graph-fit-button{transition:none}}
 .graph-canvas.graph-canvas--network>.graph-stage-heading,.graph-canvas.graph-canvas--network>.graph-key,.graph-canvas.graph-canvas--network>.graph-stage-tools{width:auto;height:auto}.graph-canvas.graph-canvas--network>.graph-loading,.graph-canvas.graph-canvas--network>.graph-empty-state{width:100%;height:100%}.graph-stage-count{color:#c0d2c8}.graph-key{bottom:62px}.graph-stage-tools{bottom:14px}
 
+/* A quiet, Obsidian-inspired constellation canvas: cool ink, fine links, glowing notes. */
+.graph-canvas.graph-canvas--network{border-color:#252a3a;background:radial-gradient(ellipse at 52% 46%,#141827 0%,#0c0e17 54%,#090a10 100%);box-shadow:0 24px 70px #08091055}
+.graph-canvas--network:before{background-image:radial-gradient(circle,#b6c0f414 1px,transparent 1.3px);background-size:24px 24px;mask-image:radial-gradient(ellipse at center,#000 12%,#0009 65%,transparent 100%)}
+.graph-stage-kicker,.graph-detail-label{color:#9aa3cb}
+.graph-stage-count{color:#abb2c9}
+.graph-key{border-color:#7e86a02b;background:#0b0d16d9;color:#c5c9da;box-shadow:0 8px 30px #05060c70}
+.graph-key-seed{background:#e1d8ff;box-shadow:0 0 10px #a494ffb0}
+.graph-key-hop--one{background:#b4b7ff}.graph-key-hop--two{background:#899bea}.graph-key-hop--three{background:#707fc2}
+.graph-key-link{background:#8792c4}.graph-key-link--negative{background:#8792c4;background-image:linear-gradient(90deg,#8792c4 55%,transparent 55%);background-size:5px 2px}
+.graph-stage-tools{color:#a0a6bd}.graph-fit-button{border-color:#a9b0d333;background:#151827;color:#d8dbeb}.graph-fit-button:hover{background:#20243a;border-color:#929bea}
+.graph-empty-state{color:#bbc0d3}.graph-empty-state>b{color:#e4e6f1}.graph-empty-state>span:last-child{color:#9299b0}.graph-empty-orbit{border-color:#a494ff55;color:#c5baff;box-shadow:0 0 34px #8d7cff25}
+.graph-loading{background:#090a10d9;color:#e4e6f1}.graph-loading span{color:#a99aff}
+.graph-current-seed{color:#8993c1}.graph-path-explanation>b{color:#777fc0}.graph-rank-count{background:#ecebff;color:#555d9c}
+.graph-result-select:hover .graph-result-main>b,.graph-result.is-current .graph-result-main>b{color:#5965af}.graph-result-main>i>em{background:linear-gradient(90deg,#7782d8,#b5a8fa)}
+.graph-inspector .graph-result button:focus-visible,.graph-fit-button:focus-visible,.graph-explore-button:focus-visible{outline-color:#989cf2}
+.graph-page-head .eyebrow{color:#747cae}.graph-toolbar>select,.graph-toolbar>label{border-color:#d9daeb;background:#f8f8fc;color:#656987}.graph-toolbar>label select,.graph-toolbar>label input{background:#f0f1f8;color:#2d3044}.graph-toolbar>.graph-spread-button{border-color:#5962b8;background:#5962b8;color:#fff}.graph-toolbar>.graph-spread-button:hover:not(:disabled){background:#454e9e;border-color:#454e9e}.graph-toolbar>.graph-spread-button:disabled{background:#878bb5;border-color:#878bb5}
+.graph-inspector .panel{border:1px solid #dfe0ed;background:#fbfbfe;color:#33364a;box-shadow:0 8px 28px #24233b0a}.graph-detail-panel{background:linear-gradient(145deg,#fff 0%,#f7f7fc 100%)}.graph-selected-title{color:#25283a}.graph-current-seed{color:#777fae}.graph-detail-stats>span{border-color:#e5e6f0;background:#fff;color:#777b91}.graph-detail-stats b{color:#454b7b}.graph-path-explanation{border-top-color:#e6e7f0}.graph-path-explanation>b{color:#555d9e}.graph-detail-copy,.graph-path-explanation>span:last-child{color:#73788f}.graph-selection-empty{color:#7f8399}.graph-ranking-panel{scrollbar-color:#d8d9e8 transparent}.graph-rank-count{background:#eeedff;color:#525ba5}.graph-result{border-top-color:#ebebf3}.graph-result-select:hover .graph-result-main>b,.graph-result.is-current .graph-result-main>b{color:#555eae}.graph-result:focus-within{background:#f6f6fc}.graph-result-rank{background:#efeff8;color:#747891}.graph-result-main>span{color:#777b91}.graph-result-main>i{background:#e9eaf2}.graph-result .algorithm-note{background:#f4f4fa;border-left-color:#8d94d6}
+.graph-inspector .graph-result button:focus-visible,.graph-fit-button:focus-visible,.graph-explore-button:focus-visible{outline-color:#8288d2}
+.graph-inspector .graph-explore-button{border:1px solid #5962b8;background:#5962b8;color:#fff}.graph-inspector .graph-explore-button:hover:not(:disabled){background:#454e9e}.graph-inspector .graph-result .button.ghost{border-color:transparent;background:transparent;color:#5962a5}.graph-inspector .graph-result .button.ghost:hover:not(:disabled){background:#f0f0fc;color:#414a94}
+
 .leaflet-control-attribution a{color:#005a83;text-decoration:underline}
 .leaflet-container .leaflet-control-attribution a{color:#00517a;text-decoration:underline}
 .table-scroll{max-width:100%;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch}.muted{overflow-wrap:anywhere}

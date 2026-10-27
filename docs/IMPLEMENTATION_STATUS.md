@@ -166,7 +166,7 @@ Core engines, app flows, migrations, optional local authentication with database
 
 ## 2026-10-27 interaction refinements
 
-- **Implemented and tested** — Associative graph uses a seed-centered, hop-aware network layout with depth/valence styling, hover-focused edge labels, a selected-memory inspector, and an explicit action to explore from an inspected result. PostgreSQL still calculates activation and paths.
+- **Implemented and tested** — Associative graph uses an animated force-directed constellation with a restrained violet/blue palette, fine neutral links, hop depth and valence styling, hover-focused labels, a selected-memory inspector, and an explicit action to explore from an inspected result. PostgreSQL still calculates activation and paths.
 - **Implemented and tested** — Spatial Memory Walk requests browser geolocation, centers the map on the current position when permission is granted, and can use that point as the first route vertex. If geolocation is unavailable or denied, the map remains usable with its VIT Vellore starting view and manual route drawing.
 - **Implemented and tested** — Weekly Review presents one review card at a time. Swipe right keeps it; swipe left archives it recoverably. The card leaves the active queue and the next item appears. Explicit Keep, Snooze, Archive, and Dismiss controls remain available for keyboard and touch accessibility.
 - **Verified 2026-10-27** — `npx tsc --noEmit`, `npm test -- --reporter=dot` (75 tests), Docker production build/start, `/api/health`, and the focused Playwright graph, map, timeline/review integration suite (12 tests) passed.
