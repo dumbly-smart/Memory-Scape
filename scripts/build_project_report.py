@@ -13,9 +13,6 @@ from docx.oxml.ns import qn
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE = ROOT / "AC1855A5C7148BFEF7B640F739CB02C7-4_ImplementationBasedtemplate_1.docx"
 OUT = ROOT / "MemoryScape_Project_Report_Final.docx"
-ASSETS = ROOT / "docs" / "report_assets"
-ASSETS.mkdir(parents=True, exist_ok=True)
-
 NAVY = "000000"
 INK = "000000"
 MUTED = "000000"
@@ -250,18 +247,59 @@ def add_table(doc, headers, rows, widths=None, font_size=8.8):
     return table
 
 
-def add_figure(doc, filename, caption, width=6.55):
-    p = doc.add_paragraph()
-    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p.paragraph_format.space_before = Pt(4)
-    p.paragraph_format.space_after = Pt(2)
-    p.paragraph_format.keep_with_next = True
-    p.paragraph_format.keep_together = True
-    p.add_run().add_picture(str(ASSETS / filename), width=Inches(width))
-    c = doc.add_paragraph(caption, style="Caption")
-    c.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    c.paragraph_format.keep_together = True
-    return c
+def set_cell_border(cell, visible=True):
+    tc_pr = cell._tc.get_or_add_tcPr()
+    borders = tc_pr.first_child_found_in("w:tcBorders")
+    if borders is None:
+        borders = OxmlElement("w:tcBorders")
+        tc_pr.append(borders)
+    for side in ("top", "left", "bottom", "right"):
+        edge = OxmlElement(f"w:{side}")
+        edge.set(qn("w:val"), "single" if visible else "nil")
+        if visible:
+            edge.set(qn("w:sz"), "8")
+            edge.set(qn("w:color"), "000000")
+        borders.append(edge)
+
+
+def add_editable_diagram_row(doc, blocks, widths, caption=None):
+    """Draw a simple black-outline diagram from editable Writer table cells."""
+    table = doc.add_table(rows=1, cols=len(blocks))
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.autofit = False
+    table.style = "Table Grid"
+    for index, (heading, detail, is_block) in enumerate(blocks):
+        cell = table.cell(0, index)
+        cell.width = Inches(widths[index])
+        cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
+        set_cell_margins(cell, top=120, bottom=120, start=90, end=90)
+        set_cell_border(cell, visible=is_block)
+        p = cell.paragraphs[0]
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(0)
+        if is_block:
+            title = p.add_run(heading)
+            title.bold = True
+            title.font.name = "Arial"
+            title.font.size = Pt(8.2 if len(heading) > 13 else 9)
+            if detail:
+                desc = cell.add_paragraph()
+                desc.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                desc.paragraph_format.space_after = Pt(0)
+                run = desc.add_run(detail)
+                run.font.name = "Arial"
+                run.font.size = Pt(8)
+        else:
+            run = p.add_run(heading)
+            run.font.name = "Arial"
+            run.font.size = Pt(8)
+    if caption:
+        c = doc.add_paragraph(caption, style="Caption")
+        c.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        c.paragraph_format.keep_together = True
+    else:
+        doc.add_paragraph("")
+    return table
 
 
 def add_callout(doc, title, body, fill=PALE_BLUE):
@@ -375,9 +413,9 @@ def generate():
         ("2. Literature Study", "Memory cues, spatial context, association, forgetting", "5"),
         ("3. Objectives", "Research questions and measurable objectives", "6"),
         ("4. Design", "Architecture, schema, and three recall engines", "7"),
-        ("5. Implementation and Evaluation", "Features, data, validation, measurements, limitations", "10"),
-        ("6. Conclusion and Future Work", "Findings and next research steps", "14"),
-        ("References", "Research literature and primary technical documentation", "15"),
+        ("5. Implementation and Evaluation", "Features, data, validation, measurements, limitations", "9"),
+        ("6. Conclusion and Future Work", "Findings and next research steps", "12"),
+        ("References", "Research literature and primary technical documentation", "13"),
     ]
     add_table(doc, ["Section", "Coverage", "Page"], toc_rows, [2.35, 3.45, 0.55], 9.2)
     add_p(doc, "Document version: final implementation-based report · 27 October 2026", style="Caption")
@@ -439,10 +477,39 @@ def generate():
     add_heading(doc, "4. Design", 1)
     add_heading(doc, "4.1 Architecture", 2)
     add_p(doc, "The Next.js interface submits validated requests to a TypeScript API. The API issues parameterized SQL against PostgreSQL. The database performs route filtering and ordering, decay and reinforcement, recursive path expansion, and materialized-view refresh. The browser renders geometry, timelines, nodes, edges, and database-provided explanations.")
-    add_figure(doc, "architecture.png", "Figure 1. Implemented architecture. PostgreSQL/PostGIS performs the central recall and strength computations.")
+    add_editable_diagram_row(doc, [
+        ("WEB INTERFACE", "Map · timeline · graph", True),
+        ("→", "", False),
+        ("API", "Validate · parameterized SQL", True),
+        ("→", "", False),
+        ("POSTGRESQL + POSTGIS", "Filter · rank · update", True),
+    ], [1.55, 0.35, 1.55, 0.35, 2.0])
+    p = add_p(doc, "PostgreSQL executes the recall engines:")
+    p.paragraph_format.space_after = Pt(2)
+    add_editable_diagram_row(doc, [
+        ("SPATIAL", "Route proximity · route order", True),
+        ("TEMPORAL", "Decay · reinforcement", True),
+        ("ASSOCIATIVE", "Recursive activation paths", True),
+    ], [2.0, 2.0, 2.0], "Figure 1. Application requests flow to PostgreSQL; the database performs recall calculations.")
     add_heading(doc, "4.2 Relational model and integrity", 2)
     add_p(doc, "The core schema separates reusable context labels from memory records. memory_contexts resolves the many-to-many relationship. memory_edges represents directed associations and permits explicit reciprocal edges. memory_reinforcements records each strength change. UUID primary keys, foreign keys, uniqueness rules, range checks, timestamp defaults, and targeted indexes protect the data contract. A nullable geography(Point,4326) column stores coordinates; timestamps use TIMESTAMPTZ, and occurred_at is kept distinct from last_strength_at.")
-    add_figure(doc, "data-model.png", "Figure 2. Core entities and cardinalities. Edge source and destination are two foreign keys back to memories.", width=5.75)
+    add_editable_diagram_row(doc, [
+        ("MEMORIES", "id · title · occurred_at · location", True),
+        ("1 : N  →", "", False),
+        ("MEMORY_CONTEXTS", "memory_id · context_id", True),
+        ("←  N : 1", "", False),
+        ("CONTEXTS", "id · type · label", True),
+    ], [1.35, 0.75, 1.8, 0.75, 1.35])
+    add_editable_diagram_row(doc, [
+        ("MEMORIES", "id · title", True),
+        ("1 : N  →", "", False),
+        ("MEMORY_EDGES", "src · dst reference memories", True),
+    ], [1.8, 0.8, 2.8])
+    add_editable_diagram_row(doc, [
+        ("MEMORIES", "id · title", True),
+        ("1 : N  →", "", False),
+        ("REINFORCEMENTS", "memory_id · strength history", True),
+    ], [1.8, 0.8, 2.8], "Figure 2. Context links, directed memory edges, and reinforcement history are represented with foreign keys.")
     add_heading(doc, "4.3 Spatial and spatiotemporal recall", 2)
     add_p(doc, "A map route is validated as a non-degenerate LineString and submitted as GeoJSON. SQL constructs a route geography and applies ST_DWithin to memory geography using a radius in meters; PostGIS documents this geography overload in meters and describes the index-aware bounding-box stage [15]. Distance is returned for explanation. ST_LineLocatePoint gives each result a fractional position along the route, followed by stable tie-breaks [15]. The spatiotemporal operation adds a half-open event interval: from ≤ occurred_at < until. Both the spatial corridor and interval are evaluated in the database.")
     add_p(doc, "Spatial Walk and Spatiotemporal Recall request geolocation only in the browser. With permission, the map centers on and marks the current point and offers a one-action route start there. Without permission—or outside a secure context—manual map use remains available. Memory coordinates are not needed to determine the user's live position; the location is used as a query/route cue.")
@@ -483,7 +550,6 @@ def generate():
     ], [1.85, 4.55], 8.6)
     add_heading(doc, "5.4 Performance protocol", 2)
     add_p(doc, "The scale comparison runs five sequential trials for each synthetic size (10,000 and 50,000 memories). Each observation follows a PostgreSQL restart, which resets shared_buffers, but the protocol does not flush operating-system cache. Data is generated from clustered campus distributions. Values below are observed medians from this host and this workload; they are not cold-disk latency, an independent-machine sample, or a general service-level expectation. [14–16]")
-    add_figure(doc, "benchmark-medians.png", "Figure 3. Median execution time from five restart-only trials; exact values and caveats are also listed in Table 3.")
     add_table(doc, ["Query (median ms)", "10,000 memories", "50,000 memories"], [
         ("Spatial index candidate", "57.510", "58.784"),
         ("Controlled sequential plan", "25.203", "49.212"),

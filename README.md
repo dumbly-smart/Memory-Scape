@@ -111,7 +111,7 @@ The SQL contract tests run in rollback transactions and exercise actual database
 
 ## Research contributions and limits
 
-The prototype makes the three recall algorithms inspectable in SQL and provides deterministic correctness fixtures. Valence and review-priority coefficients are engineering choices, not empirically validated cognitive constants. See [spatial recall](docs/algorithms/SPATIAL_RECALL.md), [temporal model](docs/algorithms/TEMPORAL_DECAY.md), [spreading activation](docs/algorithms/SPREADING_ACTIVATION.md), [evaluation methodology](docs/evaluation/METHODOLOGY.md), and the [demo guide](docs/DEMO_GUIDE.md). The recorded benchmark output is a reproducible repeated observation, not a general performance claim.
+The prototype makes the three recall algorithms inspectable in SQL and provides deterministic correctness fixtures. Valence and review-priority coefficients are engineering choices, not empirically validated cognitive constants. See [spatial recall](docs/algorithms/SPATIAL_RECALL.md), [temporal model](docs/algorithms/TEMPORAL_DECAY.md), [spreading activation](docs/algorithms/SPREADING_ACTIVATION.md), [evaluation methodology](docs/evaluation/METHODOLOGY.md), the [demo guide](docs/DEMO_GUIDE.md), and the [presentation guide](docs/PRESENTATION_GUIDE.md). The recorded benchmark output is a reproducible repeated observation, not a general performance claim.
 
 ### Daily-use portability
 
