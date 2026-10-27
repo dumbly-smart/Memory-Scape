@@ -1,6 +1,18 @@
 # MemoryScape implementation status
 
-Updated 2026-10-26 after research-recall extensions and final verification. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
+Updated 2026-10-27 after final validation and local storage cleanup. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
+
+
+## Latest validation (2026-10-27)
+
+- **Implemented and tested** — Rebuildable npm, pip, and uv caches plus task-generated temporary test artifacts were removed. `/home` now has 29 GB available. The PostgreSQL data volume and unrelated Docker volumes were preserved.
+- **Implemented and tested** — `docker compose up --build -d web` starts the app and PostgreSQL against the existing local volume. `/api/health` reports PostgreSQL 16.15 and PostGIS 3.6.4; pg_cron lists `memoryscape-daily-decay` and `memoryscape-hourly-review-refresh`; the memory count remains 1,200. No seed was run.
+- **Implemented and tested** — `npm test -- --run`: 72/72 tests; `npx tsc --noEmit`: passed; `npm run build`: passed.
+- **Implemented and tested** — Database checks on a disposable PostgreSQL instance: migrations 001–013, 1,200 deterministic seed rows, research SQL contracts, algorithm assertions, auth rate-limit SQL, eight-session reinforcement concurrency, and push-delivery integration all passed. The temporary database was removed.
+- **Implemented and tested** — `npm audit --audit-level=low`: zero reported vulnerabilities. Full Playwright Chromium/Firefox matrix: 150/150 passed.
+- **Implemented but not fully tested** — Full WebKit matrix: 72/75 passed. Three failures are in Daily-page browser tests; route recall passed. The nearby-results test now targets its unique heading; its focused Playwright check passes in Chromium, Firefox, and WebKit.
+- **Incomplete** — Investigate the three remaining WebKit Daily-page interaction/navigation failures. Daily workflows pass in Chromium and Firefox; WebKit coverage for those three cases is not verified.
+
 
 ## Practical daily-use expansion (started 2026-10-23)
 
