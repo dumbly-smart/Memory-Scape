@@ -20,6 +20,6 @@ libreoffice --headless --convert-to pdf --outdir /tmp/memoryscape-report-export 
 cp /tmp/memoryscape-report-export/MemoryScape_Project_Report_Final.pdf .
 ```
 
-The report cites twelve peer-reviewed memory, lifelogging, visualization, and personal-information-management works plus Ebbinghaus's foundational book, primary PostgreSQL/PostGIS/pg_cron documentation, the GeoJSON RFC, and the project evaluation artifacts. The performance section reports the actual five-trial medians in `docs/evaluation/SCALE_RESULTS.md`, including the sequential-plan result and the trial/cache limitations. It does not describe synthetic measurements as human outcomes.
+The report bibliography contains exactly 16 sources: 12 peer-reviewed memory, lifelogging, visualization, and personal-information-management papers; Ebbinghaus's foundational book; and three consolidated primary documentation references for PostgreSQL, PostGIS, and pg_cron. The diagrams, charts, document accents, and tables use black and white only. The performance section reports the actual five-trial medians in `docs/evaluation/SCALE_RESULTS.md`, including the sequential-plan result and the trial/cache limitations. It does not describe synthetic measurements as human outcomes.
 
 When content changes, recheck the static page numbers in the report contents and render every PDF page before delivery.
