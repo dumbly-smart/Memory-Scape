@@ -35,11 +35,12 @@ test('spatiotemporal SQL recall intersects route distance with a half-open event
 
 test('associative path endpoint returns ranked alternative SQL paths with explainable score steps', async ({ page, request }) => {
   const stamp = Date.now();
+  const baseTime = Date.now();
   const ids = await Promise.all([
-    createMemory(request, `Research seed ${stamp}`, '2025-01-01T12:00:00.000Z'),
-    createMemory(request, `Research strong ${stamp}`, '2025-01-01T12:01:00.000Z', undefined, 0.8),
-    createMemory(request, `Research alternate ${stamp}`, '2025-01-01T12:02:00.000Z', undefined, 0.8),
-    createMemory(request, `Research target ${stamp}`, '2025-01-01T12:03:00.000Z', undefined, 0.9),
+    createMemory(request, `Research seed ${stamp}`, new Date(baseTime).toISOString()),
+    createMemory(request, `Research strong ${stamp}`, new Date(baseTime + 60_000).toISOString(), undefined, 0.8),
+    createMemory(request, `Research alternate ${stamp}`, new Date(baseTime + 120_000).toISOString(), undefined, 0.8),
+    createMemory(request, `Research target ${stamp}`, new Date(baseTime + 180_000).toISOString(), undefined, 0.9),
   ]);
   try {
     const edges = [
@@ -68,10 +69,11 @@ test('associative path endpoint returns ranked alternative SQL paths with explai
     expect(paths[0].step_activations[2]).toBeCloseTo(strongestActivation, 5);
     for (const path of paths) expect(new Set(path.path_ids).size).toBe(path.path_ids.length);
     await page.goto('/graph');
-    await page.getByLabel('Hops').selectOption('3');
+    await page.getByLabel('Hops').fill('3');
+    await page.getByLabel('Hops').press('Enter');
     await page.getByLabel('Seed memory').selectOption({ label: `Research seed ${stamp}` });
     await page.getByRole('button', { name: 'Spread activation' }).click();
-    const targetCard = page.locator('.result-card').filter({ hasText: `Research target ${stamp}` });
+    const targetCard = page.locator('.graph-result').filter({ hasText: `Research target ${stamp}` });
     await targetCard.getByRole('button', { name: 'Inspect alternate paths' }).click();
     await expect(page.getByLabel('Alternate activation paths')).toContainText('Path 1');
     await expect(page.getByLabel('Alternate activation paths')).toContainText('Path 2');
@@ -84,12 +86,17 @@ test('spatiotemporal recall page draws a route and applies its event-time window
   const now = Date.now();
   const id = await createMemory(request, `Research UI route ${now}`, new Date(now).toISOString(), { latitude: 13.021, longitude: 77.568 });
   try {
-    await page.goto('/research/spatiotemporal');
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition: (success: PositionCallback) => success({ coords: { latitude: 13.021, longitude: 77.568, accuracy: 10 } as GeolocationCoordinates, timestamp: Date.now() } as GeolocationPosition) } });
+    });
+    // Remote OSM tiles do not need to finish loading for the local recall UI.
+    await page.goto('/research/spatiotemporal', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByTestId('spatiotemporal-location-status')).toContainText('Centered on your current location');
     const map = page.locator('.leaflet-container');
     const bounds = await map.boundingBox();
     if (!bounds) throw new Error('Research map has no visible bounds');
-    await page.mouse.click(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-    await page.mouse.click(bounds.x + bounds.width / 2 + 12, bounds.y + bounds.height / 2);
+    await page.getByRole('button', { name: 'Start route at my location' }).click();
+    await page.mouse.click(bounds.x + bounds.width / 2 + 48, bounds.y + bounds.height / 2);
     // WebKit can render this responsive map with a click center offset from
     // the configured geographic center. Keep the UI fixture inside the route
     // corridor; route filtering itself is asserted with exact radii at the API.

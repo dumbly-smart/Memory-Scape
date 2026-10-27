@@ -39,7 +39,7 @@ To explore a richer fictional timeline alongside existing data, run `docker comp
 
 ## E — Seed-centered associative recall
 
-1. Open **Associative graph**, choose a seed from the recent memory list, choose depth 1–3 and a pruning threshold, then explore.
+1. Open **Associative graph**, choose a seed from the recent memory list, enter a hop depth from 1 to 32 and choose a pruning threshold, then explore. The upper bound protects the recursive query on dense graphs.
 2. Observe the bounded graph and the ranked strongest-path explanations (edge types, weights, valence, and target strength).
 3. Click a recalled node to recenter the SQL traversal. The database prevents cycles, excludes sensitive/archived memories, caps outgoing traversal candidates, and limits returned nodes.
 4. Under a target, choose **Inspect alternate paths** to compare the top simple SQL paths, scores at each hop, and edge evidence.

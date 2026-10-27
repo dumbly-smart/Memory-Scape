@@ -27,6 +27,65 @@ test('database returns bounded, explained graph around selected seed and exclude
   } finally { await Promise.all(ids.map(memoryId => request.delete(`/api/memories/${memoryId}`))); }
 });
 
+test('associative engines honor a requested four-hop depth', async ({ request }) => {
+  const suffix = Date.now();
+  const ids: string[] = [];
+  try {
+    for (const title of ['Depth seed', 'Depth one', 'Depth two', 'Depth three', 'Depth four']) {
+      const response = await request.post('/api/memories', { data: { title: `${title} ${suffix}`, content: '', occurredAt: new Date().toISOString(), strength: 1, decayRate: 0 } });
+      expect(response.status()).toBe(201);
+      ids.push((await response.json()).data.id as string);
+    }
+    for (let index = 0; index < ids.length - 1; index++) {
+      const edge = await request.post('/api/edges', { data: { src: ids[index], dst: ids[index + 1], type: `hop ${index + 1}`, weight: 1, valence: 1 } });
+      expect(edge.status()).toBe(201);
+    }
+
+    const subgraph = await request.post('/api/associative/subgraph', { data: { seedId: ids[0], depth: 4, threshold: 0.01 } });
+    expect(subgraph.status()).toBe(200);
+    const subgraphData = (await subgraph.json()).data as { nodes: { memory_id: string; hop_depth: number }[] };
+    expect(subgraphData.nodes.find(node => node.memory_id === ids[3])?.hop_depth).toBe(3);
+    expect(subgraphData.nodes.find(node => node.memory_id === ids[4])?.hop_depth).toBe(4);
+
+    const recall = await request.post('/api/associative/recall', { data: { seedId: ids[0], depth: 4, threshold: 0.01 } });
+    expect(recall.status()).toBe(200);
+    const recallData = (await recall.json()).data as { memory_id: string; hop_depth: number }[];
+    expect(recallData.find(node => node.memory_id === ids[3])?.hop_depth).toBe(3);
+    expect(recallData.find(node => node.memory_id === ids[4])?.hop_depth).toBe(4);
+
+    const paths = await request.post('/api/associative/paths', { data: { seedId: ids[0], targetId: ids[4], depth: 4, threshold: 0.01 } });
+    expect(paths.status()).toBe(200);
+    const pathsData = (await paths.json()).data as { hop_depth: number; path_ids: string[] }[];
+    expect(pathsData[0]?.hop_depth).toBe(4);
+    expect(pathsData[0]?.path_ids).toEqual(ids);
+  } finally { await Promise.all(ids.map(memoryId => request.delete(`/api/memories/${memoryId}`))); }
+});
+
+test('graph page accepts a custom hop count above three', async ({ page, request }) => {
+  const suffix = Date.now();
+  const ids: string[] = [];
+  const titles = ['Custom seed', 'Custom one', 'Custom two', 'Custom three', 'Custom four'].map(title => `${title} ${suffix}`);
+  try {
+    for (const title of titles) {
+      const response = await request.post('/api/memories', { data: { title, content: '', occurredAt: new Date().toISOString(), strength: 1, decayRate: 0 } });
+      expect(response.status()).toBe(201);
+      ids.push((await response.json()).data.id as string);
+    }
+    for (let index = 0; index < ids.length - 1; index++) {
+      const edge = await request.post('/api/edges', { data: { src: ids[index], dst: ids[index + 1], type: `hop ${index + 1}`, weight: 1, valence: 1 } });
+      expect(edge.status()).toBe(201);
+    }
+    await page.goto('/graph');
+    await page.getByLabel('Seed memory').selectOption(ids[0]);
+    const hops = page.getByLabel('Hops');
+    await hops.fill('4');
+    await hops.press('Enter');
+    await page.getByRole('button', { name: 'Spread activation' }).click();
+    const fourHop = page.locator('.graph-result').filter({ hasText: titles[4] });
+    await expect(fourHop).toContainText('4 hops');
+  } finally { await Promise.all(ids.map(memoryId => request.delete(`/api/memories/${memoryId}`))); }
+});
+
 test('graph page can start an exploration from a chosen memory', async ({ page, request }) => {
   const created = await request.post('/api/memories', { data: { title: `Graph page seed ${Date.now()}`, content: '', occurredAt: new Date().toISOString(), strength: 1, decayRate: 0 } });
   expect(created.status()).toBe(201);

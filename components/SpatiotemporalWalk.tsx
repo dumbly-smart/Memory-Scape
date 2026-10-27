@@ -1,8 +1,12 @@
 'use client';
 
 import { MapContainer, Marker, Polyline, TileLayer, useMapEvents } from 'react-leaflet';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DEFAULT_MAP_TILES } from '@/lib/map-tiles';
+import { CurrentLocationLayer } from '@/components/CurrentLocationLayer';
+
+type Point = [latitude: number, longitude: number];
+const defaultCenter: Point = [12.9698, 79.1559];
 
 type RecallRow = {
   memory_id: string;
@@ -33,6 +37,44 @@ export function SpatiotemporalWalk() {
   const [rows, setRows] = useState<RecallRow[]>([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [currentLocation, setCurrentLocation] = useState<Point | null>(null);
+  const [locationStatus, setLocationStatus] = useState('Finding your current location…');
+  const [locating, setLocating] = useState(false);
+  const [focusRequest, setFocusRequest] = useState(0);
+
+  const onCentered = useCallback(() => setLocationStatus('Centered on your current location'), []);
+  const locateCurrentPosition = useCallback(() => {
+    if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+      setLocationStatus('Location requires HTTPS or localhost. You can still draw a route manually.');
+      return;
+    }
+    if (!navigator.geolocation) {
+      setLocationStatus('Location is unavailable in this browser. You can still draw a route manually.');
+      return;
+    }
+    setLocating(true);
+    setLocationStatus('Finding your current location…');
+    navigator.geolocation.getCurrentPosition(position => {
+      setCurrentLocation([position.coords.latitude, position.coords.longitude]);
+      setFocusRequest(value => value + 1);
+      setLocationStatus('Location found; centering the map…');
+      setLocating(false);
+    }, cause => {
+      setLocationStatus(cause.code === cause.PERMISSION_DENIED
+        ? 'Location permission was declined. You can still draw a route manually.'
+        : 'Could not determine your location. You can still draw a route manually.');
+      setLocating(false);
+    }, { enableHighAccuracy: true, timeout: 20_000, maximumAge: 30_000 });
+  }, []);
+
+  useEffect(() => { locateCurrentPosition(); }, [locateCurrentPosition]);
+
+  function beginRouteAtCurrentLocation() {
+    if (!currentLocation) return;
+    setPoints([currentLocation]);
+    setRows([]);
+    setError('');
+  }
 
   async function search() {
     setError('');
@@ -66,16 +108,30 @@ export function SpatiotemporalWalk() {
       <div className="toolbar"><button className="button secondary" disabled={!points.length} onClick={() => setPoints(value => value.slice(0, -1))}>Undo last point</button><button className="button secondary" onClick={() => { setPoints([]); setRows([]); }}>Clear route</button></div>
     </div>
     <div className="map-layout">
-      <div className="map-panel"><MapContainer center={[13.021, 77.568]} zoom={15} scrollWheelZoom>
+      <div className="map-panel"><MapContainer key={currentLocation ? 'current-location' : 'fallback-location'} center={currentLocation ?? defaultCenter} zoom={currentLocation ? 16 : 13} scrollWheelZoom>
         <TileLayer attribution={DEFAULT_MAP_TILES.attribution} url={DEFAULT_MAP_TILES.url}/>
+        <CurrentLocationLayer position={currentLocation} request={focusRequest} onCentered={onCentered}/>
         <RouteClickCapture onPoint={point => setPoints(value => [...value, point])}/>
-        {points.length > 1 && <Polyline positions={points} pathOptions={{ color: '#2f6c54', weight: 5 }}/>} 
+        {points.length > 1 && <Polyline positions={points} pathOptions={{ color: '#656dc2', weight: 5 }}/>}
         {points.map((point, index) => <Marker key={`route-${index}`} position={point}/>)}
         {rows.map(row => row.coordinates && <Marker key={row.memory_id} position={[row.coordinates.coordinates[1], row.coordinates.coordinates[0]]}/>)}
-      </MapContainer></div>
+      </MapContainer>
+      <div className="map-current-controls">
+        <button className="map-locate-button" onClick={locateCurrentPosition} disabled={locating}>
+          <span aria-hidden="true">⌖</span> {locating ? 'Finding you…' : 'My location'}
+        </button>
+      </div></div>
       <aside className="map-tools"><section className="panel">
         <div className="panel-title"><h2>Research query</h2><span className="muted">{points.length} route vertices</span></div>
         <p className="muted">Click the map to draw a LineString. The event window includes its start and excludes its end.</p>
+        <div className="spatial-location-box" data-testid="spatiotemporal-location-status" role="status" aria-live="polite">
+          <span className={`spatial-location-dot ${currentLocation ? 'is-found' : ''}`} />
+          <span>{locationStatus}</span>
+        </div>
+        <div className="spatial-location-actions">
+          <button className="button secondary" onClick={beginRouteAtCurrentLocation} disabled={!currentLocation || locating}>Start route at my location</button>
+          <button className="button ghost" onClick={locateCurrentPosition} disabled={locating}>{locating ? 'Finding you…' : 'Recenter'}</button>
+        </div>
         <div className="field"><label htmlFor="st-from">Event time from</label><input className="input" id="st-from" aria-label="Event time from" type="datetime-local" value={from} onChange={event => setFrom(event.target.value)}/></div>
         <div className="field"><label htmlFor="st-until">Event time until (exclusive)</label><input className="input" id="st-until" aria-label="Event time until (exclusive)" type="datetime-local" value={until} onChange={event => setUntil(event.target.value)}/></div>
         <div className="field"><label htmlFor="st-radius">Corridor radius · {radius} m</label><input id="st-radius" type="range" min="25" max="1000" step="25" value={radius} onChange={event => setRadius(Number(event.target.value))}/></div>

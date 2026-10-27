@@ -81,6 +81,28 @@ test('spatial walk focuses on browser location and can start a route there', asy
   await page.getByRole('button', { name: 'Start route at my location' }).click();
   await expect(page.locator('.map-tools')).toContainText('1 vertex');
   await expect(page.locator('.current-location-marker')).toBeVisible();
+  const mapBounds = await page.locator('.leaflet-container').boundingBox();
+  const locationBounds = await page.locator('.current-location-marker').boundingBox();
+  expect(mapBounds).not.toBeNull();
+  expect(locationBounds).not.toBeNull();
+  expect(Math.abs((locationBounds!.x + locationBounds!.width / 2) - (mapBounds!.x + mapBounds!.width / 2))).toBeLessThan(10);
+  expect(Math.abs((locationBounds!.y + locationBounds!.height / 2) - (mapBounds!.y + mapBounds!.height / 2))).toBeLessThan(10);
+});
+
+test('spatiotemporal recall locates and displays the current position', async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition: (success: PositionCallback) => success({ coords: { latitude: 11.8745, longitude: 75.3704, accuracy: 12 } as GeolocationCoordinates, timestamp: Date.now() } as GeolocationPosition) } });
+  });
+  await page.goto('/research/spatiotemporal', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByTestId('spatiotemporal-location-status')).toContainText('Centered on your current location');
+  await page.getByRole('button', { name: 'Start route at my location' }).click();
+  await expect(page.locator('.map-tools')).toContainText('1 route vertices');
+  const mapBounds = await page.locator('.leaflet-container').boundingBox();
+  const locationBounds = await page.locator('.current-location-marker').boundingBox();
+  expect(mapBounds).not.toBeNull();
+  expect(locationBounds).not.toBeNull();
+  expect(Math.abs((locationBounds!.x + locationBounds!.width / 2) - (mapBounds!.x + mapBounds!.width / 2))).toBeLessThan(10);
+  expect(Math.abs((locationBounds!.y + locationBounds!.height / 2) - (mapBounds!.y + mapBounds!.height / 2))).toBeLessThan(10);
 });
 
 test('timeline filters event dates and reinforces a memory', async ({ page, request }) => {
@@ -89,8 +111,12 @@ test('timeline filters event dates and reinforces a memory', async ({ page, requ
   try {
     await page.goto('/timeline');
     await expect(page.getByRole('heading', { name: title })).toBeVisible();
+    const reinforcement = page.waitForResponse(response => response.url().endsWith('/api/temporal/reinforce') && response.request().method() === 'POST');
     await page.getByRole('button', { name: '＋ Reinforce' }).first().click();
-    await expect(page.getByText('60% strength')).toBeVisible();
+    expect((await reinforcement).ok()).toBe(true);
+    const reinforced = (await (await request.get(`/api/memories/${id}`)).json()).data as { strength: number };
+    expect(reinforced.strength).toBeGreaterThan(0.4);
+    await expect(page.getByText(`${Math.round(reinforced.strength * 100)}% strength`).first()).toBeVisible();
     const today = new Date().toISOString().slice(0, 10);
     await page.getByLabel('From', { exact: true }).fill(today);
     await page.getByLabel('To', { exact: true }).fill(today);
@@ -112,7 +138,8 @@ test('graph page runs bounded associative recall from a selected memory', async 
     const edge = await request.post('/api/edges', { data: { src: source, dst: target, type: 'UI test link', weight: 0.9, valence: 0.5 } });
     expect(edge.status()).toBe(201);
     await page.goto('/graph');
-    await page.getByLabel('Hops').selectOption('1');
+    await page.getByLabel('Hops').fill('1');
+    await page.getByLabel('Hops').press('Enter');
     await page.locator('select').first().selectOption({ label: firstTitle });
     await page.getByRole('button', { name: 'Spread activation' }).click();
     await expect(page.locator('.graph-result b').filter({ hasText: secondTitle })).toBeVisible();

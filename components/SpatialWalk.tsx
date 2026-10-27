@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { DEFAULT_MAP_TILES, MAP_TILE_STORAGE_KEY, parseMapTileSettings } from '@/lib/map-tiles';
+import { CurrentLocationLayer } from '@/components/CurrentLocationLayer';
 
 type Point = [latitude: number, longitude: number];
 type Memory = {
@@ -33,12 +34,6 @@ const memoryMarker = L.divIcon({
   iconSize: [14, 14],
   iconAnchor: [7, 7],
 });
-const currentLocationMarker = L.divIcon({
-  className: 'current-location-marker',
-  html: '<span></span>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-});
 const defaultCenter: Point = [12.9698, 79.1559];
 
 function RouteCorridor({ positions, radius }: { positions: Point[]; radius: number }) {
@@ -52,23 +47,6 @@ function RouteCorridor({ positions, radius }: { positions: Point[]; radius: numb
 
 function ClickCapture({ add }: { add: (point: Point) => void }) {
   useMapEvents({ click: event => add([event.latlng.lat, event.latlng.lng]) });
-  return null;
-}
-
-function FocusCurrentLocation({ position, request, onCentered }: { position: Point | null; request: number; onCentered: () => void }) {
-  const map = useMap();
-  useEffect(() => {
-    if (!position) return;
-    const center = L.latLng(position[0], position[1]);
-    if (map.getCenter().distanceTo(center) < 18 && map.getZoom() >= 15) {
-      onCentered();
-      return;
-    }
-    const finish = () => onCentered();
-    map.once('moveend', finish);
-    map.flyTo(position, Math.max(16, map.getZoom()), { duration: 0.75 });
-    return () => { map.off('moveend', finish); };
-  }, [map, onCentered, position, request]);
   return null;
 }
 
@@ -91,6 +69,10 @@ export function SpatialWalk() {
   const onCentered = useCallback(() => setLocationStatus('Centered on your current location'), []);
 
   const locateCurrentPosition = useCallback(() => {
+    if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+      setLocationStatus('Location requires HTTPS or localhost. You can still explore the map manually.');
+      return;
+    }
     if (!navigator.geolocation) {
       setLocationStatus('Location is unavailable in this browser. You can still explore the map manually.');
       return;
@@ -108,7 +90,7 @@ export function SpatialWalk() {
         : 'Could not determine your location. You can still pan the map or choose a place manually.';
       setLocationStatus(message);
       setLocating(false);
-    }, { enableHighAccuracy: false, timeout: 12_000, maximumAge: 60_000 });
+    }, { enableHighAccuracy: true, timeout: 20_000, maximumAge: 30_000 });
   }, []);
 
   useEffect(() => {
@@ -198,16 +180,15 @@ export function SpatialWalk() {
 
     <div className="map-layout spatial-walk-layout">
       <div className="map-panel spatial-map-panel">
-        <MapContainer center={currentLocation ?? defaultCenter} zoom={currentLocation ? 16 : 13} scrollWheelZoom>
+        <MapContainer key={currentLocation ? 'current-location' : 'fallback-location'} center={currentLocation ?? defaultCenter} zoom={currentLocation ? 16 : 13} scrollWheelZoom>
           <TileLayer attribution={tileSettings.attribution} url={tileSettings.url} />
-          <FocusCurrentLocation position={currentLocation} request={focusRequest} onCentered={onCentered} />
+          <CurrentLocationLayer position={currentLocation} request={focusRequest} onCentered={onCentered} />
           <ClickCapture add={point => setPoints(value => [...value, point])} />
           {points.length > 1 && <>
             <RouteCorridor positions={coords} radius={radius} />
             <Polyline positions={coords} pathOptions={{ color: '#2f6c54', weight: 5, opacity: 0.92, lineCap: 'round', lineJoin: 'round' }} />
           </>}
           {points.map((point, index) => <Marker key={`route-${index}`} position={point} />)}
-          {currentLocation && <Marker position={currentLocation} icon={currentLocationMarker} keyboard title="Your current location" />}
           {rows.map(memory => memory.coordinates && <Marker
             key={memory.memory_id}
             position={[memory.coordinates.coordinates[1], memory.coordinates.coordinates[0]]}
@@ -216,7 +197,7 @@ export function SpatialWalk() {
           />)}
         </MapContainer>
         <div className="map-current-controls">
-          <button className="map-locate-button" onClick={() => { if (currentLocation) setFocusRequest(value => value + 1); else locateCurrentPosition(); }} disabled={locating}>
+          <button className="map-locate-button" onClick={locateCurrentPosition} disabled={locating}>
             <span aria-hidden="true">⌖</span> {locating ? 'Finding you…' : 'My location'}
           </button>
         </div>
@@ -231,7 +212,7 @@ export function SpatialWalk() {
         </div>
         <div className="spatial-location-actions">
           <button className="button secondary" onClick={beginRouteAtCurrentLocation} disabled={!currentLocation || locating}>Start route at my location</button>
-          <button className="button ghost" onClick={() => { if (currentLocation) setFocusRequest(value => value + 1); else locateCurrentPosition(); }} disabled={locating}>Recenter</button>
+          <button className="button ghost" onClick={locateCurrentPosition} disabled={locating}>Recenter</button>
         </div>
         <div className="field spatial-radius-field">
           <label htmlFor="route-radius">Corridor radius <b>{radius} m</b></label>

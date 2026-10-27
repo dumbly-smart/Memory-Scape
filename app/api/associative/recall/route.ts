@@ -1,3 +1,3 @@
-import {NextRequest,NextResponse} from 'next/server';import{z}from'zod';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';
-const schema=z.object({seedId:z.guid(),depth:z.number().int().min(1).max(3).default(3),threshold:z.number().min(0).max(1).default(0.01),initialActivation:z.number().min(0).max(1).default(1)});
+import {NextRequest,NextResponse} from 'next/server';import{z}from'zod';import{pool}from'@/lib/db/pool';import{jsonError}from'@/lib/api';import{MAX_ASSOCIATIVE_HOPS}from'@/lib/associative';
+const schema=z.object({seedId:z.guid(),depth:z.number().int().min(1).max(MAX_ASSOCIATIVE_HOPS).default(3),threshold:z.number().min(0).max(1).default(0.01),initialActivation:z.number().min(0).max(1).default(1)});
 export async function POST(req:NextRequest){try{const v=schema.parse(await req.json());const r=await pool.query('SELECT * FROM associative_recall($1,$2,$3,$4)',[v.seedId,v.depth,v.threshold,v.initialActivation]);return NextResponse.json({data:r.rows});}catch(e){return jsonError(e);}}

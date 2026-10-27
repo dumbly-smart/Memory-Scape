@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { jsonError } from '@/lib/api';
 import { pool } from '@/lib/db/pool';
+import { MAX_ASSOCIATIVE_HOPS } from '@/lib/associative';
 
-const schema = z.object({ seedId: z.guid(), depth: z.number().int().min(1).max(3).default(2), threshold: z.number().min(0).max(1).default(0.01), limit: z.number().int().min(1).max(100).default(60) });
+const schema = z.object({ seedId: z.guid(), depth: z.number().int().min(1).max(MAX_ASSOCIATIVE_HOPS).default(2), threshold: z.number().min(0).max(1).default(0.01), limit: z.number().int().min(1).max(100).default(60) });
 type Traversal = { memory_id: string; title: string; activation: number; hop_depth: number; path_ids: string[]; path_edge_ids: string[]; edge_types: string[]; edge_weights: number[]; edge_valences: number[]; strength: number };
 
 export async function POST(request: NextRequest) {

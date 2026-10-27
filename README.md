@@ -8,12 +8,12 @@
 - PostGIS geography route corridor queries with meter distance and route order.
 - Spatiotemporal route recall intersects a PostGIS corridor with a half-open event-time window.
 - Exponential decay, reinforcement, and atomic context-link reinforcement routines.
-- Recursive SQL activation with maximum three hops, cycle prevention, pruning, and best-path explanations.
+- Recursive SQL activation with user-selected depth up to 32 hops, cycle prevention, pruning, and best-path explanations.
 - Hourly fading-memory materialized view refreshed by pg_cron.
 - Everyday workflows: quick capture and bookmarklet, people/project workspaces, follow-ups, decision notes, weekly review, and searchable attachments with local PDF/image text extraction and OCR.
 - Independent importance, sensitive-data, and archive controls; place reminders use user-triggered nearby recall.
 - Preview-first portable JSON backup/restore with attachment digest checks and transactional, no-overwrite imports.
-- Seed-centered graph exploration bounded to at most 60 displayed nodes, 12 candidate outgoing edges per node, and three hops.
+- Force-directed associative graph exploration bounded to at most 60 displayed nodes, 12 candidate outgoing edges per node, and 32 hops.
 - Alternate associative paths expose per-hop activation scores and relationship evidence.
 - Synthetic-ground-truth research lab measures ablations, parameter sweeps, radius sensitivity, and resilience to missing/noisy locations or removed graph edges.
 - Browser-local map tile configuration supports a local XYZ tile server for offline-compatible maps.

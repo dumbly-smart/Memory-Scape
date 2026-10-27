@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import cytoscape, { Core, ElementDefinition } from 'cytoscape';
 import { ActivationPathComparison } from '@/components/ActivationPathComparison';
+import { MAX_ASSOCIATIVE_HOPS } from '@/lib/associative';
 
 type Memory = { id: string; title: string; occurred_at: string; strength: number };
 type Edge = { id: string; src: string; dst: string; edge_type: string; weight: number; valence: number };
@@ -31,6 +32,7 @@ export default function GraphPage() {
   const [selectedNodeId, setSelectedNodeId] = useState('');
   const [selectedEdgeId, setSelectedEdgeId] = useState('');
   const [depth, setDepth] = useState(2);
+  const [depthInput, setDepthInput] = useState('2');
   const [threshold, setThreshold] = useState(0.01);
   const [formula, setFormula] = useState({ base: 0.75, salience: 0.25 });
   const [error, setError] = useState('');
@@ -257,7 +259,12 @@ export default function GraphPage() {
   }, [graph, inspectNode]);
 
   async function changeDepth(next: number) {
+    if (!Number.isInteger(next) || next < 1 || next > MAX_ASSOCIATIVE_HOPS) {
+      setDepthInput(String(depth));
+      return;
+    }
     setDepth(next);
+    setDepthInput(String(next));
     if (seedId) await recall(seedId, next, threshold);
   }
 
@@ -290,7 +297,7 @@ export default function GraphPage() {
         <option value="">Choose a recent memory…</option>
         {memories.map(memory => <option key={memory.id} value={memory.id}>{memory.title}</option>)}
       </select>
-      <label className="muted">Hops <select aria-label="Hops" value={depth} onChange={event => void changeDepth(Number(event.target.value))}>{[1, 2, 3].map(value => <option key={value} value={value}>{value}</option>)}</select></label>
+      <label className="muted">Hops <input aria-label="Hops" type="number" min="1" max={MAX_ASSOCIATIVE_HOPS} step="1" value={depthInput} onChange={event => setDepthInput(event.target.value)} onBlur={() => void changeDepth(Number(depthInput))} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); }} /></label>
       <label className="muted">Prune below <input aria-label="Activation pruning threshold" className="input" style={{ width: 85, minWidth: 0 }} type="number" min="0" max="1" step=".01" value={threshold} onChange={event => void changeThreshold(Number(event.target.value))} /></label>
       <button className="button graph-spread-button" disabled={!seedId || busy} onClick={() => void recall(seedId)}>{busy ? 'Calculating…' : 'Spread activation'}</button>
     </div>
@@ -357,6 +364,6 @@ export default function GraphPage() {
       </aside>
     </div>
 
-    <div className="algorithm-note graph-formula">A′ = A × edge weight × ({formula.base.toFixed(2)} + {formula.salience.toFixed(2)} × |valence|) × target strength. PostgreSQL handles activation, pruning, cycle prevention, path ranking, and the three-hop bound. Both positive and negative valence remain visible as recall cues.</div>
+    <div className="algorithm-note graph-formula">A′ = A × edge weight × ({formula.base.toFixed(2)} + {formula.salience.toFixed(2)} × |valence|) × target strength. PostgreSQL handles activation, pruning, cycle prevention, path ranking, and bounded traversal up to {MAX_ASSOCIATIVE_HOPS} hops. Both positive and negative valence remain visible as recall cues.</div>
   </>;
 }
