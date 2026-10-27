@@ -2,6 +2,18 @@
 
 Updated 2026-10-27 after final validation and local storage cleanup. “Tested” refers to the explicit commands below; it does not imply production security or research validity.
 
+## Additive VIT–Kannur fictional student dataset (2026-10-27)
+
+- [x] **Implemented and tested:** deterministic persona builder with chronological fictional student memories, holiday returns, train journeys, vacations, distinct places/people/emotions and associative graph links. Unit checks passed for size, references, coordinates, values, narrative coverage and graph integrity.
+- [x] **Implemented and tested:** migration 014 registry for scoped dataset ownership; the standard empty-database-only seed remains unchanged.
+- [x] **Implemented and tested:** transactional `db:seed:persona`; it is version-checked, idempotent, and records only the memories it owns.
+- [ ] **Implemented but not tested:** scoped `db:remove:persona`. It only deletes registered persona memory rows and retains shared contexts. It was not executed against the user's active database so the requested synthetic data remains available.
+- [x] **Implemented and tested:** migration 014 applied to the local database; persona seed inserted 125 owned memories beside the existing 1,200, and a second seed run was a no-op. Spatial recall returned 83 VIT-route results and 32 Kannur-route results; recursive recall returned 48 reachable memories from the VIT arrival seed; 57 owned memories appeared in the refreshed fading-memory view.
+- [x] **Implemented and tested:** `npm test -- --reporter=dot` passed 75 tests; `npx tsc --noEmit` and `npm run build` passed. Rebuilt Compose web service, `/api/health` reported PostgreSQL/PostGIS healthy, and `/api/contexts` returned the persona tag with 125 linked memories.
+- **Verification commands:** `DATABASE_URL=postgres://memoryscape:memoryscape_local@127.0.0.1:5432/memoryscape npm run db:seed:persona` (twice, then once in the rebuilt web container), plus direct PostGIS route, associative traversal, and materialized-view queries. Counts above are observations from this local database, not general performance claims.
+- [x] **Implemented and tested:** documentation explains fictional/privacy boundaries, approximate coordinates, use in map/timeline/graph, and SQL verification.
+- **Not claimed:** this dataset has not been assessed as representative of real VIT students; all details are synthetic and coordinates are approximate.
+
 
 ## Latest validation (2026-10-27)
 

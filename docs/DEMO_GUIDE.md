@@ -6,6 +6,10 @@
 2. Open `http://localhost:3000`.
 3. Load the deterministic fictional campus dataset with `docker compose exec web npm run db:seed`. The seed command refuses nonempty memory tables.
 
+### Student-life dataset
+
+To explore a richer fictional timeline alongside existing data, run `docker compose exec web npm run db:seed:persona`. It adds the VIT Vellore–Kannur student profile to a nonempty database and is safe to rerun. Filter the Memory Library for **Synthetic persona: Nikhil P. (fictional)**. Use the Map for VIT/Kannur and travel clusters, the Timeline for semester/holiday contrasts, and the Graph to follow project, family and friendship associations. See the [persona dataset guide](SYNTHETIC_PERSONA_DATASET.md) for reproducibility, privacy, and scoped removal.
+
 ## A — Capture and workspace
 
 1. Open **Quick capture**, write a note, and save. The event time defaults to now; strength update time remains separate.

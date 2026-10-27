@@ -19,6 +19,7 @@
 - Browser-local map tile configuration supports a local XYZ tile server for offline-compatible maps.
 - Next.js interface for memory CRUD, search, map route recall, timeline, graph exploration, review, and database settings.
 - Deterministic 1,200-row fictional campus seed dataset; refuses nonempty databases.
+- Add-only fictional VIT Vellore–Kannur student persona dataset, separately registered and removable without affecting other memories.
 
 ## Stack and architecture
 
@@ -33,7 +34,9 @@ The frontend sends validated values to API routes. SQL routines perform the main
 3. Wait for Next.js to finish its first-start migration, then open [http://localhost:3000](http://localhost:3000).
 4. In a second terminal, load synthetic data: `docker compose exec web npm run db:seed`.
 
-Compose binds ports to `127.0.0.1`, persists PostgreSQL in `memoryscape_data`, waits for database health, and runs repeatable migrations on web startup. Seeding is separate and intentionally refuses to touch a nonempty memory database. `docker compose down` keeps data; `docker compose down -v` deletes the database volume.
+Compose binds ports to `127.0.0.1`, persists PostgreSQL in `memoryscape_data`, waits for database health, and runs repeatable migrations on web startup. The base 1,200-row seed is separate and refuses to touch a nonempty memory database; the separately registered persona seed is additive. `docker compose down` keeps data; `docker compose down -v` deletes the database volume.
+
+For a more realistic student-life walkthrough, add the fictional VIT Vellore student whose family home is in Kannur with `docker compose exec web npm run db:seed:persona`. This dataset can be added alongside existing memories, is safe to rerun, and is isolated by the **Synthetic persona: Nikhil P. (fictional)** context. It includes semester routines, study/project memories, family and friend relationships, holiday journeys and vacations. See [the persona dataset guide](docs/SYNTHETIC_PERSONA_DATASET.md) for its privacy notes and scoped removal command.
 
 ## Local development
 
@@ -43,6 +46,7 @@ Install Node.js 22 or newer and Docker. Local development also needs Poppler (`p
 npm ci
 npm run db:migrate
 npm run db:seed
+npm run db:seed:persona
 npm run dev
 ```
 

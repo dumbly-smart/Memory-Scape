@@ -14,6 +14,8 @@
     "test:watch": "vitest",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
+    "db:seed:persona": "tsx scripts/seed-vit-kannur-persona.ts",
+    "db:remove:persona": "tsx scripts/remove-vit-kannur-persona.ts",
     "db:benchmark": "tsx scripts/evaluate.ts",
     "db:benchmark:fresh-buffers": "tsx scripts/evaluate-fresh-buffers.ts",
     "db:benchmark:compare": "tsx scripts/compare-benchmarks.ts",
